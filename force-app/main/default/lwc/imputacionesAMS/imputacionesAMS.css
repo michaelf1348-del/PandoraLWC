@@ -4017,8 +4017,17 @@ td.td-hours-prior {
 
 .day-detail-total {
     font-size: 0.8125rem;
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.85rem 0;
+    padding: 0.6rem 0.85rem;
     color: var(--cc-text);
+    background: oklch(0.968 0.004 247);
+    border: 1px solid var(--cc-border);
+    border-radius: 10px;
+}
+
+.day-detail-total strong {
+    color: var(--cc-primary-dark);
+    font-weight: 800;
 }
 
 .day-detail-loading {
@@ -4028,24 +4037,34 @@ td.td-hours-prior {
 .day-detail-list {
     list-style: none;
     margin: 0;
-    padding: 0;
-    max-height: 40vh;
+    padding: 0.15rem;
+    max-height: 42vh;
     overflow: auto;
 }
 
 .day-detail-row {
     border: 1px solid var(--cc-border);
-    border-radius: 8px;
-    padding: 0.45rem 0.55rem;
-    margin-bottom: 0.35rem;
-    background: oklch(0.985 0.002 247);
+    border-radius: 12px;
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.55rem;
+    background: var(--cc-surface);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.day-detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.day-detail-row:hover {
+    border-color: var(--cc-primary);
+    box-shadow: 0 2px 8px oklch(0 0 0 / 0.07);
 }
 
 .day-detail-row-main {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.55rem;
     flex-wrap: wrap;
 }
 
@@ -4055,66 +4074,85 @@ td.td-hours-prior {
 }
 
 .day-detail-fact {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 700;
     color: var(--cc-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
     white-space: nowrap;
+    background: oklch(0.968 0.004 247);
+    border: 1px solid var(--cc-border);
+    border-radius: 999px;
+    padding: 0.12rem 0.55rem;
 }
 
 .day-detail-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.28rem;
-    margin-top: 0.38rem;
+    gap: 0.4rem;
+    margin-top: 0.65rem;
 }
 
 .day-detail-act-btn {
-    font-size: 0.68rem;
-    min-height: 1.52rem;
-    padding: 0.12rem 0.42rem;
-    line-height: 1.2;
-}
-
-.day-detail-act-btn--danger {
+    font-size: 0.7rem;
     font-weight: 600;
-    padding: 0.12rem 0.48rem;
+    min-height: 1.7rem;
+    padding: 0.2rem 0.7rem;
+    line-height: 1.2;
+    border-radius: 8px;
 }
 
+/* Boton Eliminar suavizado: estilo ghost (texto/borde rojo) que se rellena al hover */
+.day-detail-act-btn--danger,
 .day-detail-actions .slds-button_destructive.day-detail-act-btn {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
+    font-weight: 600;
     line-height: 1.2;
-    min-height: 1.52rem;
-    padding: 0.12rem 0.48rem;
+    min-height: 1.7rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--cc-danger, #ba0517);
+    border: 1px solid var(--cc-danger, #ba0517);
+    box-shadow: none;
+}
+
+.day-detail-act-btn--danger:hover,
+.day-detail-actions .slds-button_destructive.day-detail-act-btn:hover {
+    background: var(--cc-danger, #ba0517);
+    color: #fff;
 }
 
 .day-detail-case {
     font-weight: 700;
-    font-size: 0.8125rem;
+    font-size: 0.85rem;
 }
 
 .day-detail-case-link {
     font-weight: 700;
-    font-size: 0.8125rem;
+    font-size: 0.85rem;
     color: var(--cc-primary-dark);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .day-detail-case-link:hover {
     color: var(--cc-primary);
+    text-decoration: underline;
 }
 
 .day-detail-hours {
     font-weight: 800;
-    font-size: 0.8125rem;
+    font-size: 0.9rem;
     color: var(--cc-primary-dark);
+    white-space: nowrap;
 }
 
 .day-detail-subject-row {
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     color: var(--cc-muted);
-    margin-top: 0.18rem;
-    line-height: 1.3;
+    margin-top: 0.25rem;
+    line-height: 1.35;
 }
 
 .day-detail-empty {
