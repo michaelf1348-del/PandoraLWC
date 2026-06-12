@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <environments>Default</environments>
+    <interviewLabel>AMS - Eliminación Masiva Asignaciones {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>AMS - Eliminación Masiva Asignaciones</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordDeletes>
+        <name>Eliminaci_n_de_Asignaciones</name>
+        <label>Eliminación de Asignaciones</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputReference>ids</inputReference>
+    </recordDeletes>
+    <screens>
+        <name>Desea_Eliminar</name>
+        <label>¿Desea Eliminar las asignaciones?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Eliminaci_n_de_Asignaciones</targetReference>
+        </connector>
+        <fields>
+            <name>Texto_Confirmacion</name>
+            <fieldText>&lt;p&gt;¿Estás seguro de que deseas eliminar las asignaciones seleccionadas?&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Desea_Eliminar</targetReference>
+        </connector>
+    </start>
+    <status>Obsolete</status>
+    <variables>
+        <name>ids</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Matriz_Asignacion_AMS__c</objectType>
+    </variables>
+</Flow>

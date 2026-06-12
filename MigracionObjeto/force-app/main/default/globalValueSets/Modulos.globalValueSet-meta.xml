@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>AMS - B1</fullName>
+        <default>false</default>
+        <label>AMS - B1</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Analisis de Datos (BW/BPC)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Analisis de Datos (BW/BPC)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Ariba</fullName>
+        <default>false</default>
+        <label>AMS-SAP Ariba</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Automotriz (DBM/VMS)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Automotriz (DBM/VMS)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP BTP</fullName>
+        <default>false</default>
+        <label>AMS-SAP BTP</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP CO (Controlling)</fullName>
+        <default>false</default>
+        <label>AMS-SAP CO (Controlling)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Commerce</fullName>
+        <default>false</default>
+        <label>AMS-SAP Commerce</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP CRM</fullName>
+        <default>false</default>
+        <label>AMS-SAP CRM</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Docusign</fullName>
+        <default>false</default>
+        <label>AMS-SAP Docusign</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Finanzas (FI/CO/AF/TRM/RE/ETC)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Finanzas (FI/CO/AF/TRM/RE/ETC)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP LE-TRA (Logistics Execution - Transportation)</fullName>
+        <default>false</default>
+        <label>AMS-SAP LE-TRA (Logistics Execution - Transportation)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Logístico (MM/WMS/PM)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Logístico (MM/WMS/PM)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP OpenText</fullName>
+        <default>false</default>
+        <label>AMS-SAP OpenText</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS- SAP PP-QM (Production Planning - Quality Management)</fullName>
+        <default>false</default>
+        <label>AMS- SAP PP-QM (Production Planning - Quality Management)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Recursos Humanos (HCM/ECP)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Recursos Humanos (HCM/ECP)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Seguridad R&amp;P</fullName>
+        <default>false</default>
+        <label>AMS-SAP Seguridad R&amp;P</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP SFSF SuccessFactors</fullName>
+        <default>false</default>
+        <label>AMS-SAP SFSF SuccessFactors</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (ABAP)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Tecnico (ABAP)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (ABAP HR)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Tecnico (ABAP HR)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (Fiori)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Tecnico (Fiori)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (Integraciones)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Tecnico (Integraciones)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (Integraciones HR)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Tecnico (Integraciones HR)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Ventas y Distribución (SD/Facturación Electrónica)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Ventas y Distribución (SD/Facturación Electrónica)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Workzone (SFSF)</fullName>
+        <default>false</default>
+        <label>AMS-SAP Workzone (SFSF)</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-TAM (Workforce)</fullName>
+        <default>false</default>
+        <label>AMS-TAM (Workforce)</label>
+    </customValue>
+    <customValue>
+        <fullName>Basis</fullName>
+        <default>false</default>
+        <label>Basis</label>
+    </customValue>
+    <customValue>
+        <fullName>Basis - BC</fullName>
+        <default>false</default>
+        <label>Basis - BC</label>
+    </customValue>
+    <customValue>
+        <fullName>Infraestructura AMS</fullName>
+        <default>false</default>
+        <label>Infraestructura AMS</label>
+    </customValue>
+    <customValue>
+        <fullName>Infraestructura Proyecto</fullName>
+        <default>false</default>
+        <label>Infraestructura Proyecto</label>
+    </customValue>
+    <customValue>
+        <fullName>Otros</fullName>
+        <default>false</default>
+        <label>Otros</label>
+    </customValue>
+    <customValue>
+        <fullName>Todos los módulos</fullName>
+        <default>false</default>
+        <label>Todos los módulos</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP Tecnico (Desarrollo e integraciones)</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>AMS-SAP Tecnico (Desarrollo e integraciones)</label>
+    </customValue>
+    <masterLabel>Módulos</masterLabel>
+    <sorted>true</sorted>
+</GlobalValueSet>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>U2_Email_Requerido</fullName>
+    <active>true</active>
+    <description>Evita crear con email vacio en usuario</description>
+    <errorConditionFormula>AND(
+  NOT(ISBLANK(Usuario2__c)),
+  ISBLANK(Correo_Electronico_U2__c)
+)</errorConditionFormula>
+    <errorMessage>El Usuario 2 tiene el email vacío.</errorMessage>
+</ValidationRule>

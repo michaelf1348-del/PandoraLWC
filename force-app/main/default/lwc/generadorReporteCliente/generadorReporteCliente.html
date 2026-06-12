@@ -1,0 +1,22 @@
+<template>
+    <lightning-card title="Generador Dashboard AMS" icon-name="doctype:excel">
+        <div class="slds-p-around_medium">
+            <p class="slds-m-bottom_small">Genera la estructura visual del reporte Caserones.</p>
+            
+            <lightning-button 
+                variant="brand" 
+                label="Generar Estructura Espejo" 
+                onclick={generarExcelEspejo} 
+                disabled={isGenerating}
+                class="slds-button_stretch">
+            </lightning-button>
+
+            <template if:true={isGenerating}>
+                <div class="slds-m-top_medium">
+                    <lightning-spinner alternative-text="Generando..." size="small"></lightning-spinner>
+                    <p class="slds-text-align_center slds-text-color_weak slds-m-top_small">Procesando diseño y guardando...</p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

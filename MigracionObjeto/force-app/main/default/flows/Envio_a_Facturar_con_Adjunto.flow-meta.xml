@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Enviar_email_a_facturacion</name>
+        <label>Enviar email a facturacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$Record.CreatedBy.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailAddressesArray</name>
+        </inputParameters>
+        <inputParameters>
+            <name>ccRecipientAddressList</name>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>AMS Solicitud de facturación {!$Record.Cliente__r.Name}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!vCuerpoEmail}&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>attachmentId</name>
+        </inputParameters>
+        <inputParameters>
+            <name>attachmentIdCollection</name>
+        </inputParameters>
+        <inputParameters>
+            <name>relatedRecordId</name>
+            <value>
+                <elementReference>$Record.IDGC__c</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>logEmailOnSend</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>64.0</apiVersion>
+    <assignments>
+        <name>Armar_cuerpo</name>
+        <label>Armar cuerpo</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>vCuerpoEmail</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>fCabecera</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCuerpoEmail</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>fPos1</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCuerpoEmail</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>fpos2</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCuerpoEmail</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>fpos3</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>vCuerpoEmail</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>fsaludo</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Enviar_email_a_facturacion</targetReference>
+        </connector>
+    </assignments>
+    <constants>
+        <name>CorreoLider</name>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>ialarcon@seidor.com</stringValue>
+        </value>
+    </constants>
+    <environments>Default</environments>
+    <formulas>
+        <name>fCabecera</name>
+        <dataType>String</dataType>
+        <expression>&quot;Buen día, estimado(a):&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+&quot;Por favor proceder a emitir facturación al cliente &quot; &amp;
+BLANKVALUE({!$Record.Cliente__r.Name}, &quot;-&quot;) &amp;
+&quot; de acuerdo al siguiente detalle:&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;Datos Generales de la Factura:&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;CLIENTE:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Cliente__r.Name}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;NO. CLIENTE:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Cliente_seidor__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;PRECIO TOTAL DE LA FACTURA:&lt;/b&gt; &quot; &amp;
+BLANKVALUE(TEXT({!$Record.Precio_Total__c}), &quot;-&quot;) &amp; &quot; &quot; &amp;
+BLANKVALUE(TEXT({!$Record.Moneda__c}), &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;Org. de Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.OrgVenta__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;Fecha Facturación:&lt;/b&gt; &quot; &amp;
+IF(
+   ISBLANK({!$Record.Fecha_Facturacin__c}),
+   &quot;-&quot;,
+   IF(DAY({!$Record.Fecha_Facturacin__c}) &lt; 10, &quot;0&quot;, &quot;&quot;) &amp; TEXT(DAY({!$Record.Fecha_Facturacin__c})) &amp; &quot;-&quot; &amp;
+   IF(MONTH({!$Record.Fecha_Facturacin__c}) &lt; 10, &quot;0&quot;, &quot;&quot;) &amp; TEXT(MONTH({!$Record.Fecha_Facturacin__c})) &amp; &quot;-&quot; &amp;
+   TEXT(YEAR({!$Record.Fecha_Facturacin__c}))
+) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;OC Cliente:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.OC_Cliente__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+&quot;&lt;b&gt;HES:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.HES__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot;</expression>
+    </formulas>
+    <formulas>
+        <name>fPos1</name>
+        <dataType>String</dataType>
+        <expression>IF(
+  VALUE(TEXT({!$Record.Numero_de_Posiciones__c})) &gt;= 1,
+  &quot;&lt;b&gt;Posición 1:&lt;/b&gt;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Precio:&lt;/b&gt; &quot; &amp; BLANKVALUE(TEXT({!$Record.Precio__c}), &quot;-&quot;) &amp; &quot; &quot; &amp; BLANKVALUE(TEXT({!$Record.Moneda__c}), &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Material:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Materia__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;División:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Division__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Descripción:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.DenPosicin__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Pedido de Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Pedido_V__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Posición Pedido Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Posicin_PV__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;PEP:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.PEP__r.Name}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot;,
+  &quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>fpos2</name>
+        <dataType>String</dataType>
+        <expression>IF(
+  VALUE(TEXT({!$Record.Numero_de_Posiciones__c})) &gt;= 2,
+  &quot;&lt;b&gt;Posición 2:&lt;/b&gt;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Precio:&lt;/b&gt; &quot; &amp; BLANKVALUE(TEXT({!$Record.Precio2__c}), &quot;-&quot;) &amp; &quot; &quot; &amp; BLANKVALUE(TEXT({!$Record.Moneda__c}), &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Material:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Materia2__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;División:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Division2__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Descripción:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.DenPosicin2__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Pedido de Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Pedido_V2__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Posición Pedido Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Posici_n_PV2__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;PEP:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.PEP2__r.Name}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot;, 
+  &quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>fpos3</name>
+        <dataType>String</dataType>
+        <expression>IF(
+  VALUE(TEXT({!$Record.Numero_de_Posiciones__c})) &gt;= 3,
+  &quot;&lt;b&gt;Posición 3:&lt;/b&gt;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Precio:&lt;/b&gt; &quot; &amp; BLANKVALUE(TEXT({!$Record.Precio_3__c}), &quot;-&quot;) &amp; &quot; &quot; &amp; BLANKVALUE(TEXT({!$Record.Moneda__c}), &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Material:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Materia3__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;División:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Division3__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Descripción:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.DenPosicin3__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Pedido de Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Pedido_V3__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;Posición Pedido Venta:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.Posici_n_PV3__c}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&quot; &amp;
+  &quot;&lt;b&gt;PEP:&lt;/b&gt; &quot; &amp; BLANKVALUE({!$Record.PEP3__r.Name}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot;,
+  &quot;&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>fsaludo</name>
+        <dataType>String</dataType>
+        <expression>&quot;En caso de existir observaciones o comentarios, se indican aquí:&lt;br/&gt;&quot; &amp;
+IF(
+   ISBLANK({!$Record.Observaciones_del_Mes__c}),
+   &quot;&lt;i&gt;&lt;span style=&apos;color:gray;&apos;&gt;Sin Observaciones&lt;/span&gt;&lt;/i&gt;&quot;,
+   &quot;&lt;i&gt;&quot; &amp; {!$Record.Observaciones_del_Mes__c} &amp; &quot;&lt;/i&gt;&quot;
+) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+
+&quot;Desde ya,&lt;br/&gt;&quot; &amp;
+&quot;Muchas gracias por tu acostumbrada gestión.&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+
+&quot;Saludos&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+BLANKVALUE({!$User.FirstName}, &quot;-&quot;) &amp; &quot; &quot; &amp; BLANKVALUE({!$User.LastName}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+
+&quot;Gerente de Servicio AMS&lt;br/&gt;&quot; &amp;
+BLANKVALUE({!$Organization.Name}, &quot;-&quot;) &amp; &quot;&lt;br/&gt;&lt;br/&gt;&quot; &amp;
+
+&quot;&lt;hr/&gt;&quot; &amp;
+&quot;&lt;small&gt;&lt;i&gt;Este correo fue generado automáticamente desde una casilla no monitoreada. Por favor, no respondas a este mensaje. &quot; &amp;
+&quot;Si necesitas contactarte, escribe a &lt;a href=&apos;mailto:&quot; &amp;
+BLANKVALUE({!$User.Email}, &quot;-&quot;) &amp;
+&quot;&apos;&gt;&quot; &amp;
+BLANKVALUE({!$User.Email}, &quot;-&quot;) &amp;
+&quot;&lt;/a&gt;.&lt;/i&gt;&lt;/small&gt;&quot;</expression>
+    </formulas>
+    <interviewLabel>Envio a Facturar con Adjunto {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Envio a Facturar con Adjunto</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Armar_cuerpo</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>TipoRegistroTxt__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Factura Cliente</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Estatus_Facturacion__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Enviado a Facturar</stringValue>
+            </value>
+        </filters>
+        <object>Gestion_Comercial__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Draft</status>
+    <textTemplates>
+        <name>Cuerpodelmail</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;Buen dia&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;Por favor proceder a emitir facturación al cliente&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;{!$Record.Cliente__c}&lt;/span&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt; de acuerdo al siguiente detalle:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;Datos Generales de la Factura:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;CLIENTE:&amp;nbsp;{!$Record.Cliente__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;NO. CLIENTE:&amp;nbsp;{!$Record.Cliente_seidor__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;PRECIO TOTAL DE LA FACTURA: &lt;/span&gt;&lt;strong style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;{!$Record.Precio_Total__c} {!$Record.Moneda__c}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;Org. de Venta: {!$Record.OrgVenta__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-family: &amp;quot;Century Gothic&amp;quot;, Arial, Helvetica, sans-serif; font-size: 14px;&quot;&gt;Fecha Facturación:&amp;nbsp;{!$Record.Fecha_Facturacin__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</text>
+    </textTemplates>
+    <variables>
+        <name>emailcontacot</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Record.Contacto_Interlocutor__r.Email</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>Listadedestintarios</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>valorid</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Record.IDGC__c</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>vCuerpoEmail</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <label>Aviso de avance</label>
+    <protected>false</protected>
+    <values>
+        <field>Activo__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Categoria__c</field>
+        <value xsi:type="xsd:string">Avance</value>
+    </values>
+    <values>
+        <field>Orden__c</field>
+        <value xsi:type="xsd:double">20.0</value>
+    </values>
+    <values>
+        <field>Texto__c</field>
+        <value xsi:type="xsd:string">Estimado/a, le informamos que el caso continua en analisis por el equipo tecnico. Le mantendremos al tanto de los proximos avances.</value>
+    </values>
+    <values>
+        <field>Tipo_Ticket__c</field>
+        <value xsi:type="xsd:string">Ambos</value>
+    </values>
+</CustomMetadata>

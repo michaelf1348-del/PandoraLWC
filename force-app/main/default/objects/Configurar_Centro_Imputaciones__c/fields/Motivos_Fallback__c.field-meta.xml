@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Motivos_Fallback__c</fullName>
+    <description>Si motivos operativos y el CMDT est�n vac�os, se usan estos valores API Reason antes del fallback Gestion_Interna del c�digo.</description>
+    <label>Motivos AMS (reserva)</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

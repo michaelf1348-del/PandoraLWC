@@ -1,0 +1,951 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Notificaci_n_Asignaci_n_de_Ticket</name>
+        <label>Notificación Asignación de Ticket</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>recipientAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>bccAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>AMS | Ticket {!$Record.CaseNumber} asignado – {!$Record.Owner:User.FirstName} {!$Record.Owner:User.LastName}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!CuerpoMensajeTicketAsignado}&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>attachmentIdCollection</name>
+            <value>
+                <elementReference>var_VersionIds</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientId</name>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>logEmailOnSend</name>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <actionCalls>
+        <name>Notificaci_n_de_Reasignaci_n_de_Tickets</name>
+        <label>Notificación de Reasignación de Tickets</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>recipientAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>bccAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>AMS | Ticket Reasignado {!$Record.CaseNumber} – {!$Record.Owner:User.FirstName} {!$Record.Owner:User.LastName}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!CuerpoNotificacionReasignacion_V2}&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>attachmentIdCollection</name>
+            <value>
+                <elementReference>Reasig_var_VersionIds</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientId</name>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>logEmailOnSend</name>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>66.0</apiVersion>
+    <assignments>
+        <name>Agregar_ID_a_la_colecci_n</name>
+        <label>Agregar ID a la colección</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>colDocumentIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Bucle_Documentos.ContentDocumentId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Bucle_Documentos</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Agregar_ID_a_la_colecci_n_Reasignacion</name>
+        <label>Agregar ID a la colección Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>Reasig_colDocumentIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Bucle_Documentos_Reasignacion.ContentDocumentId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Bucle_Documentos_Reasignacion</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Agregar_Version_ID</name>
+        <label>Agregar Version ID</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>var_VersionIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Bucle_Archivos_Finales.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Bucle_Archivos_Finales</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Agregar_Version_ID_Reasignacion</name>
+        <label>Agregar Version ID Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>Reasig_var_VersionIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Bucle_Archivos_Finales_Reasignacion.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Bucle_Archivos_Finales_Reasignacion</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>AsignacionoReasignacion</name>
+        <label>Asignación o Reasignación</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>Resultado predeterminado</defaultConnectorLabel>
+        <rules>
+            <name>Es_Asignaci_n_Inicial</name>
+            <conditionLogic>or</conditionLogic>
+            <conditions>
+                <leftValueReference>EsNuevo</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Contenido_Documento</targetReference>
+            </connector>
+            <label>Es Asignación Inicial</label>
+        </rules>
+        <rules>
+            <name>Es_Reasignaci_n_Real</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record__Prior.OwnerId</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.OwnerId</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <elementReference>$Record__Prior.OwnerId</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Contenido_Documento_Reasignacion</targetReference>
+            </connector>
+            <label>Es Reasignación Real</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Excluir_Usuario_Cola</name>
+        <label>Excluir Usuario Cola</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Notificaci_n_de_Reasignaci_n_de_Tickets</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Es Consultor</defaultConnectorLabel>
+        <rules>
+            <name>Es_la_cola_AMS_SAP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.OwnerId</leftValueReference>
+                <operator>StartsWith</operator>
+                <rightValue>
+                    <stringValue>00G</stringValue>
+                </rightValue>
+            </conditions>
+            <label>Es la cola AMS-SAP</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Excluirusuariocolaasignacion</name>
+        <label>Excluir usuario cola asignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Notificaci_n_Asignaci_n_de_Ticket</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Es Consultor</defaultConnectorLabel>
+        <rules>
+            <name>EslacolaAMSSAP</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.OwnerId</leftValueReference>
+                <operator>StartsWith</operator>
+                <rightValue>
+                    <stringValue>00G</stringValue>
+                </rightValue>
+            </conditions>
+            <label>Es la cola AMS-SAP</label>
+        </rules>
+    </decisions>
+    <description>Envia notificaciones con adjuntos al asignar y reasignar tickets</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>EsNuevo</name>
+        <dataType>Boolean</dataType>
+        <expression>ISNEW()</expression>
+    </formulas>
+    <formulas>
+        <name>Formula_Asunto</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    ISBLANK({!$Record.Description}), 
+    &quot;&quot;, 
+    &quot;Descripción del ticket&lt;br/&gt;&quot; &amp; {!$Record.Description}
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Formula_Prioridad</name>
+        <dataType>String</dataType>
+        <expression>CASE({!$Record.Priority},
+  &quot;Critical&quot;, &quot;Muy Alta&quot;,
+  &quot;High&quot;, &quot;Alta&quot;,
+  &quot;Medium&quot;, &quot;Media&quot;,
+  &quot;Low&quot;, &quot;Baja&quot;,
+  &quot;No definida&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Formula_Reasignado_Por</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    BEGINS({!$Record__Prior.OwnerId}, &quot;00G&quot;),
+    &quot;AMS-N1&quot;,
+    {!$Record__Prior.Owner:User.FirstName} &amp; &quot; &quot; &amp; {!$Record__Prior.Owner:User.LastName}
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Formula_Solicitante</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    ISBLANK({!$Record.Contact.FirstName}), 
+    &quot;&quot;, 
+    &quot;Solicitante: &quot; &amp; {!$Record.Contact.FirstName}
+)</expression>
+    </formulas>
+    <interviewLabel>AMS - Notificación Asignación y Reasignación Tickets {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>AMS - Notificación Asignación y Reasignación Tickets</label>
+    <loops>
+        <name>Bucle_Archivos_Finales</name>
+        <label>Bucle Archivos Finales.</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Vinculo_Documento</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Agregar_Version_ID</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Excluirusuariocolaasignacion</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Bucle_Archivos_Finales_Reasignacion</name>
+        <label>Bucle Archivos Finales Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Vinculo_Documento_Reasignacion</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Agregar_Version_ID_Reasignacion</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Excluir_Usuario_Cola</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Bucle_Documentos</name>
+        <label>Bucle Documentos</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Contenido_Documento</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Agregar_ID_a_la_colecci_n</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Vinculo_Documento</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Bucle_Documentos_Reasignacion</name>
+        <label>Bucle Documentos Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Contenido_Documento_Reasignacion</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Agregar_ID_a_la_colecci_n_Reasignacion</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Vinculo_Documento_Reasignacion</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Contenido_Documento</name>
+        <label>Contenido Documento</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Bucle_Documentos</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>LinkedEntityId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>ContentDocumentLink</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Contenido_Documento_Reasignacion</name>
+        <label>Contenido Documento Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Bucle_Documentos_Reasignacion</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>LinkedEntityId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>ContentDocumentLink</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Obtener_AMS_SAP</name>
+        <label>Obtener AMS-SAP</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>AsignacionoReasignacion</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>AMS-SAP</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Group</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Vinculo_Documento</name>
+        <label>Vinculo Documento</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Bucle_Archivos_Finales</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>ContentDocumentId</field>
+            <operator>In</operator>
+            <value>
+                <elementReference>colDocumentIds</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>IsLatest</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>ContentVersion</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Vinculo_Documento_Reasignacion</name>
+        <label>Vinculo Documento Reasignacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Bucle_Archivos_Finales_Reasignacion</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>ContentDocumentId</field>
+            <operator>In</operator>
+            <value>
+                <elementReference>Reasig_colDocumentIds</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>IsLatest</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>ContentVersion</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Obtener_AMS_SAP</targetReference>
+        </connector>
+        <filterFormula>AND(
+    OR(
+        ISNEW(),
+        ISCHANGED({!$Record.OwnerId})
+    ),
+    ISPICKVAL({!$Record.Servicio__c}, &quot;AMS-SAP&quot;)
+)</filterFormula>
+        <object>Case</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <description>Texto de notificación de asignación de tickets AMS</description>
+        <name>CuerpoMensajeTicketAsignado</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+    &lt;title&gt;Ticket Asignado - SEIDOR&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0; padding: 0; background-color: #E9ECEF; font-family: Arial, Helvetica, sans-serif;&quot;&gt;
+&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; bgcolor=&quot;#E9ECEF&quot; style=&quot;padding: 40px 10px;&quot;&gt;
+    &lt;tr&gt;
+        &lt;td align=&quot;center&quot;&gt;
+            &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;max-width: 600px; background-color: #ffffff; border-radius: 4px; border: 1px solid #DEE2E6;&quot;&gt;
+
+                &lt;tr&gt;
+                    &lt;td bgcolor=&quot;#263B7A&quot; style=&quot;padding: 20px 30px; text-align: left; border-top-left-radius: 4px; border-top-right-radius: 4px;&quot;&gt;
+                        &lt;span style=&quot;color: #ffffff; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;&quot;&gt;SEIDOR&lt;/span&gt;
+                        &lt;span style=&quot;color: #16A34A; font-size: 18px; margin: 0 10px;&quot;&gt;|&lt;/span&gt;
+                        &lt;span style=&quot;color: #F8FAFC; font-size: 15px;&quot;&gt;Soporte AMS&lt;/span&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+                &lt;tr&gt;
+                    &lt;td style=&quot;padding: 30px;&quot;&gt;
+
+                        &lt;div style=&quot;margin: 0 0 20px 0; font-size: 16px; color: #343A40;&quot;&gt;
+                            Hola &lt;strong&gt;{!$Record.Owner:User.FirstName}&lt;/strong&gt;,
+                        &lt;/div&gt;
+
+                        &lt;div style=&quot;margin: 0 0 25px 0; font-size: 15px; color: #495057; line-height: 1.5;&quot;&gt;
+                            Se te ha asignado el ticket &lt;strong style=&quot;color: #16A34A; font-size: 16px;&quot;&gt;{!$Record.CaseNumber}&lt;/strong&gt;, del cliente &lt;strong style=&quot;color: #212529;&quot;&gt;{!$Record.Account.Name}&lt;/strong&gt;
+                            &lt;span style=&quot;background-color: #16A34A; color: #ffffff; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-left: 8px; vertical-align: middle;&quot;&gt;ASIGNADO&lt;/span&gt;
+                        &lt;/div&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;12&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 20px; border-collapse: collapse;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-left: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Cliente&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Nombre_Comercial2__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;M&amp;oacute;dulo&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.M_dulos__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-left: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;C&amp;eacute;lula&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Grupo_AMS_Ticket__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Prioridad&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!Formula_Prioridad}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;padding-left: 0; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Tipo de ticket&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.RecordType.Name}&lt;/div&gt;
+                                &lt;/td&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;padding-left: 0; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;display: {!Formula_Solicitante};&quot;&gt;
+                                        &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Solicitante&lt;/div&gt;
+                                        &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Contact.FirstName} {!$Record.Contact.LastName}&lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 20px; background-color: #F8F9FA; border-left: 3px solid #263B7A;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 15px;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;&quot;&gt;Asunto&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 15px; color: #212529; font-weight: bold; line-height: 1.4;&quot;&gt;{!$Record.Subject}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;div style=&quot;display: {!Formula_Asunto};&quot;&gt;
+                            &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 25px; border-top: 1px solid #DEE2E6; border-bottom: 1px solid #DEE2E6;&quot;&gt;
+                                &lt;tr&gt;
+                                    &lt;td style=&quot;padding: 20px 0;&quot;&gt;
+                                        &lt;div style=&quot;font-size: 12px; color: #263B7A; text-transform: uppercase; font-weight: bold; margin-bottom: 10px;&quot;&gt;Descripci&amp;oacute;n del ticket&lt;/div&gt;
+                                        &lt;div style=&quot;font-size: 14px; color: #495057; line-height: 1.6; white-space: pre-line; word-wrap: break-word;&quot;&gt;{!$Record.Description}&lt;/div&gt;
+                                    &lt;/td&gt;
+                                &lt;/tr&gt;
+                            &lt;/table&gt;
+                        &lt;/div&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 30px; background-color: #F6FBF7; border: 1px solid #D1E7DD; border-radius: 3px;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 15px;&quot;&gt;
+                                    &lt;div style=&quot;color: #0F5132; font-size: 13px; font-weight: bold; margin-bottom: 8px;&quot;&gt;Recuerda:&lt;/div&gt;
+                                    &lt;ul style=&quot;margin: 0; padding-left: 20px; color: #495057; font-size: 13px; line-height: 1.5;&quot;&gt;
+                                        &lt;li&gt;Revisar la descripci&amp;oacute;n, prioridad y adjuntos del ticket.&lt;/li&gt;
+                                        &lt;li&gt;Registra la primera respuesta y la estimaci&amp;oacute;n de esfuerzo/tiempos en Pandora.&lt;/li&gt;
+                                    &lt;/ul&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td align=&quot;center&quot;&gt;
+                                    &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Case/{!$Record.Id}/view&quot; style=&quot;background-color: #16A34A; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: bold; display: inline-block;&quot;&gt;Abrir Ticket&lt;/a&gt;
+                                    &amp;nbsp;&amp;nbsp;
+                                    &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/o/Case/list?filterName=Mis_Tickets_Abiertosd&quot; style=&quot;background-color: #ffffff; color: #16A34A; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: bold; display: inline-block; border: 1px solid #16A34A;&quot;&gt;Ver mis casos&lt;/a&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+                &lt;tr&gt;
+                    &lt;td bgcolor=&quot;#ffffff&quot; style=&quot;padding: 20px 30px; text-align: center; border-top: 1px solid #DEE2E6; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;&quot;&gt;
+                        &lt;div style=&quot;color: #495057; font-size: 12px; font-weight: bold; margin-bottom: 4px;&quot;&gt;Seidor Chile &amp;bull; Equipo Soporte AMS&lt;/div&gt;
+                        &lt;div style=&quot;color: #6C757D; font-size: 11px;&quot;&gt;Mensaje autom&amp;aacute;tico de Salesforce. SEIDOR &amp;mdash; &lt;em&gt;Human focused. Technology experts.&lt;/em&gt;&lt;/div&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+            &lt;/table&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <description>Notificación de Reasignación de tickets</description>
+        <name>CuerpoNotificacionReasignacion</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+	&lt;title&gt;Ticket Reasignado - SEIDOR&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0px; padding: 0px; background-color: rgb(243, 246, 249); font-family: &apos;Segoe UI&apos;, Roboto, Helvetica, Arial, sans-serif; height: auto; min-height: auto;&quot;&gt;
+&lt;table bgcolor=&quot;#f3f6f9&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td align=&quot;center&quot; style=&quot;padding:20px 0;&quot;&gt;
+			&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;max-width:600px; background-color:#ffffff; border:1px solid #e3e8ee; border-radius:10px; border-collapse:separate; overflow:hidden;&quot; width=&quot;100%&quot;&gt;
+				&lt;tbody&gt;
+					&lt;tr&gt;
+						&lt;td height=&quot;6&quot; style=&quot;background:#E65100; background:linear-gradient(90deg,#E65100 0%,#FF9800 100%); line-height:6px; font-size:6px;&quot;&gt;&amp;nbsp;&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td bgcolor=&quot;#ffffff&quot; style=&quot;padding:20px 25px; border-bottom: 1px solid #f0f0f0;&quot;&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;color:#263B7A; font-size:18px; font-weight:600;&quot;&gt;SEIDOR &lt;span style=&quot;font-weight:300; color:#E65100; margin-left:10px;&quot;&gt;| Reasignaci&amp;oacute;n AMS&lt;/span&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;padding:30px 25px; color:#1f2d3d;&quot;&gt;
+						&lt;p style=&quot;margin:0 0 10px 0; font-size:16px;&quot;&gt;Hola &lt;strong&gt;{!$Record.Owner:User.FirstName}&lt;/strong&gt;,&lt;/p&gt;
+
+						&lt;div style=&quot;background-color:#fff3e0; border-left: 4px solid #FF9800; padding: 10px; margin-bottom: 20px; font-size: 14px; color: #E65100;&quot;&gt;🔄 &lt;strong&gt;Reasignado por:&lt;/strong&gt; {!Formula_Reasignado_Por}&lt;/div&gt;
+
+						&lt;p style=&quot;margin:0 0 20px 0; font-size:15px; line-height:1.5;&quot;&gt;El ticket &lt;strong style=&quot;color:#263B7A;&quot;&gt;{!$Record.CaseNumber}&lt;/strong&gt; ha sido reasignado a usted para su revisión&lt;span style=&quot;background-color:#FF9800; color:#ffffff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:5px; vertical-align: middle;&quot;&gt; REASIGNADO &lt;/span&gt;&lt;/p&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;12&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#f8fafc; border:1px solid #e3e8ee; border-radius:8px; margin-bottom:20px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px;&quot;&gt;
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Asunto:&lt;/span&gt; &lt;strong&gt;{!$Record.Subject}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;M&amp;oacute;dulo:&lt;/span&gt; &lt;strong&gt;{!$Record.M_dulos__c}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;C&amp;eacute;lula:&lt;/span&gt; &lt;strong&gt;{!$Record.Grupo_AMS_Ticket__c}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Prioridad:&lt;/span&gt; &lt;strong&gt;{!$Record.Priority}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Estado Actual:&lt;/span&gt; &lt;strong&gt;{!$Record.Status}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Cliente:&lt;/span&gt; &lt;strong&gt;{!$Record.Nombre_Comercial2__c}&lt;/strong&gt;&lt;/div&gt;
+									
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e3e8ee; border-radius:8px; margin:0 0 20px 0;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0;&quot;&gt;
+									&lt;div style=&quot;background-color:#eef4ff; color:#263B7A; font-size:13px; font-weight:700; padding:10px 12px; border-top-left-radius:8px; border-top-right-radius:8px;&quot;&gt;Descripci&amp;oacute;n del ticket&lt;/div&gt;
+
+									&lt;div style=&quot;padding:12px 12px 14px 12px; font-size:14px; color:#1f2d3d; line-height:1.55; white-space:pre-line; word-wrap:break-word;&quot;&gt;{!$Record.Description}&lt;/div&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#fff8e1; border-left:4px solid #ffb74d; border-radius:4px; margin-bottom:25px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:15px; font-size:14px;&quot;&gt;&lt;strong style=&quot;color:#E65100; display:block; margin-bottom:5px;&quot;&gt;Recomendaciones:&lt;/strong&gt; &amp;bull; Verifica el historial del caso para entender el contexto.&lt;br /&gt;
+									&amp;bull; Si no corresponde a tu &amp;aacute;rea, reasignalo&amp;nbsp;o escala el ticket.&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+	&lt;td&gt;
+		&lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Case/{!$Record.Id}/view&quot; style=&quot;background-color: #213A5C; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; font-family: sans-serif;&quot;&gt;Abrir Ticket&lt;/a&gt;
+		&amp;nbsp; 
+		&lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/o/Case/list?filterName=Mis_Tickets_Abiertosd&quot; style=&quot;background-color:#eaf4ff; color:#263B7A; padding:12px 20px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:14px; display:inline-block; border:1px solid #cde6ff; font-family: sans-serif;&quot;&gt;Ver mis casos&lt;/a&gt;
+	&lt;/td&gt;
+&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;background-color:#fcfcfc; padding:20px 25px; border-top:1px solid #e3e8ee; color:#8a96a3; font-size:12px; text-align:center;&quot;&gt;
+						&lt;div style=&quot;margin-bottom:8px;&quot;&gt;&lt;strong&gt;Seidor Chile &amp;bull; Equipo Soporte AMS&lt;/strong&gt;&lt;/div&gt;
+
+						&lt;div&gt;Notificaci&amp;oacute;n interna de reasignaci&amp;oacute;n.&lt;/div&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+				&lt;/tbody&gt;
+			&lt;/table&gt;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <name>CuerpoNotificacionReasignacion_V2</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+    &lt;title&gt;Ticket Reasignado - SEIDOR&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0; padding: 0; background-color: #E9ECEF; font-family: Arial, Helvetica, sans-serif;&quot;&gt;
+&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; bgcolor=&quot;#E9ECEF&quot; style=&quot;padding: 40px 10px;&quot;&gt;
+    &lt;tr&gt;
+        &lt;td align=&quot;center&quot;&gt;
+            &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;max-width: 600px; background-color: #ffffff; border-radius: 4px; border: 1px solid #DEE2E6;&quot;&gt;
+
+                &lt;tr&gt;
+                    &lt;td bgcolor=&quot;#263B7A&quot; style=&quot;padding: 20px 30px; text-align: left; border-top-left-radius: 4px; border-top-right-radius: 4px;&quot;&gt;
+                        &lt;span style=&quot;color: #ffffff; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;&quot;&gt;SEIDOR&lt;/span&gt;
+                        &lt;span style=&quot;color: #0D6EFD; font-size: 18px; margin: 0 10px;&quot;&gt;|&lt;/span&gt;
+                        &lt;span style=&quot;color: #F8FAFC; font-size: 15px;&quot;&gt;Reasignaci&amp;oacute;n AMS&lt;/span&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+                &lt;tr&gt;
+                    &lt;td style=&quot;padding: 30px;&quot;&gt;
+
+                        &lt;div style=&quot;margin: 0 0 20px 0; font-size: 16px; color: #343A40;&quot;&gt;
+                            Hola &lt;strong&gt;{!$Record.Owner:User.FirstName}&lt;/strong&gt;,
+                        &lt;/div&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 25px; background-color: #EBF5FF; border: 1px solid #B6D4FE; border-left: 4px solid #0D6EFD; border-radius: 3px;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 12px 15px; font-size: 14px; color: #084298;&quot;&gt;
+                                    &lt;span style=&quot;font-size: 15px; margin-right: 6px; vertical-align: middle;&quot;&gt;&amp;#128100; &amp;#10140; &amp;#128100;&lt;/span&gt; &lt;strong&gt;Reasignado por:&lt;/strong&gt; {!Formula_Reasignado_Por}
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;div style=&quot;margin: 0 0 25px 0; font-size: 15px; color: #495057; line-height: 1.5;&quot;&gt;
+                            El ticket &lt;strong style=&quot;color: #0D6EFD; font-size: 16px;&quot;&gt;{!$Record.CaseNumber}&lt;/strong&gt; ha sido reasignado a usted para su revisi&amp;oacute;n.
+                            &lt;span style=&quot;background-color: #0D6EFD; color: #ffffff; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-left: 8px; vertical-align: middle;&quot;&gt;REASIGNADO&lt;/span&gt;
+                        &lt;/div&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;12&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 20px; border-collapse: collapse;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-left: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Cliente&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Nombre_Comercial2__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;M&amp;oacute;dulo&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.M_dulos__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-left: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;C&amp;eacute;lula&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Grupo_AMS_Ticket__c}&lt;/div&gt;
+                                &lt;/td&gt;
+                                &lt;td width=&quot;50%&quot; style=&quot;border-bottom: 1px solid #DEE2E6; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Prioridad&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!Formula_Prioridad}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td width=&quot;100%&quot; colspan=&quot;2&quot; style=&quot;padding-left: 0; padding-right: 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 3px;&quot;&gt;Estado Actual&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #212529;&quot;&gt;{!$Record.Status}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 20px; background-color: #F8F9FA; border-left: 3px solid #263B7A;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 15px;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 11px; color: #6C757D; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;&quot;&gt;Asunto&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 15px; color: #212529; line-height: 1.4;&quot;&gt;{!$Record.Subject}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 25px; border-top: 1px solid #DEE2E6; border-bottom: 1px solid #DEE2E6;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 20px 0;&quot;&gt;
+                                    &lt;div style=&quot;font-size: 12px; color: #263B7A; text-transform: uppercase; font-weight: bold; margin-bottom: 10px;&quot;&gt;Descripci&amp;oacute;n del ticket&lt;/div&gt;
+                                    &lt;div style=&quot;font-size: 14px; color: #495057; line-height: 1.6; white-space: pre-line; word-wrap: break-word;&quot;&gt;{!$Record.Description}&lt;/div&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 30px; background-color: #F8F9FA; border: 1px solid #DEE2E6; border-radius: 3px;&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td style=&quot;padding: 15px;&quot;&gt;
+                                    &lt;div style=&quot;color: #0D6EFD; font-size: 13px; font-weight: bold; margin-bottom: 8px;&quot;&gt;Recomendaciones:&lt;/div&gt;
+                                    &lt;ul style=&quot;margin: 0; padding-left: 20px; color: #495057; font-size: 13px; line-height: 1.5;&quot;&gt;
+                                        &lt;li&gt;Verifica el historial del caso para entender el contexto.&lt;/li&gt;
+                                        &lt;li&gt;Si no corresponde a tu &amp;aacute;rea, reas&amp;iacute;gnalo o escala el ticket.&lt;/li&gt;
+                                    &lt;/ul&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                        &lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+                            &lt;tr&gt;
+                                &lt;td align=&quot;center&quot;&gt;
+                                    &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Case/{!$Record.Id}/view&quot; style=&quot;background-color: #0D6EFD; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: bold; display: inline-block;&quot;&gt;Abrir Ticket&lt;/a&gt;
+                                    &amp;nbsp;&amp;nbsp;
+                                    &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/o/Case/list?filterName=Mis_Tickets_Abiertosd&quot; style=&quot;background-color: #ffffff; color: #0D6EFD; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: bold; display: inline-block; border: 1px solid #0D6EFD;&quot;&gt;Ver mis casos&lt;/a&gt;
+                                &lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+                &lt;tr&gt;
+                    &lt;td bgcolor=&quot;#F8F9FA&quot; style=&quot;padding: 20px 30px; text-align: center; border-top: 1px solid #DEE2E6; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;&quot;&gt;
+                        &lt;div style=&quot;color: #495057; font-size: 12px; font-weight: bold; margin-bottom: 4px;&quot;&gt;Seidor Chile &amp;bull; Equipo Soporte AMS&lt;/div&gt;
+                        &lt;div style=&quot;color: #6C757D; font-size: 11px;&quot;&gt;Notificaci&amp;oacute;n interna de reasignaci&amp;oacute;n.&lt;/div&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+
+            &lt;/table&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <triggerOrder>1200</triggerOrder>
+    <variables>
+        <name>colDocumentIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>Reasig_colDocumentIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>Reasig_var_VersionIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>var_VersionIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

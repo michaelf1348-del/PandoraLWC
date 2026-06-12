@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Criterios_Facturable_Filtros_JSON__c</fullName>
+    <description>Reglas de campos Case e Imputacion para documentar criterios facturable / no facturable.</description>
+    <label>Criterios facturable filtros JSON</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>6</visibleLines>
+</CustomField>

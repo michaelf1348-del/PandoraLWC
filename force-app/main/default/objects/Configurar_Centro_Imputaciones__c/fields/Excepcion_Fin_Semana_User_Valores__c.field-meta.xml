@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Excepcion_Fin_Semana_User_Valores__c</fullName>
+    <description>Valores del campo User (uno por linea o separados por coma) que permiten imputar en fin de semana.</description>
+    <externalId>false</externalId>
+    <label>Excepcion fin de semana: valores User</label>
+    <length>32768</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Envio_a_facturar_sin_fecha</fullName>
+    <active>true</active>
+    <errorConditionFormula>and( ISPICKVAL(Estatus_Facturacion__c,&apos;Enviado a Facturar&apos;),   ISBLANK(Fecha_Facturacin__c ))</errorConditionFormula>
+    <errorMessage>Debe indicar una fecha de facturacion.</errorMessage>
+</ValidationRule>

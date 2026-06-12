@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Valor_en_CLP_Absoluto__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE( Moneda_Txt__c , 
+&apos;UF&apos;,  Precio__c  *  Tasa_UF_CLP__c , 
+&apos;USD&apos;,  Precio__c  *   Tasa_USD_a_CLP__c  , 
+Precio__c )</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Valor en CLP Absoluto</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Acceso a los campos custom de Plantilla_Reporte__c necesarios para el motor de variantes del Pandora Reporting Engine.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Pandora Reporting Engine</label>
+    <license>Salesforce</license>
+
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Plantilla_Reporte__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <!-- Read sobre Plantilla_Geneador_PPT__c: listVariants detecta variantes con PPT (hasPpt). -->
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Plantilla_Geneador_PPT__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Reporte__c.Variante_Id__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Reporte__c.Variante_Nombre__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Reporte__c.Es_Default__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Reporte__c.Es_Publica__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Reporte__c.Owner_UserId__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Plantilla_Geneador_PPT__c.Variante_Id__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Plantilla_Geneador_PPT__c.Configuracion_PPT__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+
+    <classAccesses>
+        <apexClass>ReporteKaufmannController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+</PermissionSet>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fecha_Vencimiento_Provision__c</fullName>
+    <externalId>false</externalId>
+    <formula>Ingresado_a_Provision_el__c + 90</formula>
+    <label>Fecha Vencimiento Provision</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

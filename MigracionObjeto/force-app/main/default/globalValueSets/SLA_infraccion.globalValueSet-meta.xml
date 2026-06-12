@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Cumplido</fullName>
+        <default>false</default>
+        <label>Cumplido</label>
+    </customValue>
+    <customValue>
+        <fullName>En Curso</fullName>
+        <default>false</default>
+        <label>En Curso</label>
+    </customValue>
+    <customValue>
+        <fullName>Infracción</fullName>
+        <default>false</default>
+        <label>Infracción</label>
+    </customValue>
+    <customValue>
+        <fullName>No Iniciado</fullName>
+        <default>false</default>
+        <label>No Iniciado</label>
+    </customValue>
+    <customValue>
+        <fullName>Sin Datos</fullName>
+        <default>false</default>
+        <label>Sin Datos</label>
+    </customValue>
+    <masterLabel>SLA infraccion</masterLabel>
+    <sorted>true</sorted>
+</GlobalValueSet>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Imputacion_Meses_Retro__c</fullName>
+    <description>Excepcion para consultores: meses civiles anteriores al mes en curso en los que pueden imputar, editar o borrar. 0 o vacio = solo el mes actual. No limita la consulta del calendario.</description>
+    <externalId>false</externalId>
+    <label>Imputacion - meses retro permitidos</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

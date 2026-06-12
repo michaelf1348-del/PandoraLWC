@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contacto_Principal_02</fullName>
+    <active>true</active>
+    <description>Evita el contacto principal sin email</description>
+    <errorConditionFormula>OR(
+  /* Si el principal es Contacto y no tiene email */
+  AND(
+    NOT(ISBLANK(ContactoP__c)),
+    ISBLANK(ContactoP__r.Email)
+  ),
+  /* Si el principal es Usuario y no tiene email */
+  AND(
+    NOT(ISBLANK(UsuarioP__c)),
+    ISBLANK(UsuarioP__r.Email)
+  )
+)</errorConditionFormula>
+    <errorMessage>El destinatario principal debe tener un Email. Actualiza el Contacto/Usuario para agregar su correo</errorMessage>
+</ValidationRule>

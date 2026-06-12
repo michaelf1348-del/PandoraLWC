@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VR01_Reversa_sin_indicador_de_reversa</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+  ISPICKVAL(Estatus_Facturacion__c , &quot;Solicitud de Reversa&quot;),
+  OR(
+    ISPICKVAL(Reversa_Provision_Requerida__c , &quot;NO&quot;),
+    ISBLANK(TEXT(Reversa_Provision_Requerida__c))
+  )
+)</errorConditionFormula>
+    <errorDisplayField>Reversa_Provision_Requerida__c</errorDisplayField>
+    <errorMessage>No puede pasar a reversa de provisión sin haber indicado que lo necesita</errorMessage>
+</ValidationRule>

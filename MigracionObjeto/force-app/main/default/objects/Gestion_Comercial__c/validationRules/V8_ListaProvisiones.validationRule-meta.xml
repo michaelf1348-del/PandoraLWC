@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>V8_ListaProvisiones</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+  ISPICKVAL( Estatus_Facturacion__c , &quot;Enviado a Facturar&quot;),
+    ISBLANK(  Lista_de_correo_Provisiones__c ))</errorConditionFormula>
+    <errorDisplayField>Lista_de_correo_Provisiones__c</errorDisplayField>
+    <errorMessage>Falta la Lista de correo para provisiones</errorMessage>
+</ValidationRule>

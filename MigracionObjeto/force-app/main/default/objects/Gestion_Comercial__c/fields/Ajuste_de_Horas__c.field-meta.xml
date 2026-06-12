@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ajuste_de_Horas__c</fullName>
+    <externalId>false</externalId>
+    <inlineHelpText>Indique un ajuste de horas por conceptos como facturación de saldo, pago de horas extras, uso de horas de arrastre, etc, que afecten directamente al saldo del mes</inlineHelpText>
+    <label>Abono/Debito de horas</label>
+    <precision>8</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

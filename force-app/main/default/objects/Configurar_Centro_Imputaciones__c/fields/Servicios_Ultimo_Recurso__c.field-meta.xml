@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Servicios_Ultimo_Recurso__c</fullName>
+    <description>Lista final si principal y reserva de servicios estan vacios (defecto codigo AMS-SAP y AMS-SAP-Mexico).</description>
+    <label>Servicios ultimo recurso</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

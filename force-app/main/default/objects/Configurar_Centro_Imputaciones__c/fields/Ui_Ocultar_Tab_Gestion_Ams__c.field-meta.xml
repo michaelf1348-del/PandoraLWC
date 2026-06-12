@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ui_Ocultar_Tab_Gestion_Ams__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Oculta la pesta�a Gestion AMS en catalogo de tickets.</description>
+    <label>UI ocultar tab Gestion AMS</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

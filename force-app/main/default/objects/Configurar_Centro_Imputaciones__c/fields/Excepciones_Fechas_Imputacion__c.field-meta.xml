@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Excepciones_Fechas_Imputacion__c</fullName>
+    <description>Fechas ISO (YYYY-MM-DD) donde se permite imputar aunque sea fin de semana o feriado y la regla general lo bloquee.</description>
+    <label>Excepciones fechas imputacion</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Enviar_notificaciones_Administradores</name>
+        <label>Enviar notificaciones Administradores</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>Case.AMS_Admin_Error_de_Asignaci_n</actionName>
+        <actionType>emailAlert</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>SObjectRowId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>Case.AMS_Admin_Error_de_Asignaci_n</nameSegment>
+    </actionCalls>
+    <actionCalls>
+        <name>No_se_asigno_ticket</name>
+        <label>No se asigno ticket</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>Case.AMS_No_se_encuentra_un_consultor_resolutor</actionName>
+        <actionType>emailAlert</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>SObjectRowId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>Case.AMS_No_se_encuentra_un_consultor_resolutor</nameSegment>
+    </actionCalls>
+    <apiVersion>65.0</apiVersion>
+    <assignments>
+        <name>Asignar_Exclusiva</name>
+        <label>Asignar Exclusiva</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>var_Matriz_Seleccionada</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Buscar_Matriz_Exclusiva</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Datos_Consultores</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Asignar_Global</name>
+        <label>Asignar Global</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>var_Matriz_Seleccionada</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Matriz_Asignacion_Globales</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Datos_Consultores</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Preparar_Datos_Matriz</name>
+        <label>Preparar Datos Matriz</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>var_Matriz_Seleccionada.Ultima_Asignacion__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Guardar_Fecha_Matriz</targetReference>
+        </connector>
+    </assignments>
+    <decisions>
+        <name>BackupDisponible</name>
+        <label>¿Backup Disponible?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>SegundoBackup_v</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Backup No disponible</defaultConnectorLabel>
+        <rules>
+            <name>ConsultorBackupDisponible</name>
+            <conditionLogic>1 AND 2</conditionLogic>
+            <conditions>
+                <leftValueReference>ConsultarBackup.Id</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>var_Matriz_Seleccionada.Consultor_Backup__r.Id</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>ConsultarBackup.Disponibilidad__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Disponible</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>ConsultorBackup</targetReference>
+            </connector>
+            <label>Consultor Backup</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Exclusivo_Cliente</name>
+        <label>¿Se encontró exclusivo?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Matriz_Asignacion_Globales</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Resultado &quot;No&quot;</defaultConnectorLabel>
+        <rules>
+            <name>Es_Exclusivo</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Buscar_Matriz_Exclusiva.Exclusivo_Cliente__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Asignar_Exclusiva</targetReference>
+            </connector>
+            <label>Resultado &quot;Sí&quot;</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Principal_Disponible</name>
+        <label>¿Principal Disponible?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>ConsultarBackup</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Consultor Backup</defaultConnectorLabel>
+        <rules>
+            <name>Consultor_Principal</name>
+            <conditionLogic>1 AND 2</conditionLogic>
+            <conditions>
+                <leftValueReference>Datos_Consultores.Disponibilidad__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Disponible</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Datos_Consultores.Id</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>var_Matriz_Seleccionada.Consultor_Principal__r.Id</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>ConsultorPrincipal</targetReference>
+            </connector>
+            <label>Consultor Principal</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Se_encontr_asignaci_n</name>
+        <label>¿Se encontró asignación?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Admin_Pandora</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No encontrado</defaultConnectorLabel>
+        <rules>
+            <name>Encontro_Asignaci_n</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>var_Matriz_Seleccionada.Id</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Preparar_Datos_Matriz</targetReference>
+            </connector>
+            <label>Encontro Asignación</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>SegundoBackupdisponible</name>
+        <label>¿Segundo Backup disponible?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Asignar_AMS_SAP</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No Disponible</defaultConnectorLabel>
+        <rules>
+            <name>SegundoBackup</name>
+            <conditionLogic>1 AND 2</conditionLogic>
+            <conditions>
+                <leftValueReference>SegundoBackup_v.Id</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>var_Matriz_Seleccionada.Consultor_Backup_2__r.Id</elementReference>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>SegundoBackup_v.Disponibilidad__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Disponible</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>AsignarSegundobackup</targetReference>
+            </connector>
+            <label>Segundo Backup</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <interviewLabel>AMS - Automatización Asignación Tickets {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>AMS - Automatización Asignación Tickets</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Buscar_Matriz_Exclusiva</name>
+        <label>Buscar Matriz Exclusiva</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Exclusivo_Cliente</targetReference>
+        </connector>
+        <filterLogic>(1 AND 2 AND 3 AND 4)</filterLogic>
+        <filters>
+            <field>Modulo__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.M_dulos__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Celula__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Grupo_AMS_Ticket__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Cliente__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.AccountId</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Exclusivo_Cliente__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Matriz_Asignacion_AMS__c</object>
+        <sortField>Ultima_Asignacion__c</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>ConsultarBackup</name>
+        <label>Consultar Backup</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>BackupDisponible</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>var_Matriz_Seleccionada.Consultor_Backup__r.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Datos_Consultores</name>
+        <label>Datos Consultores</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Obtener_datos_cola</targetReference>
+        </connector>
+        <filterLogic>or</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Buscar_Matriz_Exclusiva.Consultor_Principal__r.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Matriz_Asignacion_Globales.Consultor_Principal__r.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Matriz_Asignacion_Globales</name>
+        <label>Matriz Asignacion Globales</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Asignar_Global</targetReference>
+        </connector>
+        <filterLogic>1 AND 2 AND ( (3 AND 4) OR 5 )</filterLogic>
+        <filters>
+            <field>Modulo__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.M_dulos__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Celula__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Grupo_AMS_Ticket__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Exclusivo_Cliente__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Cliente__c</field>
+            <operator>IsNull</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Cliente__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.AccountId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Matriz_Asignacion_AMS__c</object>
+        <sortField>Ultima_Asignacion__c</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Obtener_datos_cola</name>
+        <label>Obtener datos cola</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Se_encontr_asignaci_n</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>AMS-SAP</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Group</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>SegundoBackup_v</name>
+        <label>Segundo Backup</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>SegundoBackupdisponible</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>var_Matriz_Seleccionada.Consultor_Backup_2__r.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Admin_Pandora</name>
+        <label>Admin Pandora</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Enviar_notificaciones_Administradores</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Obtener_datos_cola.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Asignar_AMS_SAP</name>
+        <label>Asignar AMS-SAP</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>No_se_asigno_ticket</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Obtener_datos_cola.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>AsignarSegundobackup</name>
+        <label>Asignar Segundo backup</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>var_Matriz_Seleccionada.Consultor_Backup_2__r.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>ConsultorBackup</name>
+        <label>Consultor Backup</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>var_Matriz_Seleccionada.Consultor_Backup__r.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>ConsultorPrincipal</name>
+        <label>Consultor Principal</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>var_Matriz_Seleccionada.Consultor_Principal__r.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Guardar_Fecha_Matriz</name>
+        <label>Guardar Fecha Matriz</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Principal_Disponible</targetReference>
+        </connector>
+        <inputReference>var_Matriz_Seleccionada</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Buscar_Matriz_Exclusiva</targetReference>
+        </connector>
+        <filterFormula>AND(
+   /* 1. Condición Obligatoria: Que sea del servicio correcto */
+   ISPICKVAL({!$Record.Servicio__c}, &quot;AMS-SAP&quot;),
+
+   /* 2. Condición Detonante: Que sea Nuevo O que cambien los campos clave */
+   OR(
+      ISNEW(),
+      ISCHANGED({!$Record.M_dulos__c}),
+      ISCHANGED({!$Record.RecordTypeId})
+   )
+)</filterFormula>
+        <object>Case</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Obsolete</status>
+    <textTemplates>
+        <name>CuerpoMensajeTicketAsignado</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+	&lt;title&gt;Ticket Asignado - SEIDOR&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0px; padding: 0px; background-color: rgb(243, 246, 249); font-family: &amp;quot;Segoe UI&amp;quot;, Roboto, Helvetica, Arial, sans-serif; height: auto; min-height: auto;&quot;&gt;
+&lt;table bgcolor=&quot;#f3f6f9&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td align=&quot;center&quot; style=&quot;padding:20px 0;&quot;&gt;
+			&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;max-width:600px; background-color:#ffffff; border:1px solid #e3e8ee; border-radius:10px; border-collapse:separate; overflow:hidden;&quot; width=&quot;100%&quot;&gt;
+				&lt;tbody&gt;
+					&lt;tr&gt;
+						&lt;td height=&quot;6&quot; style=&quot;background:#263B7A; background:linear-gradient(90deg,#263B7A 0%,#66B6FF 100%); line-height:6px; font-size:6px;&quot;&gt;&amp;nbsp;&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td bgcolor=&quot;#263B7A&quot; style=&quot;padding:20px 25px;&quot;&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;color:#ffffff; font-size:18px; font-weight:600;&quot;&gt;SEIDOR &lt;span style=&quot;font-weight:300; opacity:.8; margin-left:10px;&quot;&gt;| Soporte AMS&lt;/span&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;padding:30px 25px; color:#1f2d3d;&quot;&gt;
+						&lt;p style=&quot;margin:0 0 15px 0; font-size:16px;&quot;&gt;Hola &lt;strong&gt;{{{Case.OwnerFullName}}}&lt;/strong&gt;,&lt;/p&gt;
+
+						&lt;p style=&quot;margin:0 0 20px 0; font-size:15px; line-height:1.5;&quot;&gt;Se te ha asignado el ticket &lt;strong style=&quot;color:#263B7A;&quot;&gt;{{{Case.CaseNumber}}}&lt;/strong&gt;, del cliente &lt;strong style=&quot;color:#263B7A;&quot;&gt;{{{Case.Nombre_Comercial2__c}}}&lt;/strong&gt;&lt;span style=&quot;background-color:#1E8E3E; color:#ffffff; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:5px;&quot;&gt; ASIGNADO &lt;/span&gt;&lt;/p&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;12&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#f8fafc; border:1px solid #e3e8ee; border-radius:8px; margin-bottom:20px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px;&quot;&gt;
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Asunto:&lt;/span&gt; &lt;strong&gt;{{{Case.Subject}}}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;M&amp;oacute;dulo:&lt;/span&gt; &lt;strong&gt;{{{Case.M_dulos__c}}}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;C&amp;eacute;lula:&lt;/span&gt; &lt;strong&gt;{{{Case.Grupo_AMS_Ticket__c}}}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Prioridad:&lt;/span&gt; &lt;strong&gt;{{{Case.Priority}}}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Tipo de ticket:&lt;/span&gt; &lt;strong&gt;{{{Case.RecordType}}}&lt;/strong&gt;&lt;/div&gt;
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Cliente:&lt;/span&gt; &lt;strong&gt;{{{Case.Nombre_Comercial2__c}}}&lt;/strong&gt;&lt;/div&gt;
+									{{#if Case.ContactId}}
+
+									&lt;div style=&quot;margin-bottom:5px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Solicitante:&lt;/span&gt; &lt;strong&gt;{{{Case.Contact}}}&lt;/strong&gt;&lt;/div&gt;
+									{{/if}}&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						{{#if Case.Description}}
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e3e8ee; border-radius:8px; margin:0 0 20px 0;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0;&quot;&gt;
+									&lt;div style=&quot;background-color:#eef4ff; color:#263B7A; font-size:13px; font-weight:700; padding:10px 12px; border-top-left-radius:8px; border-top-right-radius:8px;&quot;&gt;Descripci&amp;oacute;n del ticket&lt;/div&gt;
+
+									&lt;div style=&quot;padding:12px 12px 14px 12px; font-size:14px; color:#1f2d3d; line-height:1.55; white-space:pre-line; word-wrap:break-word;&quot;&gt;{{Case.Description}}&lt;/div&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						{{/if}}
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#f5fff7; border-left:4px solid #1E8E3E; border-radius:4px; margin-bottom:25px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:15px; font-size:14px;&quot;&gt;&lt;strong style=&quot;color:#1E8E3E; display:block; margin-bottom:5px;&quot;&gt;Recuerda:&lt;/strong&gt; &amp;bull; Revisar la descripci&amp;oacute;n, prioridad y&amp;nbsp;adjuntos del ticket.&lt;br /&gt;
+									&amp;bull; Registra la primera respuesta y la estimaci&amp;oacute;n de esfuerzo/tiempos en Pandora.&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td&gt;&lt;a href=&quot;{{{Case.Link}}}&quot; style=&quot;background-color:#263B7A; color:#ffffff; padding:12px 20px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:14px; display:inline-block; margin-right:10px;&quot;&gt;Abrir Ticket&lt;/a&gt; &lt;a href=&quot;https://seidorcrm--jira.sandbox.lightning.force.com/lightning/o/Case/list?filterName=Recent&quot; style=&quot;background-color:#eaf4ff; color:#263B7A; padding:12px 20px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:14px; display:inline-block; border:1px solid #cde6ff;&quot;&gt;Ver mis casos&lt;/a&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;background-color:#ffffff; padding:20px 25px; border-top:1px solid #e3e8ee; color:#8a96a3; font-size:12px; text-align:center;&quot;&gt;
+						&lt;div style=&quot;margin-bottom:8px;&quot;&gt;&lt;strong&gt;Seidor Chile &amp;bull; Equipo Soporte AMS&lt;/strong&gt;&lt;/div&gt;
+
+						&lt;div&gt;Mensaje autom&amp;aacute;tico de Salesforce. SEIDOR &amp;mdash; &lt;em&gt;Human focused. Technology experts.&lt;/em&gt;&lt;/div&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+				&lt;/tbody&gt;
+			&lt;/table&gt;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <triggerOrder>400</triggerOrder>
+    <variables>
+        <name>colDocumentIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>var_Matriz_Seleccionada</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>Matriz_Asignacion_AMS__c</objectType>
+    </variables>
+</Flow>

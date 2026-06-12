@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Deploy PRD: usar RunSpecifiedTests (NO RunLocalTests).
+     Tests: ImputacionesAMSControllerTest, CentroImputacionesConfigControllerTest, ImputacionesBillableRulesTest
+     Excluir: ApplyCaseAssignmentRulesTest (regla Case V11, test ajeno y roto en PRD).
+     Script: scripts/deploy-validate-centro-imputaciones-prd.ps1 -->
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- LWC bundles -->
+    <types>
+        <members>imputacionesAMS</members>
+        <members>imputacionesAMSQuickShell</members>
+        <members>centroImputacionesConfig</members>
+        <name>LightningComponentBundle</name>
+    </types>
+
+    <!-- Aura: wrapper Quick Action invocado desde el boton rapido del caso -->
+    <types>
+        <members>imputacionesAMSQuickAction</members>
+        <name>AuraDefinitionBundle</name>
+    </types>
+
+    <!-- Apex Class del controlador + test class para cubrir cobertura -->
+    <types>
+        <members>ImputacionesAMSController</members>
+        <members>ImputacionesOperativeConfigLoader</members>
+        <members>ImputacionesAMSControllerTest</members>
+        <members>CentroImputacionesConfigController</members>
+        <members>CentroImputacionesConfigControllerTest</members>
+        <members>ImputacionesBillableRules</members>
+        <members>ImputacionesBillableRulesTest</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- Objeto configuracion operativa -->
+    <types>
+        <members>Configurar_Centro_Imputaciones__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Configurar_Centro_Imputaciones__c.Config_Key__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Dias_franja_calendario__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Horas_Jornada__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Motivo_Ticket__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Numero_Ticket_Anclados__c</members>
+        <members>Configurar_Centro_Imputaciones__c.PEP_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.PEP_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Motivos_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Servicios_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Tamano_Pagina_Tickets__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Umbral_Aviso_Horas_Dia__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Meta_Facturable_Pct__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Origen_Imputacion__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Servicios__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Horas_Meta_Dia_Lab__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ams_Creado_Filtro_Dias_Atras__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Limite_Soql_Desglose_Dia__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Limite_Soql_Mes_Agregacion__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Limite_Soql_Owner_Opciones__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ayuda_Texto_General__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ui_Mostrar_Guia_Uso__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Guia_Uso_Texto__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Festivos_Extra_MM_DD__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Imputacion_Meses_Retro__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Imputacion_Meses_Adelante__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Servicios_Ultimo_Recurso__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Motivos_Ultimo_Recurso__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ui_Ocultar_Importar_Csv__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ui_Ocultar_Exportar_Csv__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ui_Ocultar_Panel_Trimestral__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ui_Ocultar_Tab_Gestion_Ams__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Campo_Case_Motivo_Ams__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Ayuda_Admin_Monitor__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Vacio_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Parcial_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Parcial_Borde__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Meta_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Meta_Borde__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Sobre_Umbral__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Feriado_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Fin_Semana_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Seleccion_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Seleccion_Borde__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Cal_Dia_Bloqueado_Fondo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_No_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_Meta_Progreso__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Pestanas_Catalogo_Tickets__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Permitir_Imputar_Fin_Semana__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Texto_Aviso_Fin_Semana__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Texto_Confirmacion_Imputacion__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Permitir_Imputar_Feriados__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Texto_Aviso_Feriado__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Texto_Aviso_Umbral_Horas__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Panel_Meta_Copy_JSON__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Criterio_Calculo_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Criterio_Calculo_No_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Texto_Subtitulo_Centro__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Excepciones_Fechas_Imputacion__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Activar_Aviso_Umbral_Horas__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Excepcion_Fin_Semana_User_Campo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Excepcion_Fin_Semana_User_Valores__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Servicio_Tickets__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Consultor_User_Campo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Consultor_User_Valores__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Criterios_Facturable_Filtros_JSON__c</members>
+        <name>CustomField</name>
+    </types>
+
+    <!-- Plantillas de carga (consultor y admin) -->
+    <types>
+        <members>ImputacionesAmsPlantilla</members>
+        <members>ImputacionesAmsPlantillaAdmin</members>
+        <name>StaticResource</name>
+    </types>
+
+    <version>66.0</version>
+</Package>

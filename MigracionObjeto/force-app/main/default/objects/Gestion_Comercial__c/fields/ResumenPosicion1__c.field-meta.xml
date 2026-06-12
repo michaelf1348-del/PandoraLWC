@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ResumenPosicion1__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( TEXT(Numero_de_Posiciones__c) = &quot;1&quot;,
+&quot;POSICION 1&quot;&amp;BR()&amp;BR()&amp;
+
+&quot;Descripcion: &quot;&amp;DenPosicin__c&amp;BR() &amp;
+&quot;Division: &quot;&amp;Division__c&amp;BR() &amp;
+&quot;Pedido de Venta: &quot;&amp;Pedido_V__c&amp;BR() &amp;
+&quot;Posición Pedido Venta: &quot;&amp;Posicin_PV__c&amp;BR() &amp;
+&quot;Material: &quot;&amp;Materia__c&amp;BR() &amp;
+&quot;Precio: &quot;&amp;TEXT(Precio__c)&amp;BR() &amp;
+&quot;Moneda: &quot;&amp;TEXT(Moneda__c)&amp;BR() &amp;
+&quot;PEP: &quot;&amp;PEP__r.Name,
+&quot;&quot;)</formula>
+    <label>ResumenPosicion1</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Es_Publica__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>true = variante visible para todos los usuarios; false = solo visible para el creador (Owner_UserId__c).</description>
+    <externalId>false</externalId>
+    <label>Es publica</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

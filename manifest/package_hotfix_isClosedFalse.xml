@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Hotfix Centro de Imputaciones AMS -->
+    <types>
+        <members>ImputacionesAMSController</members>
+        <members>ImputacionesAMSControllerTest</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>Imputation_Center_Settings.Default</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
+        <members>imputacionesAMS</members>
+        <name>LightningComponentBundle</name>
+    </types>
+    <version>66.0</version>
+</Package>

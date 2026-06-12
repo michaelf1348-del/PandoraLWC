@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Guia_Uso_Texto__c</fullName>
+    <description>Texto introductorio opcional en el modal Guia de uso. Si esta vacio se usa el texto por defecto del componente.</description>
+    <externalId>false</externalId>
+    <label>Guia de uso - texto introductorio</label>
+    <length>1000</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

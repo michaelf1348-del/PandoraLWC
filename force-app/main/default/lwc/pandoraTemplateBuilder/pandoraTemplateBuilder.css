@@ -1,0 +1,409 @@
+/* Raíz — misma línea visual que reportePptBuilder */
+.ptb-root {
+    min-height: 100vh;
+    font-family: 'Salesforce Sans', 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(165deg, #f8fafc 0%, #eef2ff 42%, #f1f5f9 100%);
+    color: #0f172a;
+}
+
+.ptb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.ptb-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ptb-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.45);
+}
+
+.ptb-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+}
+
+.ptb-subtitle {
+    margin: 2px 0 0 0;
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+    max-width: 42rem;
+}
+
+.ptb-layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    min-height: calc(100vh - 72px);
+}
+
+.ptb-sidebar {
+    padding: 22px 18px 36px;
+    overflow-y: auto;
+    border-right: 1px solid rgba(148, 163, 184, 0.45);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.ptb-card {
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 14px;
+    padding: 18px 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 28px -12px rgba(15, 23, 42, 0.12);
+}
+
+.ptb-card--templates .ptb-combo {
+    margin-top: 4px;
+}
+
+.ptb-status-line {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.ptb-status-line--muted {
+    color: #64748b;
+}
+
+.ptb-card--grow {
+    flex: 1;
+}
+
+.ptb-section-label {
+    margin: 0 0 10px 0;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.ptb-mini-label {
+    margin: 0 0 6px 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ptb-help {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #475569;
+    line-height: 1.45;
+    flex: 1;
+    min-width: 0;
+}
+
+.ptb-dirty {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.ptb-error {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #b91c1c;
+}
+
+.ptb-hint {
+    margin: 0 0 8px 0;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.ptb-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.ptb-row--spread {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ptb-mt-sm { margin-top: 10px; }
+.ptb-mt-md { margin-top: 16px; }
+
+.ptb-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+}
+
+.ptb-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px 10px;
+    align-items: end;
+}
+
+@media (max-width: 420px) {
+    .ptb-grid-3 { grid-template-columns: 1fr; }
+}
+
+.ptb-subblock {
+    padding-top: 14px;
+    margin-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.ptb-callout {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.ptb-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Píldoras tipo slide — Portada / Contenido / Cierre */
+.slide-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slide-pills--compact {
+    gap: 6px;
+}
+
+.slide-pill {
+    appearance: none;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slide-pill:hover {
+    border-color: #94a3b8;
+    background: #ffffff;
+}
+
+.slide-pill--active {
+    border-color: #0369a1;
+    background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+    color: #0c4a6e;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25);
+}
+
+/* Panel de previsualización */
+.ptb-main {
+    padding: 20px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 45%, #f1f5f9 100%);
+    overflow: auto;
+}
+
+.ptb-preview-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #334155;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.ptb-preview-header__icon {
+    --sds-c-icon-color-foreground-default: #0284c7;
+}
+
+.ptb-preview-frame {
+    width: 100%;
+    max-width: 960px;
+    padding: 12px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 24px 50px -20px rgba(15, 23, 42, 0.35);
+}
+
+.ppt-slide-mock {
+    background: #ffffff;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    outline: none;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
+}
+
+.slide-tag {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.72);
+    color: #f8fafc;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.mock-element {
+    position: absolute;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    pointer-events: auto;
+    user-select: none;
+    padding: 4px;
+    border: 1px dashed rgba(148, 163, 184, 0.95);
+    background: rgba(255, 255, 255, 0.28);
+    cursor: grab;
+    transition: border 0.2s ease, box-shadow 0.15s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.mock-element:hover {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 1px rgba(2, 132, 199, 0.25);
+}
+
+.mock-element.is-selected {
+    border: 2px solid #0284c7 !important;
+    background-color: rgba(224, 242, 254, 0.45);
+    z-index: 10;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.25);
+}
+
+.mock-element.is-selected:active {
+    cursor: grabbing;
+}
+
+.mock-table-line {
+    position: absolute;
+    width: 90%;
+    left: 5%;
+    border-top: 2px dashed #f97316;
+    display: flex;
+    justify-content: center;
+}
+
+.table-label {
+    background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+    color: white;
+    padding: 3px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 0 0 10px 10px;
+    letter-spacing: 0.03em;
+}
+
+/* Estado vacío */
+.ptb-empty {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+}
+
+.ptb-empty__card {
+    max-width: 420px;
+    text-align: center;
+    padding: 36px 28px;
+    border-radius: 16px;
+    border: 1px dashed #94a3b8;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.2);
+}
+
+.ptb-empty__icon {
+    --sds-c-icon-color-foreground-default: #0ea5e9;
+    margin-bottom: 12px;
+}
+
+.ptb-empty__title {
+    margin: 0 0 10px 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ptb-empty__text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.55;
+}
+
+/* Modal */
+.ptb-modal {
+    max-width: 520px;
+}
+
+.ptb-modal__header {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ptb-modal__sub {
+    margin: 6px 0 0 0;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+@media (max-width: 1024px) {
+    .ptb-layout {
+        grid-template-columns: 1fr;
+    }
+    .ptb-sidebar {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        max-height: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

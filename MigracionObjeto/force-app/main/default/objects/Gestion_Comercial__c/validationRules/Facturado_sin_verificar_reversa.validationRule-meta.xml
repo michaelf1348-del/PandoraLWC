@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Facturado_sin_verificar_reversa</fullName>
+    <active>true</active>
+    <errorConditionFormula>and( ISPICKVAL(Estatus_Facturacion__c,&apos;Facturado&apos;),   ISBLANK(text(Reversa_Provision_Requerida__c )))</errorConditionFormula>
+    <errorMessage>Debe indicar si aplica o no reversa de provisión</errorMessage>
+</ValidationRule>

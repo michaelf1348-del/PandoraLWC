@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ayuda_Admin_Monitor__c</fullName>
+    <description>Texto de ayuda para administradores en el modal Monitor del centro (antes en CMDT Ayuda_Admin__c).</description>
+    <externalId>false</externalId>
+    <label>Ayuda admin monitor</label>
+    <length>32768</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

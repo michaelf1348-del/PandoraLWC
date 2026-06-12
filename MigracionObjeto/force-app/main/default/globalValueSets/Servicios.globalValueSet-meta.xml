@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>SAP Business One</fullName>
+        <default>false</default>
+        <label>SAP Business One</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP</fullName>
+        <default>false</default>
+        <label>AMS-SAP</label>
+    </customValue>
+    <customValue>
+        <fullName>AMS-SAP-Mexico</fullName>
+        <default>false</default>
+        <label>AMS-SAP-Mexico</label>
+    </customValue>
+    <customValue>
+        <fullName>Basis</fullName>
+        <default>false</default>
+        <label>Basis</label>
+    </customValue>
+    <customValue>
+        <fullName>Infraestructura</fullName>
+        <default>false</default>
+        <label>Infraestructura</label>
+    </customValue>
+    <masterLabel>Servicios</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

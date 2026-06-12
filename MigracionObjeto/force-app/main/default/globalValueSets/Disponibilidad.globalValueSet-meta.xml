@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Disponible</fullName>
+        <default>true</default>
+        <label>Disponible</label>
+    </customValue>
+    <customValue>
+        <fullName>No Disponible</fullName>
+        <default>false</default>
+        <label>No Disponible</label>
+    </customValue>
+    <masterLabel>¿Disponibilidad?</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

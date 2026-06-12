@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Nuevo Ticket (Quick Action)</masterLabel>
+    <description>Quick Action LWC para crear un Ticket (Case) con filtrado dinámico de Record Type según la cuenta.</description>
+    <targets>
+        <!-- Único target válido para Quick Actions de tipo LWC -->
+        <target>lightning__RecordAction</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordAction">
+            <!-- ScreenAction = la Quick Action abre el LWC en un modal con header/footer -->
+            <actionType>ScreenAction</actionType>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

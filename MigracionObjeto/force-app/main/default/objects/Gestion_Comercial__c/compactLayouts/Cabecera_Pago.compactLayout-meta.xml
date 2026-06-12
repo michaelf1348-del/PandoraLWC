@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cabecera_Pago</fullName>
+    <fields>RecordTypeId</fields>
+    <fields>DenProveedor__c</fields>
+    <fields>Proveedor_Seidor__c</fields>
+    <fields>Pag__c</fields>
+    <fields>DenPosicin__c</fields>
+    <label>Cabecera Pago</label>
+</CompactLayout>

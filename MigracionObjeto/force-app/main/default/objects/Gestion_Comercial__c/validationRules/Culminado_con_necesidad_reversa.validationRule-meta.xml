@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Culminado_con_necesidad_reversa</fullName>
+    <active>true</active>
+    <errorConditionFormula>and( ISPICKVAL(Estatus_Facturacion__c,&apos;Culminado&apos;), ISPICKVAL(Reversa_Provision_Requerida__c,&apos;SI&apos;), RevP__c = FALSE )</errorConditionFormula>
+    <errorMessage>Factura necesita ser reversada de provisión, por favor confirme que ha sido reversada en la casilla Reversa Provisión para poder culminar el ciclo</errorMessage>
+</ValidationRule>

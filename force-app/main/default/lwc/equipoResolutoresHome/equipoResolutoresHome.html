@@ -1,0 +1,226 @@
+<template>
+    <div class="monitor-shell">
+        <header class="monitor-header">
+            <div class="monitor-brand">
+                <span class="monitor-logo">
+                    <lightning-icon icon-name="utility:desktop" size="small" variant="inverse"></lightning-icon>
+                </span>
+                <div class="monitor-title">
+                    <h1>Monitor SLA</h1>
+                    <p class="monitor-subtitle">{summaryText}</p>
+                </div>
+            </div>
+            <div class="monitor-header-actions">
+                <span class="refresh-pill">
+                    <span class="refresh-dot"></span>
+                    Actualizado {lastRefreshLabel}
+                </span>
+                <button type="button" class="icon-btn" title="Actualizar" onclick={handleRefresh}>
+                    <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </header>
+
+        <template lwc:if={loading}>
+            <div class="monitor-loading">
+                <lightning-spinner alternative-text="Cargando" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:elseif={hasData}>
+            <section class="controls-top">
+                <div class="search-box">
+                    <lightning-input
+                        class="toolbar-search"
+                        type="search"
+                        label="Buscar"
+                        variant="label-hidden"
+                        placeholder="Buscar por ticket, asunto o responsable..."
+                        value={slaSearchTerm}
+                        onchange={handleSlaSearchChange}>
+                    </lightning-input>
+                </div>
+                <lightning-combobox
+                    class="toolbar-sort"
+                    label="Ordenar"
+                    variant="label-hidden"
+                    options={sortOptions}
+                    value={sortBy}
+                    onchange={handleSortChange}>
+                </lightning-combobox>
+            </section>
+
+            <section class="controls-meta">
+                <div class="stat-cells">
+                    <template for:each={statCells} for:item="s">
+                        <button key={s.key}
+                                type="button"
+                                class={s.cellClass}
+                                data-value={s.value}
+                                onclick={handleStatClick}>
+                            <span class="stat-ic">
+                                <lightning-icon icon-name={s.icon} size="xx-small"></lightning-icon>
+                            </span>
+                            <span class="stat-text">
+                                <span class="stat-n">{s.count}</span>
+                                <span class="stat-l">{s.label}</span>
+                            </span>
+                        </button>
+                    </template>
+                </div>
+                <div class="quick-filters">
+                    <template for:each={quickFilterPills} for:item="f">
+                        <button key={f.key}
+                                type="button"
+                                class={f.pillClass}
+                                data-value={f.key}
+                                onclick={handleQuickFilterClick}>
+                            <lightning-icon icon-name={f.icon} size="xx-small"></lightning-icon>
+                            <span>{f.label}</span>
+                        </button>
+                    </template>
+                </div>
+            </section>
+
+            <template lwc:if={hasFilteredRows}>
+                <section class="monitor-table-wrap">
+                    <table class="monitor-table">
+                        <tbody>
+                            <template for:each={displayedRows} for:item="row">
+                                <tr key={row.key} class={row.rowClass}>
+                                    <td class="col-pri">
+                                        <span class={row.priorityClass}>{row.priorityLabel}</span>
+                                    </td>
+                                    <td class="col-tickets">
+                                        <div class="cell-ticket-line">
+                                            <a href="javascript:void(0)"
+                                               class="ticket-link"
+                                               data-case-id={row.caseId}
+                                               onclick={handleOpenTicket}>{row.caseNumber}</a>
+                                            <template lwc:if={row.isApoyoEquipo}>
+                                                <span class="badge-apoyo">Apoyo</span>
+                                            </template>
+                                            <template lwc:if={row.isMyTurn}>
+                                                <span class="badge-turno">Mi turno</span>
+                                            </template>
+                                        </div>
+                                        <div class="cell-subject">{row.subjectDisplay}</div>
+                                        <template lwc:if={row.responsibleLine}>
+                                            <div class="cell-responsible">
+                                                <lightning-icon icon-name="utility:user" size="xx-small"></lightning-icon>
+                                                {row.responsibleLine}
+                                            </div>
+                                        </template>
+                                    </td>
+                                    <td class="col-estado">
+                                        <div class="cell-estado-label">Estado</div>
+                                        <div class="cell-estado">
+                                            <lightning-icon icon-name="utility:routing_offline" size="xx-small"></lightning-icon>
+                                            <span>{row.statusDisplay}</span>
+                                        </div>
+                                    </td>
+                                    <td class="col-sla">
+                                        <div class="cell-sla-label">SLA</div>
+                                        <span class={row.badgeClass}>{row.badgeText}</span>
+                                        <template lwc:if={row.isPaused}>
+                                            <span class="badge-paused">Pausado</span>
+                                        </template>
+                                        <div class="sla-track">
+                                            <div class={row.slaBarClass} style={row.slaBarStyle}></div>
+                                        </div>
+                                        <div class={row.countdownWrapClass}>
+                                            <span class={row.countdownClass}>{row.countdownLabel}</span>
+                                        </div>
+                                    </td>
+                                    <td class="col-actions">
+                                        <button type="button"
+                                                class="action-btn action-btn_primary"
+                                                data-case-id={row.caseId}
+                                                data-case-number={row.caseNumber}
+                                                onclick={handleQuickAction}>
+                                            Atender
+                                        </button>
+                                        <button type="button"
+                                                class="action-btn action-btn_ghost"
+                                                data-case-id={row.caseId}
+                                                data-case-number={row.caseNumber}
+                                                onclick={handleOpenHistory}>
+                                            Historial
+                                        </button>
+                                        <lightning-button-menu
+                                            class="row-menu"
+                                            icon-name="utility:threedots_vertical"
+                                            menu-alignment="auto"
+                                            variant="bare"
+                                            data-case-id={row.caseId}
+                                            data-case-number={row.caseNumber}
+                                            onselect={handleRowMenuSelect}>
+                                            <lightning-menu-item value="open" label="Abrir ticket completo"></lightning-menu-item>
+                                            <lightning-menu-item value="history" label="Ver historial"></lightning-menu-item>
+                                            <lightning-menu-item value="attend" label="Atender"></lightning-menu-item>
+                                        </lightning-button-menu>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </section>
+
+                <footer class="monitor-footer">
+                    <span class="page-info">{pageInfoLabel}</span>
+                    <template lwc:if={showPagination}>
+                        <div class="pager">
+                            <button type="button" class="pg-arrow" disabled={prevDisabled} onclick={handlePrevPage}>
+                                <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                            </button>
+                            <template for:each={pageNumbers} for:item="p">
+                                <template lwc:if={p.isGap}>
+                                    <span key={p.key} class="pg-gap">&hellip;</span>
+                                </template>
+                                <template lwc:else>
+                                    <button key={p.key}
+                                            type="button"
+                                            class={p.btnClass}
+                                            data-page={p.num}
+                                            onclick={handlePageClick}>{p.num}</button>
+                                </template>
+                            </template>
+                            <button type="button" class="pg-arrow" disabled={nextDisabled} onclick={handleNextPage}>
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </template>
+                </footer>
+            </template>
+            <template lwc:else>
+                <div class="empty-state">
+                    <p>Ning&#250;n ticket coincide con el filtro.</p>
+                </div>
+            </template>
+        </template>
+
+        <template lwc:else>
+            <div class="empty-state">
+                <p>No hay tickets abiertos en esta vista.</p>
+            </div>
+        </template>
+    </div>
+
+    <template lwc:if={showPopup}>
+        <c-espacio-sla-popup
+            case-id={popupCaseId}
+            case-number={popupCaseNumber}
+            onclose={handlePopupClose}
+            onactiondone={handleActionDone}>
+        </c-espacio-sla-popup>
+    </template>
+
+    <template lwc:if={showHistoryModal}>
+        <c-sla-ticket-historial-modal
+            key={historyCaseId}
+            case-id={historyCaseId}
+            case-number={historyCaseNumber}
+            onclose={handleHistoryClose}>
+        </c-sla-ticket-historial-modal>
+    </template>
+</template>

@@ -1,0 +1,39 @@
+<template>
+    <!--
+        Modal "selector" liviano: solo el combobox de Tipo de Registro.
+        Al continuar, navegamos a la pantalla estándar de "Nuevo Case" con
+        AccountId pre-cargado, reutilizando todo el layout/validaciones
+        nativas de Salesforce sin replicar el formulario aquí.
+    -->
+    <lightning-quick-action-panel header={headerLabel}>
+
+        <lightning-combobox
+            name="recordType"
+            label="Tipo de Registro"
+            placeholder="Selecciona un tipo de registro"
+            options={recordTypeOptions}
+            value={selectedRecordTypeId}
+            onchange={handleRecordTypeChange}
+            required>
+        </lightning-combobox>
+
+        <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+            Al continuar, se abrirá la pantalla estándar de creación del Ticket
+            con la cuenta ya vinculada.
+        </p>
+
+        <div slot="footer">
+            <lightning-button
+                label="Cancelar"
+                onclick={handleClose}
+                class="slds-m-right_x-small">
+            </lightning-button>
+            <lightning-button
+                variant="brand"
+                label="Continuar"
+                onclick={handleContinue}
+                disabled={isContinueDisabled}>
+            </lightning-button>
+        </div>
+    </lightning-quick-action-panel>
+</template>

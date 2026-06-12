@@ -1,0 +1,239 @@
+<template>
+    <div class="pandora-wrapper slds-is-relative">
+        <template if:true={loading}>
+            <div class="loading-overlay">
+                <lightning-spinner alternative-text="Cargando" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <div class="header-banner">
+            <div class="header-banner-left">
+                <lightning-icon
+                    icon-name="standard:timesheet"
+                    size="small"
+                    alternative-text="Imputación">
+                </lightning-icon>
+                <h2>Centro de Imputaciones Pandora</h2>
+            </div>
+
+            <div class="header-banner-right">
+                <div class="header-chip">
+                    Fecha seleccionada: <strong>{selectedDateLabel}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-layout slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_5-of-12">
+                <div class="left-panel">
+                    <div class="calendar-card">
+                        <div class="cal-header">
+                            <lightning-button-icon
+                                icon-name="utility:chevronleft"
+                                variant="border-filled"
+                                alternative-text="Mes anterior"
+                                onclick={handlePrevMonth}>
+                            </lightning-button-icon>
+
+                            <h2>{currentMonthName} {currentYear}</h2>
+
+                            <lightning-button-icon
+                                icon-name="utility:chevronright"
+                                variant="border-filled"
+                                alternative-text="Mes siguiente"
+                                onclick={handleNextMonth}>
+                            </lightning-button-icon>
+                        </div>
+
+                        <div class="cal-grid cal-weekdays">
+                            <template for:each={weekdays} for:item="weekday">
+                                <div key={weekday.key}>{weekday.label}</div>
+                            </template>
+                        </div>
+
+                        <div class="cal-grid cal-days">
+                            <template for:each={calendarDays} for:item="day">
+                                <template if:true={day.isEmpty}>
+                                    <div key={day.key} class="cal-day empty"></div>
+                                </template>
+
+                                <template if:false={day.isEmpty}>
+                                    <button
+                                        key={day.key}
+                                        type="button"
+                                        class={day.buttonClass}
+                                        data-date={day.isoDate}
+                                        onclick={handleDayClick}
+                                        disabled={day.disabled}>
+                                        <span>{day.label}</span>
+                                    </button>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-title">Resumen del día</div>
+
+                        <div class="summary-grid">
+                            <div class="summary-box">
+                                <span class="summary-label">Objetivo</span>
+                                <strong>{objetivoHoras} h</strong>
+                            </div>
+
+                            <div class="summary-box">
+                                <span class="summary-label">Cargado</span>
+                                <strong>{totalHorasDia} h</strong>
+                            </div>
+
+                            <div class="summary-box">
+                                <span class="summary-label">Pendiente</span>
+                                <strong>{restantesHoras} h</strong>
+                            </div>
+                        </div>
+
+                        <div class="progress-wrap progress-wrap-large">
+                            <div class="progress-label">Avance del día</div>
+
+                            <div class="progress-bar" aria-hidden="true">
+                                <div class="progress-fill" style={progressStyle}></div>
+                            </div>
+
+                            <div class="progress-foot">
+                                {progressPercentageLabel}% completado
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-col slds-size_1-of-1 slds-large-size_7-of-12">
+                <div class="right-panel">
+                    <div class="table-card slds-is-relative">
+                        <div class="table-header">
+                            <div class="table-header-top">
+                                <div class="header-left">
+                                    <h3>Tickets de la jornada: <strong>{selectedDateLabel}</strong></h3>
+                                </div>
+
+                                <div class="header-right">
+                                    <div class="pending-chip">
+                                        Pendientes de guardar: <strong>{pendingEntriesCount}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="progress-wrap">
+                                <div class="progress-label">
+                                    Progreso: <strong>{totalHorasDia}</strong> / <strong>{objetivoHoras}</strong> h
+                                    <span class="muted">(restan {restantesHoras} h)</span>
+                                </div>
+
+                                <div class="progress-bar" aria-hidden="true">
+                                    <div class="progress-fill" style={progressStyle}></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="custom-table-container">
+                            <table class="pandora-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 34%;">Ticket y Asunto</th>
+                                        <th style="width: 16%; text-align: center;">Estado</th>
+                                        <th style="width: 14%; text-align: center;">Imputado</th>
+                                        <th style="width: 18%; text-align: center;">Horas</th>
+                                        <th style="width: 18%; text-align: center;">No Fact.</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template if:true={hasTickets}>
+                                        <template for:each={tickets} for:item="t">
+                                            <tr key={t.id} class={t.rowClass}>
+                                                <td>
+                                                    <div class="ticket-number">
+                                                        <a
+                                                            href={t.recordLink}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer">
+                                                            [{t.caseNumber}]
+                                                        </a>
+                                                    </div>
+                                                    <div class="ticket-subject">{t.subject}</div>
+                                                </td>
+
+                                                <td class="slds-text-align_center">
+                                                    <span class="status-badge">{t.status}</span>
+                                                </td>
+
+                                                <td class="slds-text-align_center">
+                                                    <template if:true={t.hasImputedHours}>
+                                                        <span class="imputed-pill">{t.horasImputadas} h</span>
+                                                    </template>
+                                                    <template if:false={t.hasImputedHours}>
+                                                        <span class="imputed-empty">-</span>
+                                                    </template>
+                                                </td>
+
+                                                <td class="slds-text-align_center">
+                                                    <lightning-input
+                                                        type="number"
+                                                        variant="label-hidden"
+                                                        class="custom-number-fix"
+                                                        data-id={t.id}
+                                                        value={t.horasInput}
+                                                        min="0"
+                                                        max="24"
+                                                        step="0.25"
+                                                        onchange={handleHoursChange}>
+                                                    </lightning-input>
+                                                </td>
+
+                                                <td class="slds-text-align_center">
+                                                    <lightning-input
+                                                        type="checkbox"
+                                                        variant="label-hidden"
+                                                        data-id={t.id}
+                                                        checked={t.noFacturable}
+                                                        onchange={handleNoFactChange}>
+                                                    </lightning-input>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+
+                                    <template if:false={hasTickets}>
+                                        <tr>
+                                            <td colspan="5" class="empty-state-cell">
+                                                No hay tickets activos para imputar en la fecha seleccionada.
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-footer sticky-footer">
+                            <div class="footer-left">
+                                <div class="total-counter">
+                                    Total Jornada: <strong>{totalHorasDia}</strong> hrs
+                                </div>
+                            </div>
+
+                            <div class="footer-right">
+                                <button
+                                    class="btn-save-massive"
+                                    type="button"
+                                    onclick={handleSave}
+                                    disabled={saveDisabled}>
+                                    Guardar Imputación
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

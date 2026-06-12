@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cierre_Mensual</fullName>
+    <fields>RecordTypeId</fields>
+    <fields>Cliente__c</fields>
+    <fields>Estatus_del_cierre__c</fields>
+    <fields>DenPosicin__c</fields>
+    <fields>PeriodoM__c</fields>
+    <fields>Base_Mensual__c</fields>
+    <fields>Consumo_Mensual__c</fields>
+    <label>Cierre Mensual</label>
+</CompactLayout>

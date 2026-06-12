@@ -1,0 +1,146 @@
+.history-modal-content {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.slds-modal__container {
+    max-width: 36rem;
+    width: 92%;
+}
+
+.hist-loading,
+.hist-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #706e6b;
+}
+
+.hist-error {
+    color: #8e030f;
+}
+
+.history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.hl-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.hl-item:last-child {
+    border-bottom: none;
+}
+
+.hl-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+
+.hl-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.hl-line1 {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+}
+
+.hl-line2 {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+    margin-top: 0.125rem;
+    font-size: 0.6875rem;
+    color: #706e6b;
+}
+
+.hl-name {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: #181818;
+}
+
+.hl-name_link {
+    color: #0176d3;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.hl-name_link:hover {
+    text-decoration: underline;
+}
+
+.hl-estado {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #5c5c5c;
+    background: #f3f3f3;
+    border-radius: 0.75rem;
+    padding: 0.0625rem 0.5rem;
+}
+
+.hl-open {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #2e844a;
+    background: #ecfdf3;
+    border-radius: 0.75rem;
+    padding: 0.0625rem 0.4375rem;
+}
+
+.hl-violation {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #8e030f;
+    background: #fef1f1;
+    border: 1px solid #ea001e;
+    border-radius: 0.75rem;
+    padding: 0.0625rem 0.4375rem;
+}
+
+.hl-right {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex: 0 0 auto;
+}
+
+.hl-duration {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #181818;
+    white-space: nowrap;
+}
+
+.hl-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+.hl-item_violation {
+    background: #fef8f8;
+}
+
+.hl-item_open {
+    background: #f8fdf9;
+}

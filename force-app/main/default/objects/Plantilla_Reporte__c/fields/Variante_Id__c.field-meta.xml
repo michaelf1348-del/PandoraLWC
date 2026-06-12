@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Variante_Id__c</fullName>
+    <description>Identificador unico de la variante del reporte (formato uuid corto). Junto con ID_del_Reporte__c forma la PK logica de una variante.</description>
+    <externalId>true</externalId>
+    <label>Variante Id</label>
+    <length>36</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

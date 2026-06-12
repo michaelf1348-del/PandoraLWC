@@ -1,0 +1,64 @@
+<template>
+    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <h2 class="slds-modal__title slds-hyphenate">{modalTitle}</h2>
+                <p class="slds-text-body_small slds-m-top_x-small slds-text-color_weak">{headerMeta}</p>
+            </header>
+
+            <div class="slds-modal__content slds-p-around_medium history-modal-content">
+                <template lwc:if={loading}>
+                    <div class="hist-loading">
+                        <lightning-spinner alternative-text="Cargando historial" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:elseif={hasRows}>
+                    <ul class="history-list">
+                        <template for:each={displayRows} for:item="h">
+                            <li key={h.key} class={h.itemClass}>
+                                <span class="hl-avatar" style={h.avatarStyle}>{h.initials}</span>
+                                <div class="hl-body">
+                                    <div class="hl-line1">
+                                        <template lwc:if={h.showRecordLink}>
+                                            <a href="javascript:void(0);" class="hl-name hl-name_link" data-record-id={h.equipoRecordId} onclick={handleRecordNavigate}>{h.consultantName}</a>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="hl-name">{h.consultantName}</span>
+                                        </template>
+                                        <template lwc:if={h.isCurrentResponsible}>
+                                            <span class="hl-open">Actual</span>
+                                        </template>
+                                        <template lwc:if={h.hadViolation}>
+                                            <span class="hl-violation">Infracción SLA</span>
+                                        </template>
+                                    </div>
+                                    <div class="hl-line2">
+                                        <template lwc:if={h.estadoDisplay}>
+                                            <span class="hl-estado">{h.estadoDisplay}</span>
+                                        </template>
+                                        <span class="hl-dates">{h.rangeLabel}</span>
+                                    </div>
+                                </div>
+                                <div class="hl-right">
+                                    <span class="hl-duration" title={h.durationMeta}>{h.durationLabel}</span>
+                                    <span class="hl-dot" style={h.dotStyle}></span>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:elseif={loadError}>
+                    <p class="hist-empty hist-error">{loadError}</p>
+                </template>
+                <template lwc:elseif={showEmpty}>
+                    <p class="hist-empty">No hay registros de custodia ni apoyos para este ticket.</p>
+                </template>
+            </div>
+
+            <footer class="slds-modal__footer">
+                <lightning-button label="Cerrar" onclick={handleClose}></lightning-button>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

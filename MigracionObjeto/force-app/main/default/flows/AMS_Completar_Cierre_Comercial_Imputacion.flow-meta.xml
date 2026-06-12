@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Notificaci_n_Fallo_Actualizaci_n</name>
+        <label>Notificación Fallo Actualización</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>recipientAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>bccAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>AMS | Error al actualizar campo &quot;Cierre Comercial&quot; de imputaciones</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!Cuerpo_Notificacion_CierreComercial}&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>66.0</apiVersion>
+    <environments>Default</environments>
+    <interviewLabel>AMS - C {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>AMS - Completar Cierre Comercial Imputacion</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Obtener_Datos_Gestion_Comercial</name>
+        <label>Obtener Datos Gestion Comercial</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Actualizar_Campos_Cierre_Mensual</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>PeriodoM__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.PeriodoM__c</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Gestion_Comercial__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Actualizar_Campos_Cierre_Mensual</name>
+        <label>Actualizar Campos Cierre Mensual</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <faultConnector>
+            <targetReference>Notificaci_n_Fallo_Actualizaci_n</targetReference>
+        </faultConnector>
+        <inputAssignments>
+            <field>Cierre_Comercial__c</field>
+            <value>
+                <elementReference>Obtener_Datos_Gestion_Comercial.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Obtener_Datos_Gestion_Comercial</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Cliente__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Ripley</stringValue>
+            </value>
+        </filters>
+        <object>Imputacion__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <name>Cuerpo_Notificacion_CierreComercial</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;div style=&quot;font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #d4dadf; border-radius: 8px; overflow: hidden; background-color: #f8f9fa;&quot;&gt;
+    
+    &lt;div style=&quot;background-color: #003366; color: #ffffff; padding: 15px 20px; text-align: center;&quot;&gt;
+        &lt;h2 style=&quot;margin: 0; font-size: 20px;&quot;&gt;Seidor AMS - Error de Imputación&lt;/h2&gt;
+    &lt;/div&gt;
+
+    &lt;div style=&quot;padding: 20px; color: #333333;&quot;&gt;
+        &lt;p style=&quot;margin-top: 0;&quot;&gt;Se ha detectado un inconveniente con el registro de imputación. Por favor, revisa los detalles a continuación:&lt;/p&gt;
+
+        &lt;table style=&quot;width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;&quot;&gt;
+            &lt;tr&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0; width: 40%;&quot;&gt;&lt;strong&gt;ID de Imputación:&lt;/strong&gt;&lt;/td&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0; width: 60%;&quot;&gt;{!$Record.Name}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0;&quot;&gt;&lt;strong&gt;Consultor:&lt;/strong&gt;&lt;/td&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0;&quot;&gt;{!$Record.En_nombre_de__r.Name}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0;&quot;&gt;&lt;strong&gt;Fecha de Registro:&lt;/strong&gt;&lt;/td&gt;
+                &lt;td style=&quot;padding: 10px 0; border-bottom: 1px solid #e0e0e0;&quot;&gt;{!$Record.CreatedDate}&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+
+        &lt;div style=&quot;background-color: #003366; color: #ffffff; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; font-size: 15px;&quot;&gt;
+            &lt;strong&gt;Asunto:&lt;/strong&gt; Corrección requerida en campo Cierre Comercial
+        &lt;/div&gt;
+
+        &lt;div style=&quot;background-color: #ffffff; padding: 15px; border-left: 4px solid #00509e; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);&quot;&gt;
+            &lt;p style=&quot;margin: 0; color: #003366;&quot;&gt;&lt;strong&gt;Detalle del Error:&lt;/strong&gt;&lt;/p&gt;
+            &lt;p style=&quot;margin-top: 8px; margin-bottom: 0; font-size: 14px; line-height: 1.5;&quot;&gt;
+                El campo &lt;strong&gt;Cierre_Comercial__c&lt;/strong&gt; no contiene un valor válido o se encuentra vacío. Es necesario ingresar a Salesforce y actualizar este dato para asegurar la correcta facturación y cierre del registro.
+            &lt;/p&gt;
+        &lt;/div&gt;
+
+        &lt;div style=&quot;text-align: center; margin-top: 25px;&quot;&gt;
+            &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Imputacion__c/{!$Record.Id}/view&quot; style=&quot;background-color: #00509e; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; display: inline-block;&quot;&gt;Ver Registro en Salesforce&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div style=&quot;background-color: #e9ecef; padding: 15px; text-align: center; font-size: 12px; color: #555555;&quot;&gt;
+        &lt;p style=&quot;margin: 0;&quot;&gt;Sistema de Gestión Pandora - Seidor AMS&lt;/p&gt;
+    &lt;/div&gt;
+    
+&lt;/div&gt;</text>
+    </textTemplates>
+</Flow>

@@ -1,0 +1,14 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader" access="global">
+    <aura:html tag="style">
+        .slds-modal__container,
+        .uiModal .modal-container {
+            max-width: 90vw !important;
+            width: 1100px !important;
+        }
+        .slds-modal__content,
+        .uiModal .modal-body {
+            max-height: 80vh !important;
+        }
+    </aura:html>
+    <c:equipoResolutoresHome />
+</aura:component>

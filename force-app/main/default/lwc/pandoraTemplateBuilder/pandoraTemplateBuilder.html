@@ -1,0 +1,205 @@
+<template>
+    <div class="ptb-root">
+        <header class="ptb-header">
+            <div class="ptb-header__brand">
+                <span class="ptb-dot" aria-hidden="true"></span>
+                <div class="ptb-header__text">
+                    <h1 class="ptb-title">Plantillas de presentación</h1>
+                    <p class="ptb-subtitle">Fondos, tipografía y posición de título/subtítulo por portada, contenido y cierre</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="ptb-layout">
+            <aside class="ptb-sidebar">
+                <section class="ptb-card ptb-card--templates">
+                    <p class="ptb-section-label">Plantillas</p>
+                    <lightning-combobox
+                        label="Plantilla a editar"
+                        placeholder="Selecciona una plantilla…"
+                        options={templateOptions}
+                        value={selectedTemplateId}
+                        onchange={handleTemplateChange}
+                        class="ptb-combo"
+                    ></lightning-combobox>
+                    <template if:true={isEditMode}>
+                        <p class="ptb-status-line ptb-mt-sm">
+                            Editando <strong>{templateName}</strong>
+                            <template if:true={isDirty}>
+                                <span class="ptb-dirty"> · Cambios sin guardar</span>
+                            </template>
+                        </p>
+                    </template>
+                    <template if:false={isEditMode}>
+                        <p class="ptb-status-line ptb-status-line--muted ptb-mt-sm">Elige una plantilla arriba o crea una desde cero.</p>
+                    </template>
+                    <lightning-button
+                        label="Crear plantilla nueva"
+                        icon-name="utility:add"
+                        variant="brand-outline"
+                        stretch
+                        onclick={openCreateModal}
+                        class="ptb-mt-md"
+                        title="Crear plantilla vacía o clonar desde una existente"
+                    ></lightning-button>
+                    <template if:true={errorMessage}>
+                        <p class="ptb-error ptb-mt-sm">{errorMessage}</p>
+                    </template>
+                </section>
+
+                <template if:true={isEditMode}>
+                    <section class="ptb-card">
+                        <p class="ptb-section-label">Estilo global</p>
+                        <lightning-input label="Nombre" value={templateName} data-field="templateName" onchange={handleField}></lightning-input>
+                        <div class="ptb-grid-2 ptb-mt-sm">
+                            <lightning-input type="color" label="Color primario" value={colorPrimary} data-field="colorPrimary" onchange={handleField}></lightning-input>
+                            <lightning-input type="color" label="Color secundario" value={colorSecondary} data-field="colorSecondary" onchange={handleField}></lightning-input>
+                        </div>
+                        <lightning-combobox class="ptb-mt-sm" label="Fuente corporativa" value={fontFamily} options={fontOptions} onchange={handleFontChange}></lightning-combobox>
+                        <lightning-input class="ptb-mt-sm" type="toggle" label="Plantilla activa" checked={isActive} onchange={handleToggleActive}></lightning-input>
+                        <div class="ptb-mt-md">
+                            <lightning-button variant="brand" label="Guardar plantilla" icon-name="utility:save" onclick={handleSave} disabled={isSaveDisabled}></lightning-button>
+                        </div>
+                    </section>
+
+                    <section class="ptb-card ptb-card--grow">
+                        <p class="ptb-section-label">Diapositiva</p>
+                        <div class="slide-pills" role="tablist" aria-label="Tipo de diapositiva">
+                            <button type="button" role="tab" class={slidePillPortadaClass} data-slide="portada" onclick={handleSlideTab}>Portada</button>
+                            <button type="button" role="tab" class={slidePillContenidoClass} data-slide="contenido" onclick={handleSlideTab}>Contenido</button>
+                            <button type="button" role="tab" class={slidePillCierreClass} data-slide="cierre" onclick={handleSlideTab}>Cierre</button>
+                        </div>
+
+                        <div class="ptb-subblock ptb-mt-md">
+                            <p class="ptb-mini-label">Fondo (imagen)</p>
+                            <p class="ptb-hint">PNG o JPG recomendado · 1920×1080 o similar (16:9)</p>
+                            <lightning-file-upload
+                                label="Subir fondo para esta diapositiva"
+                                record-id={selectedTemplateId}
+                                accept={acceptedFormats}
+                                onuploadfinished={handleBgUploadFinished}
+                            ></lightning-file-upload>
+                            <lightning-button class="ptb-mt-sm" variant="neutral" label="Quitar imagen de fondo" icon-name="utility:delete" title="Elimina la imagen de esta diapositiva (portada, contenido o cierre)" onclick={clearBackgroundForActiveSlide}></lightning-button>
+                        </div>
+
+                        <div class="ptb-subblock ptb-mt-md">
+                            <p class="ptb-mini-label">Elemento activo</p>
+                            <div class="slide-pills slide-pills--compact">
+                                <button type="button" class={titleElementPillClass} onclick={selectTitle}>Título</button>
+                                <button type="button" class={subtitleElementPillClass} onclick={selectSubtitle}>Subtítulo</button>
+                            </div>
+                            <lightning-input
+                                class="ptb-mt-sm"
+                                label="Texto de ejemplo (solo aquí, no se guarda en la plantilla)"
+                                placeholder="Opcional: texto largo para ver salto de línea"
+                                value={testPreviewText}
+                                onchange={handleTestTextChange}
+                            ></lightning-input>
+                        </div>
+
+                        <div class="ptb-subblock ptb-mt-md">
+                            <p class="ptb-mini-label">Posición de la caja (pulgadas)</p>
+                            <div class="ptb-grid-2 ptb-mt-sm">
+                                <lightning-input type="number" step="0.01" label="Desde la izquierda (X)" value={currentXIn} onchange={handleXIn}></lightning-input>
+                                <lightning-input type="number" step="0.01" label="Desde arriba (Y)" value={currentYIn} onchange={handleYIn}></lightning-input>
+                            </div>
+                            <div class="ptb-grid-2 ptb-mt-sm">
+                                <lightning-input type="number" step="0.01" label="Ancho" value={currentWIn} onchange={handleWIn}></lightning-input>
+                                <lightning-input type="number" step="0.01" label="Alto" value={currentHIn} onchange={handleHIn}></lightning-input>
+                            </div>
+                            <div class="ptb-btn-row ptb-mt-sm">
+                                <lightning-button variant="neutral" label="Centrar en horizontal" title="Centra la caja en el ancho de la diapositiva" onclick={alignCenterH}></lightning-button>
+                                <lightning-button variant="neutral" label="Centrar en vertical" title="Centra la caja en el alto de la diapositiva" onclick={alignCenterV}></lightning-button>
+                            </div>
+                            <p class="ptb-hint ptb-mt-sm">Con el foco en la vista previa, usa las flechas del teclado para mover la caja.</p>
+                        </div>
+
+                        <div class="ptb-subblock ptb-mt-md">
+                            <p class="ptb-mini-label">Tipografía y color del elemento</p>
+                            <div class="ptb-grid-2 ptb-mt-sm">
+                                <lightning-slider label="Tamaño fuente" min="10" max="48" value={currentFontSize} onchange={handleFontSize}></lightning-slider>
+                                <lightning-input type="color" label="Color" value={currentColor} onchange={handleColor}></lightning-input>
+                            </div>
+                            <lightning-combobox class="ptb-mt-sm" label="Fuente del elemento" value={currentFontFace} options={elementFontOptions} onchange={handleElementFontFace}></lightning-combobox>
+                            <div class="ptb-grid-3 ptb-mt-sm">
+                                <lightning-input type="checkbox" label="Negrita" checked={currentBold} onchange={handleBold}></lightning-input>
+                                <lightning-input type="checkbox" label="Cursiva" checked={currentItalic} onchange={handleItalic}></lightning-input>
+                                <lightning-combobox label="Alineación" value={currentAlign} options={alignOptions} onchange={handleAlign}></lightning-combobox>
+                            </div>
+                        </div>
+
+                        <template if:true={isContenido}>
+                            <div class="ptb-subblock ptb-mt-md ptb-callout">
+                                <p class="ptb-mini-label">Área de datos del reporte</p>
+                                <lightning-input type="number" step="0.1" label="Inicio tabla · Y (in)" value={tableStartY} onchange={handleTableStartY}></lightning-input>
+                                <p class="ptb-hint ptb-mt-sm">Define dónde empiezan tablas y gráficos en el constructor de presentaciones.</p>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+            </aside>
+
+            <main class="ptb-main">
+                <template if:true={isEditMode}>
+                    <div class="ptb-preview-header">
+                        <lightning-icon icon-name="utility:preview" size="small" class="ptb-preview-header__icon"></lightning-icon>
+                        <span>Vista previa · {activeSlideLabel}</span>
+                    </div>
+                    <div class="ptb-preview-frame">
+                        <div class="ppt-slide-mock" data-canvas style={mockupSlideStyle} tabindex="0" onkeydown={handleKeyDown}>
+                            <div class={titleClasses} style={mockupTitleStyle} data-el="title" onpointerdown={onElementPointerDown}>{previewTitleText}</div>
+                            <div class={subtitleClasses} style={mockupSubtitleStyle} data-el="subtitle" onpointerdown={onElementPointerDown}>{previewSubtitleText}</div>
+                            <template if:true={isContenido}>
+                                <div class="mock-table-line" style={mockupTableLineStyle}>
+                                    <span class="table-label">Inicio área tabla / gráficos</span>
+                                </div>
+                            </template>
+                            <div class="slide-tag">{slideTag}</div>
+                        </div>
+                    </div>
+                </template>
+
+                <template if:false={isEditMode}>
+                    <div class="ptb-empty">
+                        <div class="ptb-empty__card">
+                            <lightning-icon icon-name="utility:template" size="large" class="ptb-empty__icon"></lightning-icon>
+                            <h2 class="ptb-empty__title">Ninguna plantilla seleccionada</h2>
+                            <p class="ptb-empty__text">Selecciona una plantilla en la lista o pulsa <strong>Crear plantilla nueva</strong> para empezar desde cero o clonar una existente.</p>
+                        </div>
+                    </div>
+                </template>
+            </main>
+        </div>
+    </div>
+
+    <template if:true={isCreateOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container ptb-modal">
+                <header class="slds-modal__header ptb-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeCreateModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="Cerrar" variant="inverse" size="small"></lightning-icon>
+                    </button>
+                    <h2 class="slds-modal__title">Nueva plantilla</h2>
+                    <p class="ptb-modal__sub">El JSON guardado es el mismo que usa el constructor de presentaciones al exportar a PowerPoint.</p>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input label="Nombre" value={newTemplateName} placeholder="Ej. Plantilla Power KF" required onchange={handleNewName}></lightning-input>
+                    <lightning-combobox
+                        class="slds-m-top_small"
+                        label="Clonar desde"
+                        value={cloneFromId}
+                        placeholder="Opcional"
+                        options={allTemplateOptions}
+                        onchange={handleCloneChange}
+                    ></lightning-combobox>
+                    <lightning-input class="slds-m-top_small" type="toggle" label="Activa al crear" checked={newActive} onchange={handleNewActive}></lightning-input>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancelar" onclick={closeCreateModal}></lightning-button>
+                    <lightning-button class="slds-m-left_small" label="Crear plantilla" variant="brand" icon-name="utility:add" onclick={createTemplate}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

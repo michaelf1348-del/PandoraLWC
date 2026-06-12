@@ -1,0 +1,1029 @@
+<template>
+    <!-- OVERLAY DE CARGA Y PROGRESO -->
+    <template if:true={isExporting}>
+        <div class="export-overlay">
+            <div class="export-modal">
+                <lightning-spinner size="medium" variant="brand" class="slds-m-bottom_medium" style="position:relative; height: 40px;"></lightning-spinner>
+                <h3 class="export-title">{exportStatusText}</h3>
+                <div class="export-progress-bg">
+                    <div class="export-progress-fill" style={progressBarStyle}></div>
+                </div>
+                <div class="export-percentage">{exportProgress}%</div>
+            </div>
+        </div>
+    </template>
+
+    <div class="builder-container">
+        <!-- HEADER -->
+        <div class="seidor-header">
+            <div class="seidor-header__left">
+                <lightning-button-icon icon-name="utility:back" variant="bare" size="large" alternative-text="Volver al diseñador de reportes" onclick={goBack} class="slds-m-right_small"></lightning-button-icon>
+                <div class="seidor-dot"></div>
+                <div class="seidor-text">
+                    <div class="seidor-title">Constructor de Presentaciones</div>
+                    <div class="seidor-subtitle">Diseño y descarga en PowerPoint</div>
+                </div>
+                <span class={unsavedBadgeClass} title={unsavedBadgeTitle} aria-live="polite">{unsavedBadgeLabel}</span>
+                <!-- Contexto: variante activa del reporte. La config del PPT se guarda ligada a esta variante. -->
+                <template if:true={reportVariantName}>
+                    <span class="report-variant-chip" title={reportVariantChipTooltip}>
+                        <lightning-icon icon-name="utility:layers" size="xx-small" alternative-text=""></lightning-icon>
+                        <span class="report-variant-chip__label">Variante reporte:</span>
+                        <strong class="report-variant-chip__value">{reportVariantName}</strong>
+                    </span>
+                </template>
+            </div>
+            <div class="seidor-header__actions">
+                <!-- Cluster 1: Undo / Redo (siempre visibles, compactos) -->
+                <div class="header-cluster header-cluster--undo">
+                    <lightning-button-icon icon-name="utility:undo" variant="border-filled" alternative-text="Deshacer" title="Deshacer último cambio (Ctrl+Z)" onclick={handleUndoClick} disabled={undoDisabled}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:redo" variant="border-filled" alternative-text="Rehacer" title="Rehacer (Ctrl+Y o Ctrl+Shift+Z)" onclick={handleRedoClick} disabled={redoDisabled}></lightning-button-icon>
+                </div>
+
+                <!-- Cluster 2: menú "Más" con acciones secundarias (Backup / Export / Import JSON) -->
+                <lightning-button-menu variant="border-filled" alternative-text="Más acciones" icon-name="utility:settings" menu-alignment="right" title="Más acciones: respaldo local y configuración JSON" class="header-more-menu" onselect={handleHeaderMoreMenuSelect}>
+                    <lightning-menu-item value="backup" label={localBackupLabel} prefix-icon-name="utility:rotate" disabled={restoreLocalBackupDisabled}></lightning-menu-item>
+                    <lightning-menu-divider></lightning-menu-divider>
+                    <lightning-menu-item value="export-json" label="Exportar configuración (JSON)" prefix-icon-name="utility:download" disabled={isGenerateDisabled}></lightning-menu-item>
+                    <lightning-menu-item value="import-json" label="Importar configuración (JSON)" prefix-icon-name="utility:upload"></lightning-menu-item>
+                </lightning-button-menu>
+                <input type="file" data-id="import-config-file" accept=".json" onchange={handleImportConfigFile} style="display:none">
+
+                <!-- Cluster 3: acciones primarias (Guardar + Descargar PPT como CTA principal) -->
+                <div class="header-cluster header-cluster--primary">
+                    <lightning-button variant="neutral" label="Guardar diseño" icon-name="utility:save" title="Guarda todas las variantes PPT y diapositivas en el reporte" onclick={savePptConfig} disabled={isGenerateDisabled}></lightning-button>
+                    <lightning-button variant="brand" label="Descargar PPT" icon-name="doctype:ppt" title="Genera y descarga el archivo PowerPoint (.pptx)" onclick={generateFinalPpt} disabled={isGenerateDisabled} class="header-cta"></lightning-button>
+                </div>
+            </div>
+        </div>
+
+        <template if:true={isParsingExcel}>
+            <div class="loading-state">
+                <lightning-spinner size="large" variant="brand"></lightning-spinner>
+                <h2 class="slds-m-top_large" style="font-weight: 800; color: #1e293b;">{parsingStatusText}</h2>
+            </div>
+        </template>
+
+        <template if:false={isParsingExcel}>
+            <div class="builder-layout">
+                <!-- PANEL IZQUIERDO -->
+                <aside class="config-panel">
+                    <div class="ux-card">
+                        <div class="ux-section-title">
+                            <span class="section-icon"><lightning-icon icon-name="utility:layout" size="xx-small" alternative-text=""></lightning-icon></span>
+                            <span>Diseño base</span>
+                        </div>
+                        <lightning-combobox label="Plantilla corporativa" options={designOptions} value={selectedDesign} onchange={handleDesignChange} required field-level-help="Define los fondos, colores y tipografía base de las diapositivas."></lightning-combobox>
+                    </div>
+
+                    <div class="ux-card slds-m-top_medium">
+                        <div class="ux-section-title">
+                            <span class="section-icon"><lightning-icon icon-name="utility:page" size="xx-small" alternative-text=""></lightning-icon></span>
+                            <span>Estructura del documento</span>
+                        </div>
+                        <div class="toggle-stack">
+                            <lightning-input type="toggle" label="Incluir Portada" checked={includeCover} onchange={handleCoverChange} message-toggle-active="" message-toggle-inactive=""></lightning-input>
+                            <template if:true={includeCover}>
+                                <div class="cover-config">
+                                    <lightning-input label="Título de Portada" value={coverTitle} onchange={handleCoverTitleChange}></lightning-input>
+                                    <lightning-input type="date" label="Fecha del Reporte" value={coverDate} onchange={handleCoverDateChange} class="slds-m-top_x-small"></lightning-input>
+                                </div>
+                            </template>
+                            <lightning-input type="toggle" label="Incluir cierre" checked={includeClosing} onchange={handleClosingChange} message-toggle-active="" message-toggle-inactive="" class="slds-m-top_x-small"></lightning-input>
+                            <template if:true={includeClosing}>
+                                <lightning-input label="Texto de Cierre" value={closingText} onchange={handleClosingTextChange} class="slds-m-top_x-small"></lightning-input>
+                            </template>
+
+                            <!-- Conteo de registros junto al título de la slide.
+                                 Default ON. Añade " (N)" al título. P.ej.:
+                                 "Tickets abiertos con SLA vencido (4)". -->
+                            <lightning-input
+                                type="toggle"
+                                label="Mostrar nº de registros junto al título"
+                                checked={showRecordCountInTitle}
+                                onchange={handleRecordCountInTitleToggle}
+                                message-toggle-active=""
+                                message-toggle-inactive=""
+                                class="slds-m-top_x-small"
+                                field-level-help="Añade «(N)» al final del título de cada slide con tablas, donde N es el total de registros filtrados. No aplica a slides solo con pivot o gráfico.">
+                            </lightning-input>
+
+                            <!-- Numeración de páginas cuando una tabla se divide en varias slides.
+                                 Default ON. Activa paginación manual de filas para poder numerar. -->
+                            <lightning-input
+                                type="toggle"
+                                label="Mostrar numeración de página (Pag X/N)"
+                                checked={showPageNumbers}
+                                onchange={handlePageNumbersToggle}
+                                message-toggle-active=""
+                                message-toggle-inactive=""
+                                class="slds-m-top_x-small"
+                                field-level-help="Cuando una tabla tiene tantas filas o tantas columnas que no caben en una sola diapositiva, se generan varias slides numeradas «Pag 1 / 3» en la esquina inferior derecha.">
+                            </lightning-input>
+
+                            <!-- Pie opcional con "Total: N registros" (ya existente, ahora secundario). -->
+                            <lightning-input
+                                type="toggle"
+                                label="Mostrar también pie «Total: N registros»"
+                                checked={showRecordCountFooter}
+                                onchange={handleRecordCountToggle}
+                                message-toggle-active=""
+                                message-toggle-inactive=""
+                                class="slds-m-top_x-small"
+                                field-level-help="Pie complementario al conteo en el título. Útil si quieres mostrar el total dos veces o en una posición concreta. Por defecto OFF para no duplicar.">
+                            </lightning-input>
+                            <template if:true={showRecordCountFooter}>
+                                <lightning-combobox
+                                    label="Posición del pie"
+                                    options={recordCountPositionOptions}
+                                    value={recordCountPosition}
+                                    onchange={handleRecordCountPositionChange}
+                                    class="slds-m-top_x-small">
+                                </lightning-combobox>
+                            </template>
+
+                            <!-- Formato global de fechas en el PPT (preview + exportación).
+                                 El cambio aplica EN VIVO: reformateamos todas las celdas que
+                                 originalmente eran Date sin necesidad de recargar el Excel. -->
+                            <lightning-combobox
+                                label="Formato de fecha en el PPT"
+                                options={pptDateFormatOptions}
+                                value={pptDateFormat}
+                                onchange={handleDateFormatChange}
+                                class="slds-m-top_x-small"
+                                field-level-help="Se aplica a todas las celdas que Excel detecta como fecha. Si tu Excel viene en formato anglosajón (M/D/YYYY), este selector lo normaliza al formato que elijas.">
+                            </lightning-combobox>
+                        </div>
+                    </div>
+
+                    <div class="ux-card slds-m-top_medium panel-section--variants-collapsible">
+                        <div class="variants-panel-bar">
+                            <div class="variants-panel-bar__text">
+                                <div class="ux-section-title ux-section-title--no-margin">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:layers" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Variantes PPT</span>
+                                </div>
+                                <p class="variants-panel-summary">{presentationVariantSummary}</p>
+                            </div>
+                            <lightning-button variant="neutral" label={presentationVariantsToggleLabel} onclick={togglePresentationVariantsPanel} title="Gestionar variantes de la presentación PPT (independientes de las variantes del reporte)" class="variants-panel-bar__btn"></lightning-button>
+                        </div>
+                        <template if:true={showPresentationVariantsExpanded}>
+                            <p class="panel-hint panel-hint--tight">Varias presentaciones PPT con el mismo Excel base. Son independientes de las variantes del reporte. Usa <strong>Guardar diseño</strong> para persistirlas.</p>
+                            <lightning-combobox
+                                label="Variante PPT activa"
+                                options={presentationOptions}
+                                value={activePresentationId}
+                                onchange={handleActivePresentationChange}
+                                class="slds-m-bottom_x-small"
+                            ></lightning-combobox>
+                            <lightning-input
+                                label="Nombre de la variante PPT"
+                                value={presentationLabelDraft}
+                                onchange={handlePresentationLabelInput}
+                                class="slds-m-bottom_x-small"
+                            ></lightning-input>
+                            <div class="presentation-variant-actions">
+                                <lightning-button variant="neutral" label="Nueva vacía" title="Otra variante PPT sin diapositivas" onclick={addPresentationEmpty} class="presentation-variant-actions__btn"></lightning-button>
+                                <lightning-button variant="brand-outline" label="Duplicar la actual" title="Copia todas las diapositivas de esta variante PPT" onclick={duplicateActivePresentation} class="presentation-variant-actions__btn"></lightning-button>
+                                <lightning-button variant="destructive-text" label="Eliminar variante PPT…" onclick={removeActivePresentation} disabled={removePresentationDisabled} title="Pide confirmación; debe quedar al menos una variante PPT" class="presentation-variant-actions__btn"></lightning-button>
+                            </div>
+                        </template>
+                    </div>
+                </aside>
+
+                <!-- LIENZO CENTRAL -->
+                <main class="slides-canvas">
+                    <div class="canvas-header canvas-header--compact">
+                        <div class="canvas-toolbar canvas-toolbar--row">
+                            <!-- Acciones primarias compactas -->
+                            <div class="canvas-toolbar__primary">
+                                <!-- Split button: Nueva diapositiva (+ caret con opciones) -->
+                                <lightning-button-group class="new-slide-split">
+                                    <lightning-button
+                                        variant="brand"
+                                        label="Nueva diapositiva"
+                                        icon-name="utility:add"
+                                        onclick={addSlide}
+                                        title="Crea una diapositiva con tabla inicial lista para configurar"
+                                        class="canvas-toolbar__btn new-slide-split__main">
+                                    </lightning-button>
+                                    <lightning-button-menu
+                                        variant="brand"
+                                        icon-name="utility:down"
+                                        menu-alignment="left"
+                                        alternative-text="Más tipos de diapositiva"
+                                        title="Más tipos de diapositiva"
+                                        onselect={handleNewSlideMenuSelect}
+                                        class="new-slide-split__menu">
+                                        <lightning-menu-item value="table" label="Con tabla inicial" prefix-icon-name="utility:table"></lightning-menu-item>
+                                        <lightning-menu-item value="empty" label="Vacía (sin bloques)" prefix-icon-name="utility:page"></lightning-menu-item>
+                                    </lightning-button-menu>
+                                </lightning-button-group>
+
+                                <lightning-button
+                                    variant="neutral"
+                                    label="Vista previa"
+                                    icon-name="utility:preview"
+                                    onclick={openPreviewModal}
+                                    title="Simula el aspecto del PowerPoint"
+                                    class="canvas-toolbar__btn">
+                                </lightning-button>
+
+                                <lightning-button
+                                    variant="neutral"
+                                    label={accordionToggleLabel}
+                                    icon-name={accordionToggleIcon}
+                                    onclick={toggleAccordionSections}
+                                    disabled={accordionToggleDisabled}
+                                    title="Abre o cierra el detalle de todas las diapositivas"
+                                    class="canvas-toolbar__btn">
+                                </lightning-button>
+
+                                <lightning-combobox
+                                    variant="label-hidden"
+                                    options={slidesFilterOptions}
+                                    value={slidesFilterMode}
+                                    onchange={handleSlidesFilterChange}
+                                    class="slides-filter-pill"
+                                    title="Muestra solo las diapositivas que coincidan con este criterio (no afecta la exportación)">
+                                </lightning-combobox>
+
+                                <template if:false={chartClipboardEmpty}>
+                                    <lightning-button
+                                        variant="neutral"
+                                        label="Repetir estilo en todos"
+                                        icon-name="utility:merge"
+                                        onclick={applyChartClipboardToAllCharts}
+                                        title="Aplica el tipo de gráfico y opciones del bloque copiado al resto"
+                                        class="canvas-toolbar__btn canvas-toolbar__btn--accent">
+                                    </lightning-button>
+                                </template>
+                            </div>
+
+                            <!-- Chips contadores: total + estado vivo del deck -->
+                            <div class="canvas-toolbar__counters">
+                                <template if:true={slidesConfig.length}>
+                                    <span class="counter-chip counter-chip--total" title="Total de diapositivas en esta variante PPT">
+                                        <span class="counter-chip__dot"></span>
+                                        <strong class="counter-chip__value">{slidesConfig.length}</strong>
+                                        <span class="counter-chip__label">diapositivas</span>
+                                    </span>
+                                </template>
+                                <template if:true={slidesConfig.length}>
+                                    <span class="counter-chip counter-chip--included" title="Diapositivas marcadas para entrar en la descarga">
+                                        <span class="counter-chip__dot"></span>
+                                        <span class="counter-chip__label">Incluidas:</span>
+                                        <strong class="counter-chip__value">{exportableSlideCount}</strong>
+                                    </span>
+                                </template>
+                                <template if:true={hasExcludedSlides}>
+                                    <span class="counter-chip counter-chip--excluded" title="Diapositivas NO incluidas en la descarga (toggle apagado)">
+                                        <span class="counter-chip__dot"></span>
+                                        <span class="counter-chip__label">Excluidas:</span>
+                                        <strong class="counter-chip__value">{excludedSlideCount}</strong>
+                                    </span>
+                                </template>
+                                <template if:true={slidesWithIssuesCount}>
+                                    <span class="counter-chip counter-chip--issues" title="Diapositivas con avisos (ej: sin columnas, gráfico mal configurado)">
+                                        <span class="counter-chip__dot"></span>
+                                        <span class="counter-chip__label">Con alertas:</span>
+                                        <strong class="counter-chip__value">{slidesWithIssuesCount}</strong>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Aviso visual si el filtro oculta diapositivas -->
+                        <template if:true={slidesFilterHidesAny}>
+                            <p class="slides-filter-hint">
+                                <lightning-icon icon-name="utility:filter" size="xx-small" alternative-text=""></lightning-icon>
+                                <span>{slidesFilterLabel} · {slidesFilterHiddenCount} diapositiva(s) oculta(s) por el filtro</span>
+                            </p>
+                        </template>
+                    </div>
+
+                    <div class={deckAccordionContainerClass}>
+                        <ul class="slide-deck-list">
+                            <template for:each={slidesForAccordion} for:item="slide" for:index="sIndex">
+                                <li key={slide.id} class={slide.cardClass}>
+                                    <div class="slide-card__head"
+                                         data-spos={slide.slidePos}
+                                         ondragover={onSlideDragOver}
+                                         ondragleave={onSlideDragLeave}
+                                         ondrop={onSlideDrop}>
+                                        <!-- DRAG handle (esquina izquierda) -->
+                                        <span class="slide-drag-handle"
+                                              draggable="true"
+                                              data-spos={slide.slidePos}
+                                              ondragstart={onSlideDragStart}
+                                              ondragend={onSlideDragEnd}
+                                              title="Arrastra para reordenar diapositivas"
+                                              aria-label="Reordenar diapositiva (arrastra)">
+                                            <lightning-icon icon-name="utility:drag_and_drop" size="x-small" alternative-text=""></lightning-icon>
+                                        </span>
+
+                                        <!-- THUMBNAIL: oculto por defecto (era decorativo sin contenido real).
+                                             Se conserva la estructura por compatibilidad con la grid CSS y por si
+                                             se decide habilitar mini-previews reales en el futuro. -->
+                                        <template if:true={showSlideThumb}>
+                                            <button type="button" class={slide.thumbClass}
+                                                    data-sid={slide.id}
+                                                    onclick={handleSlideRowToggle}
+                                                    title="Vista miniatura — click para abrir el detalle"
+                                                    tabindex="-1">
+                                                <span class="slide-thumb__inner" aria-hidden="true"></span>
+                                                <span class="slide-thumb__num" aria-hidden="true">{slide.slideNumber}</span>
+                                            </button>
+                                        </template>
+
+                                        <!-- INFO: número + título + chips (clickable) -->
+                                        <button type="button" class="slide-card__info"
+                                                data-sid={slide.id}
+                                                onclick={handleSlideRowToggle}
+                                                aria-expanded={slide.expandAriaExpanded}
+                                                title="Click para ver detalle">
+                                            <div class="slide-card__title">
+                                                <span class="slide-card__number">{slide.slideNumber}.</span>
+                                                <span class="slide-card__title-text">{slide.slideTitleClean}</span>
+                                                <template if:true={slide.slideExportHasIssues}>
+                                                    <lightning-icon icon-name="utility:warning" size="xx-small" alternative-text="Aviso" class="slide-card__warn"></lightning-icon>
+                                                </template>
+                                            </div>
+                                            <div class="slide-card__chips">
+                                                <template for:each={slide.slideTypeChips} for:item="tchip">
+                                                    <span key={tchip.id} class={tchip.className}>{tchip.label}</span>
+                                                </template>
+                                                <template if:true={slide.slideHasVariantChip}>
+                                                    <span class={slide.slideVariantChip.className} title="Variante PPT actual">{slide.slideVariantChip.label}</span>
+                                                </template>
+                                                <template if:true={slide.slideHasRecordChip}>
+                                                    <span class={slide.slideRecordChip.className} title="Total de registros (filas filtradas) que se exportarán en esta diapositiva">{slide.slideRecordChip.label}</span>
+                                                </template>
+                                                <span class={slide.slideStatusChip.className} title="Estado en el PPT final">{slide.slideStatusChip.label}</span>
+                                            </div>
+                                        </button>
+
+                                        <!-- ACCIONES (clicks aquí NO disparan toggle) -->
+                                        <div class="slide-card__actions" onclick={handleSlideRowActionsClick}>
+                                            <div class="slide-header-ppt-toggle" title="Incluir esta diapositiva al descargar el PowerPoint">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    variant="label-hidden"
+                                                    label="Incluir en el PPT"
+                                                    checked={slide.slideIncludedInExport}
+                                                    message-toggle-active={slideExportToggleMessageBlank}
+                                                    message-toggle-inactive={slideExportToggleMessageBlank}
+                                                    data-spos={slide.slidePos}
+                                                    onchange={handleSlideExportToggle}
+                                                    class="slide-header-ppt-toggle__input"
+                                                ></lightning-input>
+                                                <span class="slide-header-ppt-toggle__caption">En PPT</span>
+                                            </div>
+                                            <lightning-button-icon icon-name="utility:chevronup" variant="border-filled" size="small" data-spos={slide.slidePos} onclick={moveSlideUp} disabled={slide.slideMoveUpDisabled} title="Subir diapositiva" alternative-text="Subir"></lightning-button-icon>
+                                            <lightning-button-icon icon-name="utility:chevrondown" variant="border-filled" size="small" data-spos={slide.slidePos} onclick={moveSlideDown} disabled={slide.slideMoveDownDisabled} title="Bajar diapositiva" alternative-text="Bajar"></lightning-button-icon>
+                                            <lightning-button-icon icon-name="utility:copy" variant="border-filled" size="small" data-spos={slide.slidePos} onclick={duplicateSlide} title="Duplicar diapositiva" alternative-text="Duplicar"></lightning-button-icon>
+                                            <template if:true={slide.canMoveToVariant}>
+                                                <lightning-combobox
+                                                    variant="label-hidden"
+                                                    placeholder="Mover a variante..."
+                                                    options={slide.moveToVariantOptions}
+                                                    data-spos={slide.slidePos}
+                                                    onchange={moveSlideToVariant}
+                                                    class="slide-move-to-variant"
+                                                    title="Mueve esta diapositiva a la variante elegida (sin duplicarla)">
+                                                </lightning-combobox>
+                                            </template>
+                                            <lightning-button-icon icon-name="utility:delete" variant="bare" data-spos={slide.slidePos} onclick={removeSlide} title="Eliminar diapositiva (pide confirmación)" alternative-text="Eliminar"></lightning-button-icon>
+                                            <button type="button" class="slide-card__caret" data-sid={slide.id}
+                                                    onclick={handleSlideRowToggle}
+                                                    aria-expanded={slide.expandAriaExpanded}
+                                                    title="Mostrar / ocultar detalle">
+                                                <lightning-icon icon-name={slide.expandCaretIcon} size="x-small" alternative-text=""></lightning-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <template if:true={slide.isExpanded}>
+                                        <div class="slide-card__body">
+
+                                    <template if:true={slide.slideExportHasIssues}>
+                                        <div class="slide-export-row slds-p-around_small">
+                                            <div class="slide-export-issues" role="status">
+                                                <lightning-icon icon-name="utility:warning" size="x-small" alternative-text="Aviso"></lightning-icon>
+                                                <ul class="slide-export-issues__list">
+                                                    <template for:each={slide.slideExportIssueTexts} for:item="hint">
+                                                        <li key={hint.id} class="slide-export-issues__item">{hint.text}</li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <div class="slide-designer">
+                                        <div class={slide.slideMockupClass}>
+                                            <div class="mockup-bg">
+                                                <input type="text" class="mockup-input title" value={slide.title} data-sindex={slide.slidePos} data-field="title" oninput={handleSlideInput} placeholder="TÍTULO DE LA DIAPOSITIVA" style={dynamicCoverTitleStyle}/>
+                                                <input type="text" class="mockup-input subtitle" value={slide.subtitle} data-sindex={slide.slidePos} data-field="subtitle" oninput={handleSlideInput} placeholder="Subtítulo opcional..." style={dynamicCoverSubtitleStyle}/>
+                                                
+                                                <template if:false={slide.tables.length}>
+                                                    <div class="slide-empty-hint">
+                                                        <p class="slide-empty-hint__text">Sin bloques. Elige qué añadir:</p>
+                                                        <div class="slide-empty-hint__actions">
+                                                            <lightning-button variant="brand-outline" label="Tabla" icon-name="utility:table" data-spos={slide.slidePos} onclick={addTableToSlide} title="Añadir tabla"></lightning-button>
+                                                            <lightning-button variant="brand-outline" label="Subtabla" icon-name="utility:matrix" data-spos={slide.slidePos} onclick={addPivotBlock} title="Añadir subtabla"></lightning-button>
+                                                            <lightning-button variant="brand" label="Solo gráfico" icon-name="utility:chart" data-spos={slide.slidePos} onclick={addChartOnlyBlock} title="Añadir solo gráfico"></lightning-button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                <template for:each={slide.tables} for:item="table" for:index="tIndex">
+                                                    <div key={table.id} class={table.configBoxClass}>
+                                                        <div class="table-box-header">
+                                                            <template if:true={table.flagPivotBlock}>
+                                                                <span class="table-box-header__title table-box-header__title--pivot">Subtabla · bloque {table.blockNumber}</span>
+                                                            </template>
+                                                            <template if:false={table.flagPivotBlock}>
+                                                                <template if:false={table.chartSolo}>
+                                                                    <span class="table-box-header__title">Tabla · bloque {table.blockNumber}</span>
+                                                                </template>
+                                                                <template if:true={table.chartSolo}>
+                                                                    <span class="table-box-header__title table-box-header__title--accent">Solo gráfico · bloque {table.blockNumber}</span>
+                                                                </template>
+                                                                <span class="table-box-header__chart-actions">
+                                                                    <lightning-button-icon icon-name="utility:copy" variant="border-filled" size="x-small" data-sindex={slide.slidePos} data-tindex={tIndex} onclick={copyChartSettingsFromBlock} title="Copiar tipo de gráfico y opciones (para pegar en otro bloque)" alternative-text="Copiar ajustes del gráfico"></lightning-button-icon>
+                                                                    <lightning-button-icon icon-name="utility:paste" variant="border-filled" size="x-small" data-sindex={slide.slidePos} data-tindex={tIndex} onclick={pasteChartSettingsToBlock} title="Pegar tipo de gráfico y opciones copiadas antes" alternative-text="Pegar ajustes del gráfico"></lightning-button-icon>
+                                                                </span>
+                                                            </template>
+                                                            <lightning-button-icon icon-name="utility:close" variant="bare" size="small" data-sindex={slide.slidePos} data-tindex={tIndex} onclick={removeTableFromSlide} alternative-text="Eliminar bloque"></lightning-button-icon>
+                                                        </div>
+                                                        
+                                                        <div class="table-box-body">
+                                                            <!-- Título del bloque: si se rellena, aparece en el PPT justo sobre la tabla/subtabla. Opcional. -->
+                                                            <lightning-input
+                                                                label="Título del bloque (opcional)"
+                                                                placeholder="Se mostrará sobre la tabla en el PPT (déjalo vacío para no mostrar nada)"
+                                                                value={table.blockTitle}
+                                                                data-sindex={slide.slidePos}
+                                                                data-tindex={tIndex}
+                                                                data-field="blockTitle"
+                                                                onchange={handleTableInput}
+                                                                max-length="150"
+                                                                class="slds-m-bottom_small block-title-input"
+                                                                field-level-help="Útil cuando hay más de una tabla o subtabla en la misma diapositiva para diferenciarlas.">
+                                                            </lightning-input>
+
+                                                            <template if:true={table.flagPivotBlock}>
+                                                                <lightning-combobox label="Origen (Hoja Excel)" options={sheetOptions} value={table.sheetName} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="sheetName" onchange={handleTableInput}></lightning-combobox>
+                                                                <div class="slds-grid slds-gutters slds-m-top_small">
+                                                                    <div class="slds-col slds-size_1-of-2">
+                                                                        <lightning-combobox label="Agrupar por (categoría)" placeholder="Columna..." options={table.pivotGroupOptions} value={table.pivotGroupColumn} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotGroupColumn" onchange={handleTableInput}></lightning-combobox>
+                                                                    </div>
+                                                                    <div class="slds-col slds-size_1-of-2">
+                                                                        <lightning-combobox label="Medida (columna valor)" placeholder="Columna..." options={table.pivotValueOptions} value={table.pivotValueColumn} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotValueColumn" onchange={handleTableInput} disabled={table.pivotMeasureDisabled}></lightning-combobox>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-grid slds-gutters slds-m-top_small">
+                                                                    <div class="slds-col slds-size_1-of-2">
+                                                                        <lightning-combobox label="Agregación" options={pivotAggregationOptions} value={table.pivotAggregation} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotAggregation" onchange={handleTableInput}></lightning-combobox>
+                                                                    </div>
+                                                                    <div class="slds-col slds-size_1-of-2">
+                                                                        <lightning-combobox label="Orientación de la subtabla" options={pivotOrientationOptions} value={table.pivotOrientation} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotOrientation" onchange={handleTableInput}></lightning-combobox>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-grid slds-gutters slds-m-top_small">
+                                                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                                        <lightning-combobox label="Orden de categorías" options={pivotCategorySortOptions} value={table.pivotCategorySort} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotCategorySort" onchange={handleTableInput}></lightning-combobox>
+                                                                    </div>
+                                                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-align-bottom">
+                                                                        <lightning-input type="toggle" label="Fila Total" checked={table.pivotShowTotal} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="pivotShowTotal" onchange={handleTableInput}></lightning-input>
+                                                                    </div>
+                                                                </div>
+                                                                <p class="chart-section__hint slds-m-top_x-small">Resumen por categoría y medida. «Recuento» cuenta filas. Horizontal = categorías en columnas.</p>
+                                                            </template>
+
+                                                            <template if:false={table.flagPivotBlock}>
+                                                                <div class="slds-grid slds-gutters">
+                                                                    <div class="slds-col slds-size_1-of-2">
+                                                                        <lightning-combobox label="Origen (Hoja Excel)" options={sheetOptions} value={table.sheetName} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="sheetName" onchange={handleTableInput}></lightning-combobox>
+                                                                    </div>
+                                                                    <div class="slds-col slds-size_1-of-2" style="display: flex; align-items: flex-end;">
+                                                                        <lightning-button label="Seleccionar Columnas" icon-name="utility:table" onclick={openColumnsModal} data-sindex={slide.slidePos} data-tindex={tIndex} class="full-width-btn"></lightning-button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="selected-columns-preview slds-m-top_small">
+                                                                    <template if:true={table.selectedColumnOrderHints.length}>
+                                                                        <div class="selected-columns-help">Orden en PPT</div>
+                                                                    </template>
+                                                                    <template for:each={table.selectedColumnOrderHints} for:item="ch">
+                                                                        <span key={ch.uid} class="column-pill-row slds-badge slds-badge_lightest slds-m-right_xx-small slds-m-bottom_xx-small badge-custom">
+                                                                            <span class="column-pill-row__name">{ch.col}</span>
+                                                                            <span class="column-pill-row__order-btns">
+                                                                                <lightning-button-icon icon-name="utility:chevronup" variant="bare" size="xx-small" data-sindex={slide.slidePos} data-tindex={tIndex} data-col={ch.col} data-dir="-1" onclick={moveTableColumnStep} disabled={ch.moveUpDisabled} alternative-text="Subir columna" class="column-pill-row__order-btn"></lightning-button-icon>
+                                                                                <lightning-button-icon icon-name="utility:chevrondown" variant="bare" size="xx-small" data-sindex={slide.slidePos} data-tindex={tIndex} data-col={ch.col} data-dir="1" onclick={moveTableColumnStep} disabled={ch.moveDownDisabled} alternative-text="Bajar columna" class="column-pill-row__order-btn"></lightning-button-icon>
+                                                                            </span>
+                                                                            <lightning-button-icon icon-name="utility:close" variant="bare" size="xx-small" data-sindex={slide.slidePos} data-tindex={tIndex} data-col={ch.col} onclick={removeColumnPill} alternative-text="Quitar columna" class="column-pill-row__remove"></lightning-button-icon>
+                                                                        </span>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+
+                                                            <template if:false={table.chartSolo}>
+                                                            <template if:true={table.flagPivotBlock}>
+                                                                <template if:true={table.previewRows.length}>
+                                                                    <div class="mini-preview-container mini-preview-container--pivot slds-m-top_medium slds-scrollable_x">
+                                                                        <div class="mini-caption preview-mini-cap" style="font-size:10px; margin-bottom: 4px;">Subtabla (vista previa)</div>
+                                                                        <table class="mini-preview-table">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <template for:each={table.previewHeaderCells} for:item="ph">
+                                                                                        <th key={ph.id}>{ph.label}</th>
+                                                                                    </template>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <template for:each={table.previewRows} for:item="pr">
+                                                                                    <tr key={pr.id}>
+                                                                                        <template for:each={pr.cells} for:item="pc">
+                                                                                            <td key={pc.id}>{pc.value}</td>
+                                                                                        </template>
+                                                                                    </tr>
+                                                                                </template>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </template>
+                                                            </template>
+                                                            <template if:false={table.flagPivotBlock}>
+                                                                <template if:true={table.previewHeaders.length}>
+                                                                    <div class="mini-preview-container slds-m-top_medium slds-scrollable_x">
+                                                                        <div class="mini-caption preview-mini-cap" style="font-size:10px; margin-bottom: 4px;">Datos extraídos (Primeras 3 filas)</div>
+                                                                        <table class="mini-preview-table">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <template for:each={table.previewHeaders} for:item="ph">
+                                                                                        <th key={ph}>{ph}</th>
+                                                                                    </template>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <template for:each={table.previewRows} for:item="pr">
+                                                                                    <tr key={pr.id}>
+                                                                                        <template for:each={pr.cells} for:item="pc">
+                                                                                            <td key={pc.id}>{pc.value}</td>
+                                                                                        </template>
+                                                                                    </tr>
+                                                                                </template>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </template>
+                                                            </template>
+                                                            </template>
+
+                                                            <template if:false={table.chartSolo}>
+                                                            <div class="slds-m-top_medium slds-p-around_small align-block">
+                                                                <div class="mini-caption">Alineación en diapositiva</div>
+                                                                <lightning-combobox variant="label-hidden" options={alignOptions} value={table.tableAlign} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="tableAlign" onchange={handleTableInput}></lightning-combobox>
+                                                            </div>
+                                                            </template>
+
+                                                            <!-- Modo "respetar anchos originales del Excel" — solo aplica a tablas detalladas.
+                                                                 Si está ON y los anchos no caben en el slide, la tabla se parte horizontalmente en varios slides PPT. -->
+                                                            <template if:false={table.flagPivotBlock}>
+                                                                <template if:false={table.chartSolo}>
+                                                                    <div class="slds-m-top_medium slds-p-around_small align-block">
+                                                                        <lightning-input
+                                                                            type="toggle"
+                                                                            label="Respetar anchos originales del Excel"
+                                                                            checked={table.respectOriginalWidths}
+                                                                            data-sindex={slide.slidePos}
+                                                                            data-tindex={tIndex}
+                                                                            data-field="respectOriginalWidths"
+                                                                            onchange={handleTableInput}
+                                                                            message-toggle-active="Si no caben todas las columnas, se generan slides adicionales (parte 1/N)"
+                                                                            message-toggle-inactive="Las columnas se reescalan para caber en una sola slide (puede comprimir texto)"
+                                                                            field-level-help="Útil cuando hay muchas columnas anchas y el texto se está comprimiendo. Cuando se activa y no caben todas, la misma tabla se reparte en varios slides PPT y la primera columna se repite en cada parte para mantener el contexto.">
+                                                                        </lightning-input>
+                                                                    </div>
+
+                                                                    <!-- Control de densidad y filas por slide. Solo aplica a tablas detalladas. -->
+                                                                    <div class="slds-m-top_medium slds-p-around_small align-block">
+                                                                        <lightning-combobox
+                                                                            label="Densidad de la tabla en el PPT"
+                                                                            value={table.tableDensity}
+                                                                            options={tableDensityOptions}
+                                                                            data-sindex={slide.slidePos}
+                                                                            data-tindex={tIndex}
+                                                                            data-field="tableDensity"
+                                                                            onchange={handleTableInput}
+                                                                            field-level-help="Controla cuán juntos se ven los datos. 'Automática' decide según la longitud del texto. 'Compacta' usa fuente más pequeña y mete más filas por slide. 'Espaciada' usa fuente mayor y menos filas, pero más legible.">
+                                                                        </lightning-combobox>
+
+                                                                        <lightning-input
+                                                                            class="slds-m-top_small"
+                                                                            type="number"
+                                                                            label="Máx. filas por slide (opcional)"
+                                                                            placeholder="Auto"
+                                                                            min="1"
+                                                                            max="60"
+                                                                            value={table.maxRowsPerSlideOverride}
+                                                                            data-sindex={slide.slidePos}
+                                                                            data-tindex={tIndex}
+                                                                            data-field="maxRowsPerSlideOverride"
+                                                                            onchange={handleTableInput}
+                                                                            field-level-help="Si dejas vacío, el sistema calcula cuántas filas caben en cada slide. Si pones un número, fuerza ese máximo por slide (útil para tener todos los slides idénticos). Ojo: si las celdas tienen texto muy largo y pones muchas filas, el contenido puede desbordarse del slide.">
+                                                                        </lightning-input>
+                                                                    </div>
+                                                                </template>
+                                                            </template>
+
+                                                            <div class="filters-section slds-m-top_medium">
+                                                                <div class="filters-header">
+                                                                    <strong>Filtros aplicados</strong>
+                                                                    <lightning-button-icon icon-name="utility:filterList" variant="bare" size="small" data-sindex={slide.slidePos} data-tindex={tIndex} onclick={addFilter} alternative-text="Añadir filtro"></lightning-button-icon>
+                                                                </div>
+                                                                <template for:each={table.filters} for:item="filter" for:index="fIndex">
+                                                                    <div key={filter.id} class="filter-row filter-row--advanced slds-m-top_x-small">
+                                                                        <lightning-combobox variant="label-hidden" options={table.columnOptions} value={filter.column} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="column" onchange={handleFilterChange} class="filter-input filter-input--col"></lightning-combobox>
+                                                                        <lightning-combobox variant="label-hidden" options={filterOperatorOptions} value={filter.operator} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="operator" onchange={handleFilterChange} class="filter-input filter-input--op"></lightning-combobox>
+
+                                                                        <template if:true={filter.showValueDropdown}>
+                                                                            <lightning-combobox variant="label-hidden" options={filter.valueOptions} value={filter.value} disabled={filter.disableVal} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="value" onchange={handleFilterChange} class="filter-input filter-input--val"></lightning-combobox>
+                                                                        </template>
+                                                                        <template if:true={filter.showValueInput}>
+                                                                            <lightning-input variant="label-hidden" type={filter.valueInputType} value={filter.value} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="value" onchange={handleFilterChange} class="filter-input filter-input--val" placeholder="Valor"></lightning-input>
+                                                                        </template>
+                                                                        <template if:true={filter.showValueRange}>
+                                                                            <lightning-input variant="label-hidden" type="number" value={filter.value} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="value" onchange={handleFilterChange} class="filter-input filter-input--val-range" placeholder="Desde"></lightning-input>
+                                                                            <lightning-input variant="label-hidden" type="number" value={filter.value2} data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} data-field="value2" onchange={handleFilterChange} class="filter-input filter-input--val-range" placeholder="Hasta"></lightning-input>
+                                                                        </template>
+
+                                                                        <lightning-button-icon icon-name="utility:delete" variant="bare" data-sindex={slide.slidePos} data-tindex={tIndex} data-findex={fIndex} onclick={removeFilter} alternative-text="Eliminar filtro"></lightning-button-icon>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+
+                                                            <template if:false={table.flagPivotBlock}>
+                                                            <div class="chart-section slds-m-top_medium">
+                                                                <div class="chart-section__head">
+                                                                    <lightning-icon icon-name="utility:chart" size="small" class="chart-section__icon"></lightning-icon>
+                                                                    <span class="chart-section__title">Gráfico resumen</span>
+                                                                </div>
+                                                                <p class="chart-section__hint">Categoría en un eje, valor agregado en el otro.</p>
+                                                                <template if:false={table.chartSolo}>
+                                                                    <lightning-input type="toggle" label="Adjuntar gráfico al PPT" checked={table.hasChart} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="hasChart" onchange={handleTableInput}></lightning-input>
+                                                                </template>
+                                                                <template if:true={table.chartSolo}>
+                                                                    <p class="chart-solo-badge">Este bloque exporta únicamente el gráfico (sin tabla).</p>
+                                                                </template>
+                                                                <template if:true={table.hasChart}>
+                                                                    <div class="chart-fields-grid slds-m-top_small">
+                                                                        <lightning-combobox label="Columna categoría (eje)" placeholder="—" options={table.chartCategoryOptions} value={table.chartCategoryColumn} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartCategoryColumn" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-combobox label="Columna valor (medida)" placeholder="—" options={table.chartValueOptions} value={table.chartValueColumn} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartValueColumn" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-combobox label="Agregación" options={chartAggregationOptions} value={table.chartAggregation} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartAggregation" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-combobox label="Tipo de gráfico" options={chartOptions} value={table.chartType} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartType" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-input class="span-2" label="Título del gráfico (opcional)" value={table.chartTitle} placeholder="Por defecto: Resumen · categoría" data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartTitle" onchange={handleTableInput}></lightning-input>
+                                                                        <lightning-combobox label="Posición" options={chartPositionOptions} value={table.chartPosition} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartPosition" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-combobox label="Tamaño" options={chartSizePresetOptions} value={table.chartSizePreset} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartSizePreset" onchange={handleTableInput}></lightning-combobox>
+                                                                        <lightning-input type="toggle" label="Mostrar leyenda" checked={table.chartShowLegend} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartShowLegend" onchange={handleTableInput}></lightning-input>
+                                                                        <template if:true={table.chartShowLegend}>
+                                                                            <lightning-combobox label="Leyenda" options={chartLegendPosOptions} value={table.chartLegendPos} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartLegendPos" onchange={handleTableInput}></lightning-combobox>
+                                                                        </template>
+                                                                        <lightning-input type="toggle" label="Mostrar valores en gráfico" checked={table.chartShowValue} data-sindex={slide.slidePos} data-tindex={tIndex} data-field="chartShowValue" onchange={handleTableInput}></lightning-input>
+                                                                    </div>
+                                                                    <template if:true={table.chartPreviewModel}>
+                                                                        <div class="chart-inline-preview slds-m-top_small">
+                                                                            <div class="chart-inline-preview__cap">{table.chartPreviewModel.title}</div>
+                                                                            <div class="chart-inline-preview__sub">{table.chartPreviewModel.subtitle}</div>
+
+                                                                            <template if:true={table.chartPreviewModel.variantRadial}>
+                                                                                <div class="chart-radial-preview">
+                                                                                    <div class="chart-radial-preview__main">
+                                                                                        <div class="chart-radial-preview__ring-wrap">
+                                                                                            <div class="chart-radial-preview__ring" style={table.chartPreviewModel.radialRingStyle}></div>
+                                                                                            <template if:true={table.chartPreviewModel.radialDonut}>
+                                                                                                <div class="chart-radial-preview__hole"></div>
+                                                                                            </template>
+                                                                                        </div>
+                                                                                        <ul class="chart-radial-preview__legend">
+                                                                                            <template for:each={table.chartPreviewModel.segments} for:item="seg">
+                                                                                                <li key={seg.id} class="chart-radial-preview__legend-row">
+                                                                                                    <span class="chart-radial-preview__sw" style={seg.swatchStyle}></span>
+                                                                                                    <span class="chart-radial-preview__leglab">{seg.label}</span>
+                                                                                                    <span class="chart-radial-preview__legval">{seg.valueDisplay}</span>
+                                                                                                    <span class="chart-radial-preview__legpct">{seg.pctLabel}</span>
+                                                                                                </li>
+                                                                                            </template>
+                                                                                        </ul>
+                                                                                    </div>
+                                                                                    <span class="chart-radial-preview__badge">{table.chartPreviewModel.legendHint}</span>
+                                                                                </div>
+                                                                            </template>
+
+                                                                            <template if:true={table.chartPreviewModel.variantLine}>
+                                                                                <div class="chart-line-preview">
+                                                                                    <svg class="chart-line-preview__svg" viewBox="0 0 100 42" preserveAspectRatio="none">
+                                                                                        <polygon class="chart-line-preview__area" points={table.chartPreviewModel.lineFillPoints}></polygon>
+                                                                                        <polyline class="chart-line-preview__line" points={table.chartPreviewModel.linePoints} fill="none" stroke={table.chartPreviewModel.lineStroke} stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                                                                        <template for:each={table.chartPreviewModel.lineDots} for:item="dot">
+                                                                                            <circle key={dot.id} class="chart-line-preview__dot" cx={dot.x} cy={dot.y} r="2.35" fill={table.chartPreviewModel.lineStroke} stroke="#ffffff" stroke-width="0.9"></circle>
+                                                                                        </template>
+                                                                                    </svg>
+                                                                                </div>
+                                                                            </template>
+
+                                                                            <template if:true={table.chartPreviewModel.variantBars}>
+                                                                                <template for:each={table.chartPreviewModel.bars} for:item="bar">
+                                                                                    <div key={bar.id} class="chart-inline-preview__row">
+                                                                                        <span class="chart-inline-preview__lab">{bar.label}</span>
+                                                                                        <div class="chart-inline-preview__track">
+                                                                                            <div class="chart-inline-preview__fill" style={bar.fillStyle}></div>
+                                                                                        </div>
+                                                                                        <span class="chart-inline-preview__num">{bar.valueDisplay}</span>
+                                                                                    </div>
+                                                                                </template>
+                                                                            </template>
+
+                                                                            <p class="chart-inline-preview__hint">{table.chartPreviewModel.hint}</p>
+                                                                        </div>
+                                                                    </template>
+                                                                </template>
+                                                            </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                <template if:true={slide.tables.length}>
+                                                    <div class="add-blocks-toolbar">
+                                                        <lightning-button variant="neutral" label="Tabla" icon-name="utility:table" data-spos={slide.slidePos} onclick={addTableToSlide} class="add-blocks-toolbar__btn" title="Añadir otra tabla"></lightning-button>
+                                                        <lightning-button variant="neutral" label="Subtabla" icon-name="utility:matrix" data-spos={slide.slidePos} onclick={addPivotBlock} class="add-blocks-toolbar__btn" title="Añadir subtabla"></lightning-button>
+                                                        <lightning-button variant="brand-outline" label="Solo gráfico" icon-name="utility:chart" data-spos={slide.slidePos} onclick={addChartOnlyBlock} class="add-blocks-toolbar__btn" title="Añadir solo gráfico"></lightning-button>
+                                                    </div>
+                                                </template>
+
+                                                <div class="speaker-notes-row slds-m-top_small">
+                                                    <lightning-textarea
+                                                        label="Notas de orador"
+                                                        placeholder="Estas notas no se muestran en la diapositiva; aparecen en la vista de presentador y en el .pptx (campo notes)."
+                                                        value={slide.speakerNotes}
+                                                        data-spos={slide.slidePos}
+                                                        onchange={handleSlideNotesChange}
+                                                        max-length="2000"
+                                                        field-level-help="Útil para guiones, recordatorios o instrucciones; PowerPoint las muestra al exponer y se exportan junto al archivo."
+                                                        class="speaker-notes-textarea">
+                                                    </lightning-textarea>
+                                                </div>
+
+                                                <div class="slide-logo-row slds-m-top_small">
+                                                    <div class="slide-logo-row__header">
+                                                        <lightning-icon icon-name="utility:image" size="x-small" alternative-text=""></lightning-icon>
+                                                        <span class="slide-logo-row__title">Logo / imagen de esta diapositiva</span>
+                                                        <span class="slide-logo-row__hint">PNG/JPG/WebP/SVG hasta 150 KB; se superpone en una esquina al exportar.</span>
+                                                    </div>
+                                                    <div class="slide-logo-row__controls">
+                                                        <template if:true={slide.hasLogo}>
+                                                            <div class="slide-logo-row__preview">
+                                                                <img src={slide.logoBase64} alt="Logo de la diapositiva" class="slide-logo-row__img"/>
+                                                            </div>
+                                                        </template>
+                                                        <div class="slide-logo-row__inputs">
+                                                            <lightning-input
+                                                                type="file"
+                                                                label="Subir imagen"
+                                                                accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+                                                                data-spos={slide.slidePos}
+                                                                onchange={handleSlideLogoFile}
+                                                                class="slide-logo-row__file"
+                                                                field-level-help="Solo imagenes pequeñas (<=150 KB). El logo se guarda dentro del template y aparece en cada pagina fisica de la diapositiva.">
+                                                            </lightning-input>
+                                                            <lightning-combobox
+                                                                label="Posicion"
+                                                                options={logoCornerOptions}
+                                                                value={slide.logoCorner}
+                                                                data-spos={slide.slidePos}
+                                                                onchange={handleSlideLogoCornerChange}
+                                                                disabled={slide.logoControlsDisabled}
+                                                                class="slide-logo-row__corner">
+                                                            </lightning-combobox>
+                                                            <lightning-combobox
+                                                                label="Tamaño"
+                                                                options={logoSizeOptions}
+                                                                value={slide.logoSizePct}
+                                                                data-spos={slide.slidePos}
+                                                                onchange={handleSlideLogoSizeChange}
+                                                                disabled={slide.logoControlsDisabled}
+                                                                class="slide-logo-row__size">
+                                                            </lightning-combobox>
+                                                            <template if:true={slide.hasLogo}>
+                                                                <lightning-button
+                                                                    variant="destructive-text"
+                                                                    label="Quitar logo"
+                                                                    icon-name="utility:delete"
+                                                                    data-spos={slide.slidePos}
+                                                                    onclick={removeSlideLogo}
+                                                                    class="slide-logo-row__remove">
+                                                                </lightning-button>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                        </div>
+                                    </template>
+                                </li>
+                            </template>
+                        </ul>
+
+                        <template if:false={slidesConfig.length}>
+                            <div class="empty-hero">
+                                <div class="empty-hero__icon">
+                                    <lightning-icon icon-name="utility:image" size="medium" alternative-text="" variant="inverse"></lightning-icon>
+                                </div>
+                                <h3 class="empty-hero__title">Tu presentación está vacía</h3>
+                                <p class="empty-hero__subtitle">Empieza con una diapositiva. Puedes añadir tabla, subtabla o solo un gráfico. Reordena y duplica desde la cabecera de cada slide.</p>
+                                <div class="empty-hero__actions">
+                                    <lightning-button variant="brand" label="Crear con tabla inicial" icon-name="utility:table" onclick={addSlide} title="Diapositiva con bloque de tabla listo para configurar"></lightning-button>
+                                    <lightning-button variant="neutral" label="Crear vacía" icon-name="utility:page" onclick={addEmptySlide} title="Diapositiva sin bloques"></lightning-button>
+                                </div>
+                                <p class="empty-hero__hint">Sugerencia: define primero la <strong>Plantilla corporativa</strong> y los toggles de <strong>Portada</strong>/<strong>Cierre</strong> en el panel izquierdo.</p>
+                            </div>
+                        </template>
+                    </div>
+                </main>
+            </div>
+        </template>
+    </div>
+
+    <!-- MODAL DE SELECCIÓN DE COLUMNAS -->
+    <template if:true={isColumnsModalOpen}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="ppt-columns-modal-heading" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="max-width: 700px;">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeColumnsModal}>
+                        <lightning-icon icon-name="utility:close" variant="inverse" size="small"></lightning-icon>
+                    </button>
+                    <h2 id="ppt-columns-modal-heading" class="slds-text-heading_medium" style="font-weight: bold; color: #263B7A;">Seleccionar Columnas</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input type="search" placeholder="Buscar columna..." value={columnsSearch} onchange={handleColumnsSearch} class="slds-m-bottom_medium"></lightning-input>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <lightning-button variant="base" label="Seleccionar Todas" onclick={selectAllColumns}></lightning-button>
+                        <lightning-button variant="base" label="Limpiar Todo" onclick={clearAllColumns}></lightning-button>
+                    </div>
+                    <lightning-checkbox-group name="Columnas" label="Campos disponibles" options={modalColumnOptions} value={modalSelectedColumns} onchange={handleModalColumnsChange}></lightning-checkbox-group>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancelar" onclick={closeColumnsModal}></lightning-button>
+                    <lightning-button label="Guardar Selección" variant="brand" onclick={saveColumnsModal} class="slds-m-left_small"></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- MODAL DE VISTA PRELIMINAR REAL (AHORA CON CONTENEDORES FLEXBOX TIPO PPT) -->
+    <template if:true={showPreviewModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="ppt-preview-modal-heading" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container" style="width: 95%; max-width: 1400px;">
+                <header class="slds-modal__header" style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <button class="slds-button slds-button_icon slds-modal__close" title="Cerrar" onclick={closePreviewModal}>
+                        <lightning-icon icon-name="utility:close" variant="bare"></lightning-icon>
+                    </button>
+                    <h2 id="ppt-preview-modal-heading" class="slds-text-heading_medium" style="font-weight: 900; color: #0f172a;">Vista Preliminar de la Presentación</h2>
+                    <p style="font-size: 12px; color: #64748b;">Esta vista respeta el tamaño y posición de los textos de la plantilla real. {exportSlideSummaryText}</p>
+                    <template if:true={hasExcludedSlides}>
+                        <p class="preview-modal-excluded-note">Algunas diapos no se incluyen en el archivo (excluidas).</p>
+                    </template>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium preview-scroll-container">
+                    <template for:each={previewSlidesArray} for:item="pslide">
+                        <div key={pslide.id} class={pslide.previewRootClass} style={pslide.bgStyle}>
+
+                            <template if:true={pslide.isCover}>
+                                <div style={pslide.titleContainerStyle}>
+                                    <span style={pslide.titleTextStyle}>{pslide.title}</span>
+                                </div>
+                                <div style={pslide.dateStyle}>{pslide.date}</div>
+                            </template>
+
+                            <template if:true={pslide.isContent}>
+                                <template if:true={pslide.excludeFromExport}>
+                                    <div class="ppt-slide-preview__stripe">Excluida del PPT</div>
+                                </template>
+                                <template if:true={pslide.previewHasDiagnostic}>
+                                    <div class="ppt-slide-preview__diag">
+                                        <lightning-icon icon-name="utility:warning" size="x-small" alternative-text="Aviso"></lightning-icon>
+                                        <span>{pslide.previewDiagnosticLine}</span>
+                                    </div>
+                                </template>
+                                <div style={pslide.titleContainerStyle}>
+                                    <span style={pslide.titleTextStyle}>{pslide.title}</span>
+                                </div>
+                                <div style={pslide.subtitleContainerStyle}>
+                                    <span style={pslide.subtitleTextStyle}>{pslide.subtitle}</span>
+                                </div>
+                                
+                                <div style={pslide.tableContainerStyle}>
+                                    <template for:each={pslide.tables} for:item="ptable">
+                                        <div key={ptable.id} class="preview-table-chart-wrap slds-m-bottom_medium">
+                                            <template if:false={ptable.chartOnly}>
+                                            <div class="slds-scrollable_x" style={ptable.wrapperStyle}>
+                                                <table class="ppt-preview-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <template for:each={ptable.headers} for:item="th">
+                                                                <th key={th.id}>{th.label}</th>
+                                                            </template>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template for:each={ptable.rows} for:item="trow">
+                                                            <tr key={trow.id}>
+                                                                <template for:each={trow.cells} for:item="tcell">
+                                                                    <td key={tcell.id}>{tcell.value}</td>
+                                                                </template>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            </template>
+                                            <template if:true={ptable.chartPreview}>
+                                                <div class="ppt-preview-chart">
+                                                    <div class="ppt-preview-chart__title">{ptable.chartPreview.title}</div>
+                                                    <div class="ppt-preview-chart__subtitle">{ptable.chartPreview.subtitle}</div>
+
+                                                    <template if:true={ptable.chartPreview.variantRadial}>
+                                                        <div class="ppt-chart-radial">
+                                                            <div class="ppt-chart-radial__main">
+                                                                <div class="ppt-chart-radial__ring-wrap">
+                                                                    <div class="ppt-chart-radial__ring" style={ptable.chartPreview.radialRingStyle}></div>
+                                                                    <template if:true={ptable.chartPreview.radialDonut}>
+                                                                        <div class="ppt-chart-radial__hole"></div>
+                                                                    </template>
+                                                                </div>
+                                                                <ul class="ppt-chart-radial__legend">
+                                                                    <template for:each={ptable.chartPreview.segments} for:item="seg">
+                                                                        <li key={seg.id} class="ppt-chart-radial__legend-row">
+                                                                            <span class="ppt-chart-radial__sw" style={seg.swatchStyle}></span>
+                                                                            <span class="ppt-chart-radial__leglab">{seg.label}</span>
+                                                                            <span class="ppt-chart-radial__legval">{seg.valueDisplay}</span>
+                                                                            <span class="ppt-chart-radial__legpct">{seg.pctLabel}</span>
+                                                                        </li>
+                                                                    </template>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+
+                                                    <template if:true={ptable.chartPreview.variantLine}>
+                                                        <div class="ppt-chart-line">
+                                                            <svg class="ppt-chart-line__svg" viewBox="0 0 100 42" preserveAspectRatio="none">
+                                                                <polygon class="ppt-chart-line__area" points={ptable.chartPreview.lineFillPoints}></polygon>
+                                                                <polyline class="ppt-chart-line__line" points={ptable.chartPreview.linePoints} fill="none" stroke={ptable.chartPreview.lineStroke} stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                                                <template for:each={ptable.chartPreview.lineDots} for:item="dot">
+                                                                    <circle key={dot.id} class="ppt-chart-line__dot" cx={dot.x} cy={dot.y} r="2.35" fill={ptable.chartPreview.lineStroke} stroke="#ffffff" stroke-width="0.9"></circle>
+                                                                </template>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
+
+                                                    <template if:true={ptable.chartPreview.variantBars}>
+                                                        <template for:each={ptable.chartPreview.bars} for:item="bar">
+                                                            <div key={bar.id} class="ppt-preview-chart__row">
+                                                                <span class="ppt-preview-chart__label">{bar.label}</span>
+                                                                <div class="ppt-preview-chart__track">
+                                                                    <div class="ppt-preview-chart__fill" style={bar.fillStyle}></div>
+                                                                </div>
+                                                                <span class="ppt-preview-chart__value">{bar.valueDisplay}</span>
+                                                            </div>
+                                                        </template>
+                                                    </template>
+
+                                                    <p class="ppt-preview-chart__hint">{ptable.chartPreview.hint}</p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:true={pslide.isClosing}>
+                                <div style={pslide.titleContainerStyle}>
+                                    <span style={pslide.titleTextStyle}>{pslide.title}</span>
+                                </div>
+                            </template>
+
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

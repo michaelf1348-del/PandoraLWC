@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Lunes a Viernes</fullName>
+        <default>false</default>
+        <label>Lunes a Viernes</label>
+    </customValue>
+    <customValue>
+        <fullName>Lunes a Domingo</fullName>
+        <default>false</default>
+        <label>Lunes a Domingo</label>
+    </customValue>
+    <customValue>
+        <fullName>Sabado y Domingo</fullName>
+        <default>false</default>
+        <label>Sabado y Domingo</label>
+    </customValue>
+    <customValue>
+        <fullName>Lunes</fullName>
+        <default>false</default>
+        <label>Lunes</label>
+    </customValue>
+    <customValue>
+        <fullName>Martes</fullName>
+        <default>false</default>
+        <label>Martes</label>
+    </customValue>
+    <customValue>
+        <fullName>Miercoles</fullName>
+        <default>false</default>
+        <label>Miercoles</label>
+    </customValue>
+    <customValue>
+        <fullName>Jueves</fullName>
+        <default>false</default>
+        <label>Jueves</label>
+    </customValue>
+    <customValue>
+        <fullName>Viernes</fullName>
+        <default>false</default>
+        <label>Viernes</label>
+    </customValue>
+    <customValue>
+        <fullName>Sabado</fullName>
+        <default>false</default>
+        <label>Sabado</label>
+    </customValue>
+    <customValue>
+        <fullName>Domingo</fullName>
+        <default>false</default>
+        <label>Domingo</label>
+    </customValue>
+    <masterLabel>Turnos</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

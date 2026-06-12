@@ -1,0 +1,11 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" access="global">
+
+    <aura:attribute name="recordId" type="Id" />
+
+
+
+    <!-- Shell LWC sets quick-action-mode via LWC markup (Aura->LWC boolean bridge was unreliable). -->
+
+    <c:imputacionesAMSQuickShell record-id="{!v.recordId}" />
+
+</aura:component>

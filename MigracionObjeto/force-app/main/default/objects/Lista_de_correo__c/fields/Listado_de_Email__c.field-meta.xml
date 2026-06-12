@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Listado_de_Email__c</fullName>
+    <externalId>false</externalId>
+    <formula>SUBSTITUTE(
+  SUBSTITUTE(
+    &quot;__&quot;
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_U1__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_U1__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_U2__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_U2__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_U3__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_U3__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_U4__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_U4__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_U5__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_U5__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_C1__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_C1__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_electronico_C2__c))), &quot;;&quot; &amp; TRIM(Correo_electronico_C2__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_electronico_C3__c))), &quot;;&quot; &amp; TRIM(Correo_electronico_C3__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_Electronico_C4__c))), &quot;;&quot; &amp; TRIM(Correo_Electronico_C4__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Correo_electronico_C5__c))), &quot;;&quot; &amp; TRIM(Correo_electronico_C5__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Email_Adicional_1__c))), &quot;;&quot; &amp; TRIM(Email_Adicional_1__c), &quot;&quot;)
+    &amp; IF(NOT(ISBLANK(TRIM(Email_Adicional_2__c))), &quot;;&quot; &amp; TRIM(Email_Adicional_2__c), &quot;&quot;)
+  , &quot;__;&quot;, &quot;&quot;)
+, &quot;__&quot;, &quot;&quot;)</formula>
+    <label>Listado de Email</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

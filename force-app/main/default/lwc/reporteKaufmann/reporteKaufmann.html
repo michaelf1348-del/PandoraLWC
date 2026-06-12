@@ -1,0 +1,1727 @@
+<template>
+    <div class={appContainerClass}>
+        
+        <!-- PANTALLA DE CARGA Y PROGRESO DE EXPORTACIÓN -->
+        <template if:true={isExporting}>
+            <div class="export-overlay">
+                <div class="export-modal">
+                    <lightning-spinner size="medium" variant="brand" class="slds-m-bottom_medium" style="position:relative; height: 40px;"></lightning-spinner>
+                    <h3 class="export-title">{exportStatusText}</h3>
+                    <div class="export-progress-bg">
+                        <div class="export-progress-fill" style={progressBarStyle}></div>
+                    </div>
+                    <div class="export-percentage">{exportProgress}%</div>
+                </div>
+            </div>
+        </template>
+
+        <!-- HEADER CLÁSICO -->
+        <div class="seidor-header">
+            <div class="seidor-header__left">
+                <div class="seidor-dot"></div>
+                <div class="seidor-text">
+                    <div class="seidor-title">Pandora Reporting Engine</div>
+                    <div class="seidor-subtitle">Tablas Dinámicas y Exportación Avanzada</div>
+                </div>
+                <!-- B4: nombre de la hoja activa visible siempre que haya reporte cargado.
+                     Permite saber en qué hoja estamos trabajando aunque el lienzo esté
+                     a otra altura del scroll o el panel derecho oculto. -->
+                <template if:true={hasActiveSheet}>
+                    <span class="active-sheet-chip" title="Hoja activa del libro (cámbiala desde las pestañas inferiores)">
+                        <lightning-icon icon-name="utility:table" size="xx-small" alternative-text=""></lightning-icon>
+                        <span class="active-sheet-chip__label">Hoja:</span>
+                        <span class="active-sheet-chip__name">{activeSheet.name}</span>
+                    </span>
+                </template>
+                <!-- F2: chip moderno de auto-guardado.
+                     Aparece siempre que hay reporte cargado y muestra "Guardado hace Xs",
+                     "Guardando…" o "Error". El icono cambia de utility:check/sync/warning. -->
+                <template if:true={hasAutosaveStatus}>
+                    <span class={autosaveStatusBadgeClass} title="Borrador local automático en el navegador. Se guarda al editar.">
+                        <lightning-icon icon-name={autosaveStatusIcon} size="xx-small" alternative-text=""></lightning-icon>
+                        <span>{autosaveStatusLabel}</span>
+                    </span>
+                </template>
+                <!-- Chips "Plantilla Salesforce" y "Sincronizado" eliminados:
+                     son redundantes con el chip de auto-guardado y el botón "Guardar Reporte". -->
+            </div>
+
+            <div class="seidor-header__actions">
+                <!-- M4: Botón prominente de gestión de variantes en la cabecera. -->
+                <template if:true={selectedReportId}>
+                    <button type="button" class="header-variant-btn" onclick={openVariantManagerModal} title="Gestionar variantes del reporte" aria-label="Gestionar variantes">
+                        <lightning-icon icon-name="utility:layers" size="small" alternative-text=""></lightning-icon>
+                        <span>Variantes</span>
+                        <template if:true={hasMultipleVariants}>
+                            <span class="header-variant-btn__badge">{availableVariantsCount}</span>
+                        </template>
+                    </button>
+                </template>
+                <div class="header-action-group">
+                    <template if:true={showDiscardDraftButton}>
+                        <lightning-button
+                            variant="neutral"
+                            label="Deshacer"
+                            icon-name="utility:undo"
+                            title="Descarta tus cambios locales (los del navegador) y vuelve a la versión del reporte guardada en Salesforce. Útil para partir desde cero o recuperar la versión 'oficial' compartida con el equipo."
+                            onclick={discardDraftAndLoadServerTemplate}
+                            disabled={isFetchingData}>
+                        </lightning-button>
+                    </template>
+                    <lightning-button variant="neutral" label="Guardar Reporte" onclick={guardarPlantilla} disabled={isActionDisabled}></lightning-button>
+                    <input type="file" data-id="import-report-config-file" accept=".json" onchange={handleImportReportConfigFile} style="display:none">
+                </div>
+                <div class="header-action-group header-action-group--output" title="Generar presentación o archivos">
+                    <lightning-button variant="brand" label="Generar PPT" onclick={avanzarAPpt} disabled={isPptActionDisabled} title={pptActionTooltip}></lightning-button>
+                    <lightning-button-menu alternative-text="Opciones de exportación" label="Exportar" onselect={handleExportMenuSelect} menu-alignment="right">
+                        <lightning-menu-item value="excel" label="Exportar a Excel" icon-name="doctype:excel" disabled={isActionDisabled}></lightning-menu-item>
+                        <lightning-menu-item value="pdf" label="Exportar a PDF" icon-name="doctype:pdf" disabled={isActionDisabled}></lightning-menu-item>
+                        <lightning-menu-divider></lightning-menu-divider>
+                        <lightning-menu-item value="config_export" label="Exportar variante activa (.json)" icon-name="utility:download" disabled={isActionDisabled}></lightning-menu-item>
+                        <lightning-menu-item value="config_import" label="Importar a variante activa (.json)" icon-name="utility:upload"></lightning-menu-item>
+                    </lightning-button-menu>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-selector">
+            <div class="report-selector__main">
+                <!-- M2: cuando NO hay reporte seleccionado, mostramos el combobox para elegirlo. -->
+                <template if:false={selectedReportId}>
+                    <lightning-combobox label="Reporte" placeholder="Selecciona un reporte" options={reportOptions} value={selectedReportId} onchange={handleReportChange} disabled={isLoadingReports}></lightning-combobox>
+                </template>
+                <!-- M1+M2: cuando ya hay reporte seleccionado, mostramos un breadcrumb compacto
+                     con el nombre del reporte + botón para volver a la selección. M3: el nombre
+                     de la variante se edita inline (al perder foco se persiste). -->
+                <template if:true={selectedReportId}>
+                    <button type="button" class="report-breadcrumb" onclick={changeReport} title="Cambiar de reporte">
+                        <lightning-icon icon-name="utility:back" size="x-small" alternative-text=""></lightning-icon>
+                        <span class="report-breadcrumb__label">Reporte:</span>
+                        <span class="report-breadcrumb__name">{selectedReportLabel}</span>
+                        <span class="report-breadcrumb__hint">Cambiar</span>
+                    </button>
+                    <template if:true={currentVariantId}>
+                        <lightning-input
+                            type="text"
+                            label="Nombre Variante"
+                            value={currentVariantName}
+                            onchange={handleVariantNameInputChange}
+                            onblur={handleVariantNameInputBlur}
+                            disabled={variantsBusy}
+                            class="variant-name-input">
+                        </lightning-input>
+                    </template>
+                </template>
+                <lightning-button-icon
+                    icon-name="utility:settings"
+                    variant="border-filled"
+                    alternative-text="Configuración del taller"
+                    title="Densidad de la interfaz y plantillas rápidas (modo pantalla está en propiedades de la hoja)"
+                    onclick={openStudioSettingsModal}
+                    class="studio-settings-btn">
+                </lightning-button-icon>
+            </div>
+            <template if:true={isLoadingReports}><div class="loading-row"><lightning-spinner size="small"></lightning-spinner><span>Cargando reportes...</span></div></template>
+            <template if:true={isFetchingData}><div class="loading-row"><lightning-spinner size="small"></lightning-spinner><span>{fetchStatusText}</span></div></template>
+            <!-- Banner cuando hay reporte seleccionado pero el usuario aún no eligió variante.
+                 Evita el estado "el reporte se cargó por su cuenta y avanzar a PPT abre un diseño que no es mío". -->
+            <template if:true={isAwaitingVariantPick}>
+                <div class="variant-await-banner">
+                    <lightning-icon icon-name="utility:variation_strategy" size="small" alternative-text=""></lightning-icon>
+                    <div class="variant-await-banner__text">
+                        <strong>Elige una variante de este reporte</strong>
+                        <span>Cada variante tiene su propia configuración (columnas, filtros, formato) y su propio diseño de PPT. Necesitas elegir una antes de cargar datos.</span>
+                    </div>
+                    <lightning-button label="Abrir selector de variantes" variant="brand" onclick={reopenVariantPicker}></lightning-button>
+                </div>
+            </template>
+        </div>
+
+        <!-- HOME DASHBOARD CON ONE-CLICK EXPORT -->
+        <template if:false={selectedReportId}>
+            <div class="home-dashboard">
+                <div class="welcome-banner">
+                    <div class="empty-icon-wrapper" style="margin: 0 auto;">📊</div>
+                    <h2>Bienvenido a Pandora Studio</h2>
+                    <p>Selecciona un reporte arriba, marca favoritos con la estrella en recientes, o usa Excel/PPT en un clic.</p>
+                </div>
+                
+                <template if:true={hasFavoriteReports}>
+                    <div class="ux-section-title slds-m-bottom_medium home-section-title">FAVORITOS · ACCESO RÁPIDO</div>
+                    <div class="recent-reports-grid">
+                        <template for:each={favoriteCardsForHome} for:item="fav">
+                            <div key={fav.key} class="recent-card recent-card--favorite" data-id={fav.id} onclick={loadRecentReport}>
+                                <div class="recent-content">
+                                    <lightning-icon icon-name="standard:report" size="small"></lightning-icon>
+                                    <div class="recent-info">
+                                        <span class="recent-title">{fav.name}</span>
+                                        <span class="recent-date">Pin en acceso rápido</span>
+                                    </div>
+                                </div>
+                                <div class="recent-actions">
+                                    <lightning-button-icon icon-name="utility:favorite" variant="bare" title="Quitar de favoritos" alternative-text="Quitar de favoritos" data-id={fav.id} onclick={toggleFavoriteReport} class="slds-m-right_xx-small favorite-star--on"></lightning-button-icon>
+                                    <lightning-button-icon icon-name="doctype:excel" variant="bare" title="Excel directo" alternative-text="Excel directo" data-id={fav.id} onclick={quickExportExcel} class="slds-m-right_xx-small"></lightning-button-icon>
+                                    <lightning-button-icon icon-name="doctype:ppt" variant="bare" title="PPT directo" alternative-text="PPT directo" data-id={fav.id} onclick={quickExportPpt}></lightning-button-icon>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:true={hasRecentForQuickAccess}>
+                    <div class="ux-section-title slds-m-bottom_medium slds-m-top_large home-section-title">RECIENTES</div>
+                    <div class="recent-reports-grid">
+                        <template for:each={recentReportsForHome} for:item="recent">
+                            <div key={recent.key} class="recent-card" data-id={recent.id} onclick={loadRecentReport}>
+                                <div class="recent-content">
+                                    <lightning-icon icon-name="standard:report" size="small"></lightning-icon>
+                                    <div class="recent-info">
+                                        <span class="recent-title">{recent.name}</span>
+                                        <span class="recent-date">Último uso: {recent.date}</span>
+                                    </div>
+                                </div>
+                                <div class="recent-actions">
+                                    <lightning-button-icon icon-name="utility:favorite_alt" variant="bare" title="Añadir a favoritos" alternative-text="Añadir a favoritos" data-id={recent.id} onclick={toggleFavoriteReport} class="slds-m-right_xx-small"></lightning-button-icon>
+                                    <lightning-button-icon icon-name="doctype:excel" variant="bare" title="Descargar Excel Directo" alternative-text="Descargar Excel directo" data-id={recent.id} onclick={quickExportExcel} class="slds-m-right_xx-small"></lightning-button-icon>
+                                    <lightning-button-icon icon-name="doctype:ppt" variant="bare" title="Generar PPT Directo" alternative-text="Generar PPT directo" data-id={recent.id} onclick={quickExportPpt}></lightning-button-icon>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={selectedReportId}>
+            <!-- V3: AutoFiltro tipo Excel (dropdown desde el botón ▾ de cada <th>). -->
+            <template if:true={headerFilterMenu.visible}>
+                <div class="header-filter-menu" style={headerFilterMenu.pos} role="menu" aria-label="Filtro de columna" onclick={stopHeaderFilterPropagation} onmousedown={stopHeaderFilterPropagation}>
+                    <div class="header-filter-menu__header">
+                        <span class="header-filter-menu__title">Filtrar: {headerFilterMenu.label}</span>
+                        <button type="button" class="header-filter-menu__close" onclick={closeHeaderFilter} aria-label="Cerrar">×</button>
+                    </div>
+                    <div class="header-filter-menu__search">
+                        <lightning-icon icon-name="utility:search" size="xx-small" alternative-text=""></lightning-icon>
+                        <input type="search" placeholder="Buscar valor…" value={headerFilterMenu.search} oninput={handleHeaderFilterSearchInput} autocomplete="off"/>
+                    </div>
+                    <div class="header-filter-menu__all">
+                        <button type="button" class="header-filter-menu__row header-filter-menu__row--all" onclick={toggleHeaderFilterAll}>
+                            <span class={headerFilterAllSelectedClass} aria-hidden="true"></span>
+                            <span class="header-filter-menu__row-label">{headerFilterAllLabel}</span>
+                            <span class="header-filter-menu__row-count">{headerFilterCountLabel}</span>
+                        </button>
+                    </div>
+                    <ul class="header-filter-menu__list">
+                        <template for:each={headerFilterFilteredValues} for:item="hv">
+                            <li key={hv.value} class="header-filter-menu__li">
+                                <button type="button" class="header-filter-menu__row" data-idx={hv.idx} onclick={toggleHeaderFilterValue}>
+                                    <span class={hv.checkboxClass} aria-hidden="true"></span>
+                                    <span class="header-filter-menu__row-label" title={hv.label}>{hv.label}</span>
+                                    <span class="header-filter-menu__row-count">{hv.count}</span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                    <div class="header-filter-menu__footer">
+                        <button type="button" class="header-filter-menu__btn header-filter-menu__btn--secondary" onclick={clearHeaderFilter}>Limpiar</button>
+                        <div style="flex:1;"></div>
+                        <button type="button" class="header-filter-menu__btn" onclick={closeHeaderFilter}>Cancelar</button>
+                        <button type="button" class="header-filter-menu__btn header-filter-menu__btn--primary" onclick={applyHeaderFilter} disabled={headerFilterApplyDisabled}>Aplicar</button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- F4: Menú flotante de Vistas guardadas (trigger en canvas-toolbar).
+                 K2: oculto vía featureSavedViewsEnabled (las variantes cubren este caso). -->
+            <template if:true={isSavedViewsMenuOpen}>
+                <div class="saved-views-menu" style={savedViewsMenuStyle} role="menu" aria-label="Vistas guardadas" onclick={stopSavedViewsPropagation} onmousedown={stopSavedViewsPropagation}>
+                    <div class="saved-views-menu__header">
+                        <span>Vistas guardadas</span>
+                        <button type="button" class="saved-views-menu__close" onclick={closeSavedViewsMenu} title="Cerrar" aria-label="Cerrar">×</button>
+                    </div>
+                    <div class="saved-views-menu__body">
+                        <template if:false={isSavingViewName}>
+                            <button type="button" class="saved-views-menu__primary" onclick={startSaveCurrentView} title="Guarda el estado actual: columnas visibles, orden, ancho, filtros y formato.">
+                                <lightning-icon icon-name="utility:add" size="xx-small" alternative-text=""></lightning-icon>
+                                <span>Guardar vista actual…</span>
+                            </button>
+                        </template>
+                        <template if:true={isSavingViewName}>
+                            <div class="saved-views-menu__form">
+                                <input type="text"
+                                       class="saved-views-menu__input"
+                                       placeholder="Nombre de la vista…"
+                                       value={savingViewNameInput}
+                                       oninput={handleSavedViewNameInput}
+                                       onkeydown={handleSavedViewNameKeydown}
+                                       autocomplete="off"
+                                       maxlength="60"/>
+                                <button type="button" class="saved-views-menu__save" onclick={confirmSaveCurrentView}>Guardar</button>
+                            </div>
+                        </template>
+                        <div class="saved-views-menu__sep"></div>
+                        <template if:true={hasSavedViews}>
+                            <ul class="saved-views-menu__list">
+                                <template for:each={savedViewsDecorated} for:item="v">
+                                    <li key={v.id} class="saved-views-menu__item">
+                                        <button type="button" class="saved-views-menu__apply" data-id={v.id} onclick={applySavedView} title="Aplicar esta vista">
+                                            <span class="saved-views-menu__apply-name">{v.name}</span>
+                                            <span class="saved-views-menu__apply-date">{v.savedAtLabel}</span>
+                                        </button>
+                                        <button type="button" class="saved-views-menu__delete" data-id={v.id} onclick={deleteSavedView} title="Eliminar vista" aria-label="Eliminar">×</button>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                        <template if:false={hasSavedViews}>
+                            <p class="saved-views-menu__empty">Aún no tienes vistas guardadas para esta hoja.</p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- B5: Menú flotante de filtros rápidos (click derecho sobre celda) -->
+            <template if:true={quickFilterMenuVisible}>
+                <div class="quick-filter-menu" style={quickFilterMenuPos} role="menu" aria-label="Filtros rápidos">
+                    <button type="button" class="quick-filter-menu__item" role="menuitem" onclick={applyQuickFilterEq}>
+                        <lightning-icon icon-name="utility:filterList" size="xx-small" alternative-text=""></lightning-icon>
+                        <span>{quickFilterLabelEq}</span>
+                    </button>
+                    <button type="button" class="quick-filter-menu__item" role="menuitem" onclick={applyQuickFilterNeq}>
+                        <lightning-icon icon-name="utility:ban" size="xx-small" alternative-text=""></lightning-icon>
+                        <span>{quickFilterLabelNeq}</span>
+                    </button>
+                    <div class="quick-filter-menu__sep"></div>
+                    <button type="button" class="quick-filter-menu__item" role="menuitem" onclick={clearQuickFilterColumn}>
+                        <lightning-icon icon-name="utility:clear" size="xx-small" alternative-text=""></lightning-icon>
+                        <span>{quickFilterLabelClear}</span>
+                    </button>
+                </div>
+            </template>
+
+            <!-- MENÚ CONTEXTUAL FLOTANTE -->
+            <template if:true={isFloatingMenuVisible}>
+                <div class="floating-context-menu" style={floatingMenuPos}>
+                    <div class="fcm-header">
+                        <span class="fcm-title">{selectedColumn.label}</span>
+                        <lightning-button-icon icon-name="utility:close" variant="bare" size="small" alternative-text="Cerrar menú contextual" onclick={closeFloatingMenu}></lightning-button-icon>
+                    </div>
+                    <div class="fcm-body">
+                        <lightning-input label="Alias" variant="label-hidden" value={selectedColumn.alias} data-field="alias" onchange={handleSelectedColumnChange} placeholder="Alias de columna..."></lightning-input>
+                        
+                        <div class="fcm-actions slds-m-top_small">
+                            <lightning-button-group>
+                                <lightning-button-icon icon-name="utility:left_align" value="left" alternative-text="Alinear izquierda" onclick={handleQuickAlign} variant={alignVariantLeft}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:center_align" value="center" alternative-text="Alinear centro" onclick={handleQuickAlign} variant={alignVariantCenter}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:right_align" value="right" alternative-text="Alinear derecha" onclick={handleQuickAlign} variant={alignVariantRight}></lightning-button-icon>
+                            </lightning-button-group>
+                            <lightning-button-group class="slds-m-left_small">
+                                <lightning-button-icon icon-name="utility:back" onclick={handleMoveColumnLeft} disabled={cantMoveColumnLeft} title="Mover columna a la izquierda" alternative-text="Mover izquierda"></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:forward" onclick={handleMoveColumnRight} disabled={cantMoveColumnRight} title="Mover columna a la derecha" alternative-text="Mover derecha"></lightning-button-icon>
+                            </lightning-button-group>
+                            <lightning-button-icon icon-name="utility:hide" onclick={handleQuickHide} title="Ocultar columna" alternative-text="Ocultar columna" class="slds-m-left_small" variant="border-filled"></lightning-button-icon>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- MODAL DATA BLENDING -->
+            <template if:true={showBlendModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="blend-modal-heading" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeBlendModal}>
+                                <lightning-icon icon-name="utility:close" variant="inverse" size="small"></lightning-icon>
+                            </button>
+                            <h2 id="blend-modal-heading" class="slds-text-heading_medium" style="font-weight: bold; color: #263B7A;">Segundo reporte (nueva hoja)</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <div class="hint-box slds-m-bottom_medium">No es un “join” SQL: se añade una <strong>nueva hoja</strong> con las columnas del otro reporte. Los datos no se cruzan fila a fila solos; sirve para trabajar dos conjuntos en el mismo libro de Pandora.</div>
+                            <lightning-combobox label="Reporte de origen" options={reportOptions} value={blendReportId} onchange={handleBlendReportChange} placeholder="Elige un reporte"></lightning-combobox>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button label="Cancelar" onclick={closeBlendModal}></lightning-button>
+                            <lightning-button label="Añadir hoja desde reporte" variant="brand" onclick={importBlendedReport} class="slds-m-left_small" disabled={isImportBtnDisabled}></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- MODAL COLUMNA VIRTUAL — UX rediseñada (Layout 2-col + vista previa). -->
+            <template if:true={showVirtualColModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="virtual-modal-heading" class="slds-modal slds-fade-in-open vc-modal">
+                    <div class="slds-modal__container vc-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeVirtualModal}>
+                                <lightning-icon icon-name="utility:close" variant="inverse" size="small"></lightning-icon>
+                            </button>
+                            <h2 id="virtual-modal-heading" class="slds-text-heading_medium" style="font-weight: bold; color: #263B7A;">{virtualModalTitle}</h2>
+                        </header>
+                        <div class="slds-modal__content vc-modal__body">
+                            <div class="vc-modal__intro hint-box">Crea una columna combinando datos existentes. Calcula o une campos sin tocar Salesforce; los modos <strong>regex</strong>, <strong>dividir</strong> y <strong>subcadena</strong> parten del texto de la columna A.</div>
+
+                            <lightning-input
+                                class="vc-modal__name"
+                                label="Nombre de la columna"
+                                value={vcName}
+                                onchange={handleVcFieldChange}
+                                data-field="vcName"
+                                placeholder="Ej: Estado + Consultor"
+                                required>
+                            </lightning-input>
+
+                            <div class="vc-modal__grid">
+                                <!-- Columna izquierda: lista de modos como cards radio. -->
+                                <aside class="vc-mode-list" role="radiogroup" aria-label="¿Qué quieres hacer?">
+                                    <div class="vc-mode-list__title">¿Qué quieres hacer?</div>
+                                    <template for:each={vcTypeChoices} for:item="choice">
+                                        <button
+                                            type="button"
+                                            key={choice.value}
+                                            role="radio"
+                                            aria-checked={choice.isActive}
+                                            class={choice.cardClass}
+                                            data-vctype={choice.value}
+                                            onclick={setVcType}
+                                            title={choice.hint}>
+                                            <lightning-icon icon-name={choice.icon} size="x-small" class="vc-mode-card__icon"></lightning-icon>
+                                            <span class="vc-mode-card__title">{choice.title}</span>
+                                        </button>
+                                    </template>
+                                </aside>
+
+                                <!-- Columna derecha: configuración del modo activo + preview. -->
+                                <section class="vc-config">
+                                    <p class="vc-config__hint">{vcModeHint}</p>
+
+                                    <lightning-combobox
+                                        label="Campo fuente (Columna A)"
+                                        options={baseColumnsOptions}
+                                        value={vcColA}
+                                        onchange={handleVcFieldChange}
+                                        data-field="vcColA"
+                                        required>
+                                    </lightning-combobox>
+
+                                    <template if:true={vcShowFirstTimestampBlockHint}>
+                                        <div class="hint-box slds-m-top_small">Útil cuando un campo acumula varios registros concatenados (cada uno empieza por <strong>DD/MM/AAAA HH:MM:SS</strong>). Se muestra solo el primer bloque: desde el inicio hasta <em>justo antes</em> de la segunda fecha/hora. Si solo hay un bloque o no reconoce el patrón, se deja el texto completo.</div>
+                                    </template>
+
+                                    <template if:true={vcShowComposeRow}>
+                                        <div class="slds-grid slds-gutters slds-m-top_small slds-grid_vertical-align-end">
+                                            <div class="slds-col slds-size_1-of-3">
+                                                <lightning-combobox label={vcOpLabel} options={vcOpOptions} value={vcOp} onchange={handleVcFieldChange} data-field="vcOp"></lightning-combobox>
+                                            </div>
+                                            <div class="slds-col slds-size_2-of-3">
+                                                <lightning-combobox label="Columna B (opcional)" options={baseColumnsOptions} value={vcColB} onchange={handleVcFieldChange} data-field="vcColB"></lightning-combobox>
+                                            </div>
+                                        </div>
+                                        <lightning-input class="slds-m-top_small" label="O valor estático B (Ej: 1.19 o ' - ')" value={vcStaticB} onchange={handleVcFieldChange} data-field="vcStaticB" field-level-help="Si no seleccionas Columna B, se usará este valor fijo para calcular o concatenar."></lightning-input>
+                                    </template>
+
+                                    <template if:true={vcShowRegexFields}>
+                                        <lightning-input class="slds-m-top_small" label="Patrón (regex)" value={vcRegexPattern} onchange={handleVcFieldChange} data-field="vcRegexPattern" required placeholder="Ej: [A-Z]+(\d+)"></lightning-input>
+                                        <div class="slds-grid slds-gutters slds-m-top_small">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input label="Banderas (opcional)" value={vcRegexFlags} onchange={handleVcFieldChange} data-field="vcRegexFlags" placeholder="i, m, u…"></lightning-input>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input type="number" label="Grupo capturador" value={vcCaptureGroup} onchange={handleVcFieldChange} data-field="vcCaptureGroup" min="0" step="1" field-level-help="0 = coincidencia completa; 1 = primer paréntesis, etc."></lightning-input>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={vcShowSplitFields}>
+                                        <div class="slds-grid slds-gutters slds-m-top_small">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input label="Delimitador" value={vcSplitDelimiter} onchange={handleVcFieldChange} data-field="vcSplitDelimiter" placeholder="Ej: | o ;"></lightning-input>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input type="number" label="Índice de parte (0 = primera)" value={vcSplitPartIndex} onchange={handleVcFieldChange} data-field="vcSplitPartIndex" min="0" step="1"></lightning-input>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={vcShowSubstringFields}>
+                                        <div class="slds-grid slds-gutters slds-m-top_small">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input type="number" label="Inicio (0 = primer carácter)" value={vcSubStart} onchange={handleVcFieldChange} data-field="vcSubStart" min="0" step="1"></lightning-input>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning-input type="number" label="Longitud (vacío = hasta el final)" value={vcSubLength} onchange={handleVcFieldChange} data-field="vcSubLength" min="0" step="1"></lightning-input>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Vista previa en vivo: primeras 3 filas con la fórmula actual.
+                                         Solo se muestra cuando la configuración mínima es válida. -->
+                                    <div class="vc-preview slds-m-top_medium">
+                                        <div class="vc-preview__title">Vista previa</div>
+                                        <template if:true={vcHasPreview}>
+                                            <ul class="vc-preview__list">
+                                                <template for:each={vcPreviewRows} for:item="prev">
+                                                    <li key={prev.key} class="vc-preview__item">{prev.value}</li>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                        <template if:false={vcHasPreview}>
+                                            <p class="vc-preview__empty">Selecciona la columna fuente y completa los datos para ver un ejemplo del resultado.</p>
+                                        </template>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button label="Cancelar" onclick={closeVirtualModal}></lightning-button>
+                            <lightning-button label="Crear columna" variant="brand" onclick={saveVirtualColumn} class="slds-m-left_small"></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- MODAL NUEVA HOJA — rediseño UX v2: header con icono en caja azul + subtítulo,
+                 cuerpo con cards consistente con el resto del taller, footer con Cancelar/Crear. -->
+            <template if:true={showNewSheetModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="new-sheet-modal-heading" class="slds-modal slds-fade-in-open pandora-modal-v2">
+                    <div class="slds-modal__container pandora-modal-v2__container">
+                        <header class="pandora-modal-v2__header">
+                            <button type="button" class="slds-button slds-button_icon slds-modal__close" title="Cerrar" onclick={closeNewSheetModal}>
+                                <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                            </button>
+                            <div class="pandora-modal-v2__title-row">
+                                <div class="pandora-modal-v2__title-icon" aria-hidden="true">
+                                    <lightning-icon icon-name="utility:add" size="small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div>
+                                    <h2 id="new-sheet-modal-heading" class="pandora-modal-v2__title">Añadir nueva hoja</h2>
+                                    <p class="pandora-modal-v2__subtitle">Crea una hoja adicional dentro del libro actual.</p>
+                                </div>
+                            </div>
+                        </header>
+                        <div class="pandora-modal-v2__body">
+                            <div class="ux-card">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:rows" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Propiedades de la hoja</span>
+                                </div>
+                                <lightning-input label="Nombre de la hoja" value={newSheetName} onchange={handleNewSheetNameChange} required placeholder="Ej. Tickets RPA"></lightning-input>
+                                <lightning-combobox class="slds-m-top_small" label="Tipo de hoja" options={sheetTypeOptions} value={newSheetType} onchange={handleNewSheetTypeChange} field-level-help="Tabla de detalle muestra filas; Resumen agrupa y agrega valores."></lightning-combobox>
+                            </div>
+                        </div>
+                        <footer class="pandora-modal-v2__footer">
+                            <lightning-button class="slds-m-right_x-small" label="Cancelar" variant="neutral" onclick={closeNewSheetModal}></lightning-button>
+                            <lightning-button label="Crear hoja" variant="brand" onclick={createSheetFromModal}></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- X7: Modal "Vista previa de impresión" — muestra una hoja A4 escalada
+                 con un resumen de la configuración (orientación, margen, filas, páginas).
+                 Permite exportar PDF desde el modal. -->
+            <template if:true={showPrintPreviewModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="print-preview-heading" class="slds-modal slds-fade-in-open pandora-modal-v2">
+                    <div class="slds-modal__container pandora-modal-v2__container">
+                        <header class="pandora-modal-v2__header">
+                            <button type="button" class="slds-button slds-button_icon slds-modal__close" title="Cerrar" onclick={closePrintPreviewModal}>
+                                <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                            </button>
+                            <div class="pandora-modal-v2__title-row">
+                                <span class="pandora-modal-v2__title-icon"><lightning-icon icon-name="utility:print" size="small" alternative-text=""></lightning-icon></span>
+                                <h2 id="print-preview-heading" class="pandora-modal-v2__title">Vista previa de impresión</h2>
+                            </div>
+                            <p class="pandora-modal-v2__subtitle">Comprueba cómo se verá el PDF antes de exportar.</p>
+                        </header>
+                        <div class="pandora-modal-v2__body print-preview-body">
+                            <div class="print-preview-sheet" style={printSheetStyle}>
+                                <div class="print-preview-sheet__inner">
+                                    <div class="print-preview-sheet__title">{activeSheet.name}</div>
+                                    <div class="print-preview-sheet__minitable">
+                                        <template for:each={previewColumns} for:item="col">
+                                            <span key={col.apiName} class="print-preview-sheet__col">{col.alias}</span>
+                                        </template>
+                                    </div>
+                                    <div class="print-preview-sheet__rows">
+                                        <div class="print-preview-sheet__row-placeholder"></div>
+                                        <div class="print-preview-sheet__row-placeholder"></div>
+                                        <div class="print-preview-sheet__row-placeholder"></div>
+                                        <div class="print-preview-sheet__row-placeholder"></div>
+                                        <div class="print-preview-sheet__row-placeholder"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="print-preview-summary">
+                                <div class="ux-card">
+                                    <div class="ux-section-title">
+                                        <span class="section-icon"><lightning-icon icon-name="utility:info" size="xx-small" alternative-text=""></lightning-icon></span>
+                                        <span>Resumen</span>
+                                    </div>
+                                    <ul class="print-preview-summary__list">
+                                        <li><span>Orientación:</span> <strong>{printSheetOrientationLabel}</strong></li>
+                                        <li><span>Márgenes:</span> <strong>{printSheetMarginLabel}</strong></li>
+                                        <li><span>Filas:</span> <strong>{printSheetRowsLabel}</strong></li>
+                                        <li><span>Columnas:</span> <strong>{printSheetColumnsLabel}</strong></li>
+                                        <li><span>Páginas estimadas:</span> <strong>{printSheetPagesLabel}</strong></li>
+                                    </ul>
+                                </div>
+                                <p class="print-preview-help">Cambia orientación y márgenes desde el panel <em>Más → Impresión / PDF</em>.</p>
+                            </div>
+                        </div>
+                        <footer class="pandora-modal-v2__footer">
+                            <lightning-button label="Cerrar" onclick={closePrintPreviewModal}></lightning-button>
+                            <lightning-button variant="brand" label="Exportar PDF ahora" icon-name="utility:download" onclick={exportPdfFromPreview}></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open" onclick={closePrintPreviewModal}></div>
+            </template>
+
+            <!-- F5: Modal "Configurar gráfico" — usa pandora-modal-v2. -->
+            <template if:true={showChartModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="chart-modal-heading" class="slds-modal slds-fade-in-open pandora-modal-v2">
+                    <div class="slds-modal__container pandora-modal-v2__container">
+                        <header class="pandora-modal-v2__header">
+                            <button type="button" class="slds-button slds-button_icon slds-modal__close" title="Cerrar" onclick={closeChartModal}>
+                                <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                            </button>
+                            <div class="pandora-modal-v2__title-row">
+                                <div class="pandora-modal-v2__title-icon" aria-hidden="true">
+                                    <lightning-icon icon-name="utility:chart" size="small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div>
+                                    <h2 id="chart-modal-heading" class="pandora-modal-v2__title">Configurar gráfico</h2>
+                                    <p class="pandora-modal-v2__subtitle">Se mostrará bajo la tabla del lienzo y se incluirá en las exportaciones.</p>
+                                </div>
+                            </div>
+                        </header>
+                        <div class="pandora-modal-v2__body">
+                            <div class="ux-card">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:settings" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Básico</span>
+                                </div>
+                                <lightning-input label="Título del gráfico (opcional)" value={editingChartDraft.title} data-field="title" onchange={handleChartDraftChange} placeholder="Ej. Tickets por estado"></lightning-input>
+                                <lightning-combobox class="slds-m-top_small" label="Tipo de gráfico" options={chartTypeOptions} value={editingChartDraft.type} data-field="type" onchange={handleChartDraftChange}></lightning-combobox>
+                            </div>
+
+                            <div class="ux-card slds-m-top_medium">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:chart" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Datos</span>
+                                </div>
+                                <lightning-combobox label="Agrupar por (categorías)" options={summaryOptions} value={editingChartDraft.groupByField} data-field="groupByField" onchange={handleChartDraftChange}></lightning-combobox>
+                                <lightning-combobox class="slds-m-top_small" label="Operación" options={chartOperationOptions} value={editingChartDraft.operation} data-field="operation" onchange={handleChartDraftChange}></lightning-combobox>
+                                <lightning-combobox class="slds-m-top_small" label="Campo numérico (no aplica si la operación es Conteo)" options={numericSummaryOptions} value={editingChartDraft.valueField} data-field="valueField" onchange={handleChartDraftChange}></lightning-combobox>
+                            </div>
+
+                            <div class="ux-card slds-m-top_medium">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:sort" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Orden y límite</span>
+                                </div>
+                                <div class="two-columns">
+                                    <lightning-combobox label="Ordenar por" options={pivotSortByOptions} value={editingChartDraft.sortBy} data-field="sortBy" onchange={handleChartDraftChange}></lightning-combobox>
+                                    <lightning-combobox label="Dirección" options={sortDirectionOptions} value={editingChartDraft.sortDirection} data-field="sortDirection" onchange={handleChartDraftChange}></lightning-combobox>
+                                </div>
+                                <lightning-combobox class="slds-m-top_small" label="Mostrar máximo" options={chartLimitOptions} value={editingChartDraft.limit} data-field="limit" onchange={handleChartDraftChange}></lightning-combobox>
+                            </div>
+                        </div>
+                        <footer class="pandora-modal-v2__footer">
+                            <lightning-button class="slds-m-right_x-small" label="Cancelar" variant="neutral" onclick={closeChartModal}></lightning-button>
+                            <lightning-button label="Guardar gráfico" variant="brand" onclick={saveChartFromModal}></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- MODAL CONFIGURACIÓN DEL TALLER — rediseño UX v2.
+                 Mismo lenguaje que el resto del taller: header con icono en caja azul,
+                 cards consistentes para cada sección. Se eliminó "Plantillas rápidas". -->
+            <template if:true={showStudioSettingsModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="studio-settings-modal-heading" class="slds-modal slds-fade-in-open pandora-modal-v2">
+                    <div class="slds-modal__container pandora-modal-v2__container">
+                        <header class="pandora-modal-v2__header">
+                            <button type="button" class="slds-button slds-button_icon slds-modal__close" title="Cerrar" onclick={closeStudioSettingsModal}>
+                                <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                            </button>
+                            <div class="pandora-modal-v2__title-row">
+                                <div class="pandora-modal-v2__title-icon" aria-hidden="true">
+                                    <lightning-icon icon-name="utility:settings" size="small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div>
+                                    <h2 id="studio-settings-modal-heading" class="pandora-modal-v2__title">Configuración del taller</h2>
+                                    <p class="pandora-modal-v2__subtitle">Afecta solo a la ventana de diseño. No cambia ni Salesforce ni los archivos exportados.</p>
+                                </div>
+                            </div>
+                        </header>
+                        <div class="pandora-modal-v2__body">
+                            <div class="ux-card">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:zoom_in" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Densidad</span>
+                                </div>
+                                <lightning-radio-group
+                                    type="button"
+                                    name="pandoraDensityModal"
+                                    label="Densidad de la interfaz"
+                                    variant="label-hidden"
+                                    options={densityOptions}
+                                    value={densityMode}
+                                    onchange={handleDensityChange}>
+                                </lightning-radio-group>
+                                <p class="ux-card__lead slds-m-top_small">Compacto reduce el padding y muestra más datos por pantalla.</p>
+                            </div>
+
+                            <div class="ux-card slds-m-top_medium">
+                                <div class="ux-section-title">
+                                    <span class="section-icon"><lightning-icon icon-name="utility:moon" size="xx-small" alternative-text=""></lightning-icon></span>
+                                    <span>Tema</span>
+                                </div>
+                                <lightning-input
+                                    type="toggle"
+                                    label="Modo oscuro"
+                                    checked={isDarkMode}
+                                    onchange={handleDarkModeToggle}
+                                    message-toggle-active="Activo"
+                                    message-toggle-inactive="Claro"
+                                    field-level-help="Aplica un tema oscuro al taller. No afecta a los archivos exportados a Excel/PDF/PPT.">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <footer class="pandora-modal-v2__footer">
+                            <lightning-button variant="brand" label="Listo" onclick={closeStudioSettingsModal}></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- U7: rediseño UX del modal "Configurar filtros".
+                 Encima muestra un resumen en línea: "Mostrando registros donde:" seguido
+                 de cada condición como chip y conector Y/O como chip clickable.
+                 Cada fila tiene su Campo / Operador / Valor en horizontal con
+                 botón eliminar a la derecha. El conector entre filas también es
+                 un chip clickable (alterna AND ⇄ OR). -->
+            <template if:true={showFiltersModal}>
+                <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="filters-modal-heading" class="slds-modal slds-fade-in-open filters-modal-v2">
+                    <div class="slds-modal__container filters-modal-v2__container">
+                        <header class="filters-modal-v2__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeFiltersModal}>
+                                <lightning-icon icon-name="utility:close" variant="inverse" size="small"></lightning-icon>
+                            </button>
+                            <div class="filters-modal-v2__title-row">
+                                <div class="filters-modal-v2__title-icon" aria-hidden="true">
+                                    <lightning-icon icon-name="utility:filter" size="small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div>
+                                    <h2 id="filters-modal-heading" class="filters-modal-v2__title">Configurar filtros</h2>
+                                    <p class="filters-modal-v2__subtitle">Hoja · {activeSheet.name}</p>
+                                </div>
+                            </div>
+                            <template if:true={hasActiveFilterChips}>
+                                <div class="filters-modal-v2__summary" title="Resumen actual del filtro de la hoja">
+                                    <span class="filters-modal-v2__summary-label">Mostrando registros donde:</span>
+                                    <div class="filters-modal-v2__summary-chips">
+                                        <template for:each={activeFilterSummaryChips} for:item="item">
+                                            <template if:true={item.isConnector}>
+                                                <span key={item.id} class="summary-connector">{item.label}</span>
+                                            </template>
+                                            <template if:false={item.isConnector}>
+                                                <span key={item.id} class="summary-pill" title={item.title}>{item.label}</span>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </header>
+
+                        <div class="filters-modal-v2__body">
+                            <template for:each={activeFiltersDecorated} for:item="flt">
+                                <div key={flt.key} class="filter-block">
+                                    <template if:true={flt.showLogic}>
+                                        <div class="filter-connector">
+                                            <button type="button"
+                                                    class="logic-chip"
+                                                    data-fid={flt.id}
+                                                    onclick={handleSheetFilterLogicToggle}
+                                                    title={flt.logicChipTitle}>
+                                                {flt.logicChipLabel}
+                                            </button>
+                                        </div>
+                                    </template>
+
+                                    <div class="filter-row-v2">
+                                        <div class="filter-row-v2__field filter-row-v2__field--col">
+                                            <lightning-combobox label="Campo" variant="label-stacked" options={summaryOptions} value={flt.filterColumn} data-fid={flt.id} onchange={handleSheetFilterColumnChange}></lightning-combobox>
+                                        </div>
+                                        <div class="filter-row-v2__field filter-row-v2__field--op">
+                                            <lightning-combobox label="Operador" variant="label-stacked" options={filterOperatorOptions} value={flt.operator} data-fid={flt.id} onchange={handleSheetFilterOperatorChange}></lightning-combobox>
+                                        </div>
+                                        <div class="filter-row-v2__field filter-row-v2__field--val">
+                                            <template if:true={flt.showValueDropdown}>
+                                                <lightning-combobox label={flt.valueLabel} variant="label-stacked" options={flt.valueOptions} value={flt.filterValue} data-fid={flt.id} onchange={handleSheetFilterValueChange}></lightning-combobox>
+                                            </template>
+                                            <template if:true={flt.showValueInput}>
+                                                <lightning-input type={flt.valueInputType} label={flt.valueLabel} variant="label-stacked" value={flt.filterValue} data-fid={flt.id} onchange={handleSheetFilterValueChange}></lightning-input>
+                                            </template>
+                                            <template if:true={flt.showValueRange}>
+                                                <div class="filter-row-v2__range">
+                                                    <lightning-input type="number" label={flt.valueLabel} variant="label-stacked" value={flt.filterValue} data-fid={flt.id} onchange={handleSheetFilterValueChange}></lightning-input>
+                                                    <lightning-input type="number" label={flt.value2Label} variant="label-stacked" value={flt.filterValue2} data-fid={flt.id} onchange={handleSheetFilterValue2Change}></lightning-input>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="filter-row-v2__remove" title="Quitar esta condición">
+                                            <lightning-button-icon icon-name="utility:delete" variant="bare" alternative-text="Quitar filtro" data-fid={flt.id} onclick={removeSheetFilter}></lightning-button-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="filters-modal-v2__add">
+                                <lightning-button variant="neutral" label="+ Agregar filtro" onclick={addSheetFilter} title="Añade una nueva condición a la lista"></lightning-button>
+                            </div>
+                        </div>
+
+                        <footer class="filters-modal-v2__footer">
+                            <lightning-button class="slds-m-right_x-small" label="Cancelar" variant="neutral" onclick={closeFiltersModal}></lightning-button>
+                            <lightning-button label="Aplicar filtros" variant="brand" onclick={closeFiltersModal} title="Guardar y cerrar. Los cambios ya están aplicados en vista previa y exportación."></lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- Ola 2: Tabs Diseño / Vista previa / Exportación.
+                 Diseño = comportamiento clásico. Vista previa oculta paneles laterales
+                 para que el lienzo ocupe toda la ventana. Exportación reemplaza el lienzo
+                 por una tarjeta con accesos directos a PPT/Excel/PDF/Config. -->
+            <nav class="studio-tabs" role="tablist" aria-label="Modo de trabajo del reporte">
+                <button type="button" role="tab" class={studioTabDesignClass} data-tab="design" onclick={setStudioTab} title="Editar columnas, filtros, formato y pivots de la hoja activa">
+                    <lightning-icon icon-name="utility:edit" size="x-small" alternative-text=""></lightning-icon>
+                    <span>Diseño</span>
+                </button>
+                <button type="button" role="tab" class={studioTabPreviewClass} data-tab="preview" onclick={setStudioTab} title="Ver el lienzo a pantalla ancha, sin los paneles laterales (los cambios no se pierden)">
+                    <lightning-icon icon-name="utility:preview" size="x-small" alternative-text=""></lightning-icon>
+                    <span>Vista previa</span>
+                </button>
+                <button type="button" role="tab" class={studioTabExportClass} data-tab="export" onclick={setStudioTab} title="Acciones rápidas: generar PPT, exportar a Excel/PDF y descargar la configuración">
+                    <lightning-icon icon-name="utility:download" size="x-small" alternative-text=""></lightning-icon>
+                    <span>Exportación</span>
+                </button>
+            </nav>
+
+            <template if:false={isStudioTabExport}>
+            <div class={studioLayoutClass} style={studioLayoutStyle}>
+                <!-- PANEL IZQUIERDO -->
+                <template if:false={isLeftPanelHidden}>
+                    <aside class="left-panel" ondragover={handleColumnDragOver} ondrop={handlePanelDrop}>
+                        <div class="panel-section">
+                            <div class="panel-title-row">
+                                <span class="panel-title">Campos del reporte</span>
+                                <span class="field-count-badge">{visibleFieldCountLabel}</span>
+                            </div>
+
+                            <!-- A3: dos accesos rápidos compactos y agrupados, justo bajo el título.
+                                 «+ Columna virtual» como acción primaria; «Mostrar todas» como
+                                 secundaria. Ambos comparten una fila para no ocupar espacio
+                                 vertical innecesario. -->
+                            <div class="panel-quick-actions panel-quick-actions--grouped slds-m-bottom_small">
+                                <button type="button"
+                                        class="panel-quick-btn panel-quick-btn--primary"
+                                        title="Crea una columna calculada (concatenar, regex, fórmula matemática, etc.)"
+                                        onclick={openVirtualModal}>
+                                    <lightning-icon icon-name="utility:add" size="xx-small" alternative-text=""></lightning-icon>
+                                    <span>Columna virtual</span>
+                                </button>
+                                <button type="button"
+                                        class="panel-quick-btn"
+                                        title="Activa la visibilidad de todos los campos en la hoja actual"
+                                        disabled={isShowAllColumnsDisabled}
+                                        onclick={showAllColumnsInSheet}>
+                                    <lightning-icon icon-name="utility:rows" size="xx-small" alternative-text=""></lightning-icon>
+                                    <span>Mostrar todas</span>
+                                </button>
+                            </div>
+
+                            <lightning-input
+                                data-field-search
+                                type="search"
+                                variant="label-hidden"
+                                placeholder="Buscar campo…"
+                                title="Atajos: Ctrl+F, Cmd+F o / para enfocar (fuera de otros campos de texto)"
+                                value={fieldSearchTerm}
+                                oninput={handleFieldSearchChange}
+                                class="slds-m-bottom_small">
+                            </lightning-input>
+
+                            <!-- Ola 4: filtro rápido por estado (Todos / Seleccionados / Disponibles).
+                                 Se aplica encima del search; no toca filteredAvailableColumns. -->
+                            <nav class="left-tabs" role="tablist" aria-label="Filtrar columnas por estado">
+                                <button type="button" role="tab" class={leftTabAllClass}       data-lefttab="all"       onclick={setLeftTab} title="Mostrar todas las columnas del reporte">Todos <span class="left-tab__count">{totalColumnsCount}</span></button>
+                                <button type="button" role="tab" class={leftTabSelectedClass}  data-lefttab="selected"  onclick={setLeftTab} title="Solo columnas activas en esta hoja">Activas <span class="left-tab__count">{visibleColumnsCount}</span></button>
+                                <button type="button" role="tab" class={leftTabAvailableClass} data-lefttab="available" onclick={setLeftTab} title="Columnas disponibles para activar">Inactivas <span class="left-tab__count">{availableColumnsCount}</span></button>
+                            </nav>
+
+                            <template if:true={hasDisplayedLeftPanelColumns}>
+                                <p class="left-panel-hint">Arrastra los campos para reordenar (también cambia el orden de la tabla, Excel y PPT) o suéltalos sobre el lienzo para activarlos.</p>
+                                <div class="field-list">
+                                    <template for:each={displayedLeftPanelColumns} for:item="field">
+                                        <div key={field.apiName} class={field.cardClass} draggable="true" data-api-name={field.apiName} ondragstart={handleFieldDragStart} ondragover={handleFieldReorderDragOver} ondragleave={handleFieldReorderDragLeave} ondrop={handleFieldReorderDrop} title={field.apiName}>
+                                            <div class="field-info">
+                                                <div class="field-label" style="display: flex; align-items: center; gap: 4px;">
+                                                    <template if:true={field.isVirtual}><span>✨</span></template>
+                                                    {field.label}
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center;">
+                                                <template if:true={field.isVirtual}>
+                                                    <lightning-button-icon icon-name="utility:edit" data-api-name={field.apiName} onclick={editVirtualColumn} variant="bare" title="Editar Columna Virtual" alternative-text="Editar columna virtual" tabindex="-1"></lightning-button-icon>
+                                                    <lightning-button-icon icon-name="utility:copy" data-api-name={field.apiName} onclick={duplicateVirtualColumn} variant="bare" title="Duplicar Columna Virtual" alternative-text="Duplicar columna virtual" tabindex="-1"></lightning-button-icon>
+                                                    <lightning-button-icon icon-name="utility:delete" data-api-name={field.apiName} onclick={deleteVirtualColumn} variant="bare" title="Eliminar Columna Virtual" alternative-text="Eliminar columna virtual" tabindex="-1"></lightning-button-icon>
+                                                </template>
+                                                <lightning-button-icon icon-name={field.iconName} data-api-name={field.apiName} onclick={toggleColumnVisibility} variant="bare" alternative-text="Alternar visibilidad de columna" tabindex="-1"></lightning-button-icon>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasDisplayedLeftPanelColumns}>
+                                <div class="left-panel-empty">{leftPanelEmptyMessage}</div>
+                            </template>
+                        </div>
+                    </aside>
+                </template>
+
+                <main class="canvas-panel">
+                    <template if:false={hasActiveSheet}>
+                        <div class="excel-canvas"><div class="empty-state"><lightning-spinner size="medium"></lightning-spinner><h2>Preparando entorno...</h2></div></div>
+                    </template>
+                    <template if:true={hasActiveSheet}>
+                        <div class="canvas-toolbar">
+                            <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 auto;">
+                                <lightning-button-icon icon-name={leftPanelIcon} variant="border-filled" onclick={toggleLeftPanel} alternative-text="Alternar panel"></lightning-button-icon>
+                                <div class="canvas-titles">
+                                    <div class="canvas-title">{activeSheet.name}</div>
+                                    <!-- Ola 4: breadcrumb con tipo de hoja + nº columnas + nº filtros.
+                                         Los chips de filtros sólo aparecen si hay alguno activo. -->
+                                    <div class="canvas-breadcrumb" role="status" aria-label="Resumen de la hoja activa">
+                                        <span class="canvas-breadcrumb__chip canvas-breadcrumb__chip--type">{activeSheetTypeLabel}</span>
+                                        <span class="canvas-breadcrumb__dot" aria-hidden="true">·</span>
+                                        <span class="canvas-breadcrumb__chip" title="Columnas visibles en esta hoja">{canvasBreadcrumbColumnsLabel}</span>
+                                        <template if:true={hasCanvasBreadcrumbRows}>
+                                            <span class="canvas-breadcrumb__dot" aria-hidden="true">·</span>
+                                            <span class="canvas-breadcrumb__chip canvas-breadcrumb__chip--rows" title="Filas resultado tras aplicar filtros de esta hoja">
+                                                <lightning-icon icon-name="utility:rows" size="xx-small" alternative-text="Filas"></lightning-icon>
+                                                {canvasBreadcrumbRowsLabel}
+                                            </span>
+                                        </template>
+                                        <template if:true={hasCanvasBreadcrumbFilters}>
+                                            <span class="canvas-breadcrumb__dot" aria-hidden="true">·</span>
+                                            <span class="canvas-breadcrumb__chip canvas-breadcrumb__chip--filters" title="Filtros activos. Edítalos desde el panel derecho › Filtros." onclick={openFiltersModal}>
+                                                <lightning-icon icon-name="utility:filter" size="xx-small" alternative-text="Filtros"></lightning-icon>
+                                                {canvasBreadcrumbFiltersLabel}
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap: 6px;">
+                                <!-- F4: trigger del menú de Vistas guardadas.
+                                     K2: oculto porque las variantes cubren este caso de uso de manera más robusta.
+                                     Se mantiene el código y los handlers para no perder datos históricos en JSON. -->
+                                <template if:true={featureSavedViewsEnabled}>
+                                    <div class="saved-views-trigger-wrap">
+                                        <lightning-button-icon class="saved-views-trigger" icon-name="utility:bookmark" variant="border-filled" onclick={toggleSavedViewsMenu} title="Vistas guardadas de esta hoja" alternative-text="Vistas guardadas"></lightning-button-icon>
+                                        <template if:true={hasSavedViewsBadge}>
+                                            <span class="saved-views-trigger__badge" aria-hidden="true">{savedViewsCountLabel}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <!-- B1: botón para abrir/cerrar la búsqueda dentro de la tabla.
+                                     Atajo: Ctrl+Shift+F. -->
+                                <lightning-button-icon icon-name="utility:search" variant="border-filled" onclick={toggleTableSearch} title="Buscar en la tabla (Ctrl+Shift+F)" alternative-text="Buscar en la tabla"></lightning-button-icon>
+                                <!-- R4: Controles de zoom del lienzo. -->
+                                <div class="canvas-zoom-controls" role="group" aria-label="Zoom del lienzo">
+                                    <button type="button" class="canvas-zoom-btn" onclick={handleZoomOut} disabled={cantZoomOut} title="Alejar (Ctrl + -)" aria-label="Alejar">−</button>
+                                    <button type="button" class="canvas-zoom-level" onclick={handleZoomReset} title="Restablecer (Ctrl + 0)" aria-label="Zoom actual, click para restablecer al 100%">{previewZoomLabel}</button>
+                                    <button type="button" class="canvas-zoom-btn" onclick={handleZoomIn} disabled={cantZoomIn} title="Acercar (Ctrl + +)" aria-label="Acercar">+</button>
+                                </div>
+                                <!-- V5: Mover tabla por el lienzo (activa modo drag). -->
+                                <div class="canvas-zoom-controls" role="group" aria-label="Mover tabla">
+                                    <button type="button" class={moveTableBtnClass} onclick={toggleMoveTableMode} title={moveTableBtnTitle} aria-label="Mover tabla">✥</button>
+                                    <template if:true={hasTableOffset}>
+                                        <button type="button" class="canvas-zoom-btn" onclick={resetTableOffset} title="Restablecer posición de la tabla" aria-label="Restablecer posición">⟲</button>
+                                    </template>
+                                </div>
+                                <lightning-button-icon icon-name={fullScreenIcon} variant="border-filled" onclick={toggleFullScreen} title="Modo Enfoque" alternative-text="Alternar modo enfoque"></lightning-button-icon>
+                            </div>
+                        </div>
+
+                        <!-- B1: barra de búsqueda flotante de la tabla. Aparece bajo la toolbar,
+                             muestra contador de coincidencias y permite cerrar con Esc o ×. -->
+                        <template if:true={isTableSearchOpen}>
+                            <div class="table-search-bar" role="search" aria-label="Buscar en la tabla">
+                                <lightning-icon icon-name="utility:search" size="x-small" alternative-text=""></lightning-icon>
+                                <lightning-input data-table-search
+                                                 type="search"
+                                                 variant="label-hidden"
+                                                 placeholder="Buscar en la tabla…"
+                                                 value={tableSearchTerm}
+                                                 oninput={handleTableSearchInput}
+                                                 class="table-search-bar__input"></lightning-input>
+                                <span class="table-search-bar__count">{tableSearchSummary}</span>
+                                <lightning-button-icon icon-name="utility:close" variant="bare" onclick={closeTableSearch} alternative-text="Cerrar búsqueda" title="Cerrar (Esc)"></lightning-button-icon>
+                            </div>
+                        </template>
+
+                        <!-- LIENZO CENTRAL -->
+                        <div class={excelPreviewCanvasClasses} style="position: relative;" ondragover={handleColumnDragOver} ondrop={handleCanvasDrop} onscroll={handleCanvasScroll}>
+                            <template if:false={excelPreviewVisible}>
+                                <div class="empty-state">
+                                    <div class="empty-icon-wrapper">📄</div>
+                                    <h2>Lienzo Vacío</h2>
+                                    <p>Activa columnas en el panel izquierdo o configura pivots en una hoja resumen.</p>
+                                </div>
+                            </template>
+                            
+                            <template if:true={excelPreviewVisible}>
+                                <!-- R4: wrapper de zoom (no afecta el scroll del lienzo). -->
+                                <div class="canvas-zoom-wrap" style={previewZoomStyle}>
+                                <template if:true={activeSheet.settings.logoBase64}>
+                                    <!-- Y2/Y3: logo arrastrable y redimensionable.
+                                         · Click + drag sobre la imagen → mueve el logo.
+                                         · Click + drag sobre el cuadradito ⤡ (esquina SE) → redimensiona. -->
+                                    <div class="logo-floating" style={previewLogoContainerStyle} onmousedown={handleLogoMouseDown} title="Arrastra para mover · Arrastra la esquina ⤡ para redimensionar">
+                                        <img src={activeSheet.settings.logoBase64} style={previewLogoImgStyle} alt="Logo" />
+                                        <span class="logo-floating__resize" onmousedown={handleLogoResizeMouseDown} title="Arrastra para redimensionar" aria-label="Redimensionar logo">⤡</span>
+                                    </div>
+                                </template>
+
+                                <!-- TABLA DE DETALLE -->
+                                <template if:true={isTableSheet}>
+                                    <div style={previewTableOffsetStyle} class={previewTableShellWrapClass} onmousedown={handleTableMoveMouseDown}>
+                                        <div class={excelPreviewTableShellClass}>
+                                        <table class={excelPreviewMainTableClass}>
+                                            <thead>
+                                                <tr>
+                                                    <template for:each={previewColumns} for:item="col">
+                                                        <th key={col.apiName} class={col.thClass} style={col.headerStyle} draggable="true" data-api-name={col.apiName} ondragstart={handleColumnDragStart} ondragover={handleColumnDragOver} ondrop={handleColumnDrop} onclick={selectColumnFromEvent} ondblclick={handleVirtualColumnDblClick}>
+                                                            <template if:true={col.isVirtual}><span style="margin-right:4px;" title="Doble-click para editar fórmula">✨</span></template>
+                                                            <span class="th-label">{col.alias}</span>
+                                                            <!-- Click en este botón cicla ASC → DESC → sin orden. -->
+                                                            <button type="button" class={col.sortBtnClass} data-api-name={col.apiName} onclick={handleHeaderSort} title={col.sortBtnTitle} aria-label="Cambiar orden de la columna">{col.sortIndicator}</button>
+                                                            <!-- V3: AutoFiltro tipo Excel. Click abre dropdown con valores únicos + checkboxes. -->
+                                                            <button type="button" class={col.filterBtnClass} data-api-name={col.apiName} onclick={openHeaderFilter} title={col.filterBtnTitle} aria-label="Filtrar valores de la columna">▾</button>
+                                                            <span class="resize-handle" data-api-name={col.apiName} onmousedown={startColumnResize}></span>
+                                                            <template if:true={col.isFirst}><span class="resize-handle-y" onmousedown={startHeaderResize}></span></template>
+                                                        </th>
+                                                    </template>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={previewRows} for:item="row">
+                                                    <tr key={row.id} style={row.rowStyle}>
+                                                        <template for:each={row.cells} for:item="cell">
+                                                            <td key={cell.key}
+                                                                class={cell.cellClass}
+                                                                style={cell.style}
+                                                                data-api-name={cell.apiName}
+                                                                data-raw-value={cell.rawValue}
+                                                                title={cell.titleHint}
+                                                                ondblclick={handleVirtualColumnDblClick}
+                                                                oncontextmenu={handleCellContextMenu}>{cell.value}<template if:true={cell.showYResize}><span class="resize-handle-y" onmousedown={startRowResize}></span></template></td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                                <template if:true={activeSheet.settings.showTotals}>
+                                                    <tr style="height: 28px; background-color: #f8fafc; font-weight: bold;">
+                                                        <template for:each={previewTotalsRow} for:item="tot">
+                                                            <td key={tot.id} style={tot.style}>{tot.value}</td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template if:true={isSummarySheet}>
+                                    <div class="slds-m-bottom_medium slds-text-heading_small" style="color: #64748b; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 8px;">
+                                        Hoja de Resumen (Mostrando solo Tablas Pivot)
+                                    </div>
+                                </template>
+
+                                <!-- F5: Gráficos de la hoja activa renderizados como <canvas> con Chart.js. -->
+                                <template if:true={hasActiveSheetCharts}>
+                                    <div class="charts-wrapper slds-m-top_large">
+                                        <template for:each={activeSheetCharts} for:item="ch">
+                                            <div key={ch.id} class="chart-card">
+                                                <div class="chart-card__header">
+                                                    <span class="chart-card__title">{ch.title}</span>
+                                                    <span class="chart-card__type">{ch.typeLabel}</span>
+                                                </div>
+                                                <div class="chart-card__body">
+                                                    <canvas data-chart-id={ch.id}></canvas>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template for:each={subTablePreviews} for:item="subPrev">
+                                    <div key={subPrev.id} class="slds-m-top_large pivot-preview-wrapper" style="display: block; margin-bottom: 16px;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 100%; margin-bottom: 8px;">
+                                            <h3 class="pivot-preview-title" style={subPrev.customFontStyle}>{subPrev.title}</h3>
+                                            <span class="slds-badge pivot-badge">Orientación: {subPrev.orientationLabel}</span>
+                                        </div>
+
+                                        <template if:true={subPrev.isVertical}>
+                                            <table class="preview-table" style={subPrev.customTableWidthStyle}>
+                                                <thead><tr><th style={subPrev.headerStyle}>Categoría (Fila)</th><th style={subPrev.headerStyle}>{subPrev.metricLabel}</th></tr></thead>
+                                                <tbody>
+                                                    <template for:each={subPrev.rows} for:item="sumRow">
+                                                        <tr key={sumRow.key}><td style={sumRow.styleL}>{sumRow.label}</td><td style={sumRow.styleC}>{sumRow.metricValue}</td></tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </template>
+
+                                        <template if:false={subPrev.isVertical}>
+                                            <div class="slds-scrollable_x">
+                                                <table class="preview-table" style={subPrev.customTableWidthStyle}>
+                                                    <thead><tr><template for:each={subPrev.horizontalHeaders} for:item="hh"><th key={hh} style={subPrev.headerStyle}>{hh}</th></template></tr></thead>
+                                                    <tbody><tr><template for:each={subPrev.horizontalValues} for:item="hv"><td key={hv} style={subPrev.dataStyleCenter}>{hv}</td></template></tr></tbody>
+                                                </table>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                </div><!-- /canvas-zoom-wrap (R4) -->
+                            </template>
+                        </div>
+
+                        <div class="bottom-tabs">
+                            <template for:each={decoratedSheets} for:item="sheet">
+                                <div key={sheet.id}
+                                     class={sheet.wrapClass}
+                                     draggable="true"
+                                     data-sheet-id={sheet.id}
+                                     ondragstart={handleSheetDragStart}
+                                     ondragover={handleSheetDragOver}
+                                     ondragleave={handleSheetDragLeave}
+                                     ondragend={handleSheetDragEnd}
+                                     ondrop={handleSheetDrop}>
+                                    <button class={sheet.tabClass} data-sheet-id={sheet.id} onclick={setActiveSheetFromEvent} title="Arrastra para reordenar; clic para activar la hoja">{sheet.name}</button>
+                                    <button class="tab-close" title="Eliminar hoja" data-sheet-id={sheet.id} onclick={deleteSheetFromEvent}>×</button>
+                                </div>
+                            </template>
+                            <button class="sheet-tab add-tab" onclick={openNewSheetModal}>+ Añadir Hoja</button>
+                        </div>
+                    </template>
+                </main>
+
+                <!-- PANEL DERECHO -->
+                <aside class="right-panel">
+                    <template if:true={hasActiveSheet}>
+                        <template if:true={selectedColumn}>
+                            <div class="ux-panel-header">
+                                <lightning-button-icon icon-name="utility:back" variant="bare" onclick={deselectColumn} size="large" alternative-text="Volver a propiedades de hoja" class="slds-m-right_small"></lightning-button-icon>
+                                <div>
+                                    <div class="ux-header-subtitle">Configuración de columna</div>
+                                    <div class="ux-header-title">{selectedColumn.label}</div>
+                                </div>
+                            </div>
+                            <!-- U5: rediseño del panel de columna seleccionada.
+                                 Sin tabs: se ven todas las opciones como cards verticales
+                                 (General · Apariencia · Formato de datos). Conserva los mismos
+                                 handlers que el combobox anterior, solo cambia la presentación. -->
+                            <div class="ux-panel-body">
+                                <div class="ux-card">
+                                    <div class="ux-section-title">
+                                        <span class="section-icon"><lightning-icon icon-name="utility:rows" size="xx-small" alternative-text=""></lightning-icon></span>
+                                        <span>General</span>
+                                    </div>
+                                    <lightning-input
+                                        label="Nombre visible"
+                                        value={selectedColumn.alias}
+                                        data-field="alias"
+                                        onchange={handleSelectedColumnChange}
+                                        placeholder="Alias de columna…">
+                                    </lightning-input>
+                                    <lightning-slider class="slds-m-top_small" label="Ancho de columna (px)" min="70" max="520" value={selectedColumn.width} data-field="width" onchange={handleSelectedColumnChange}></lightning-slider>
+                                </div>
+
+                                <div class="ux-card slds-m-top_medium">
+                                    <div class="ux-section-title">
+                                        <span class="section-icon"><lightning-icon icon-name="utility:palette" size="xx-small" alternative-text=""></lightning-icon></span>
+                                        <span>Apariencia</span>
+                                    </div>
+                                    <div class="color-grid">
+                                        <lightning-input type="color" label="Fondo Header" value={selectedColumn.headerColor} data-field="headerColor" onchange={handleSelectedColumnChange}></lightning-input>
+                                        <lightning-input type="color" label="Texto Header" value={selectedColumn.headerTextColor} data-field="headerTextColor" onchange={handleSelectedColumnChange}></lightning-input>
+                                        <lightning-input type="color" label="Fondo Datos" value={selectedColumn.dataColor} data-field="dataColor" onchange={handleSelectedColumnChange}></lightning-input>
+                                        <lightning-input type="color" label="Texto Datos" value={selectedColumn.textColor} data-field="textColor" onchange={handleSelectedColumnChange}></lightning-input>
+                                    </div>
+                                </div>
+
+                                <div class="ux-card slds-m-top_medium">
+                                    <div class="ux-section-title">
+                                        <span class="section-icon"><lightning-icon icon-name="utility:chart" size="xx-small" alternative-text=""></lightning-icon></span>
+                                        <span>Formato de datos</span>
+                                    </div>
+                                    <div class="format-chip-row" role="radiogroup" aria-label="Tipo de formato de la columna">
+                                        <template for:each={formatChoices} for:item="chip">
+                                            <button type="button"
+                                                    key={chip.value}
+                                                    role="radio"
+                                                    aria-checked={chip.ariaChecked}
+                                                    class={chip.chipClass}
+                                                    data-format={chip.value}
+                                                    title={chip.hint}
+                                                    onclick={setFormatChoice}>
+                                                <lightning-icon icon-name={chip.icon} size="x-small" alternative-text=""></lightning-icon>
+                                                <span>{chip.label}</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <!-- Formato de fecha por columna: aparece solo si la columna es DATE/DATETIME (por dataType,
+                                         por formato manual, o por nombre del campo). Se aplica al preview, Excel y PDF. -->
+                                    <template if:true={isSelectedColumnDateLike}>
+                                        <lightning-combobox
+                                            class="slds-m-top_small"
+                                            label="Formato de fecha"
+                                            options={dateFormatOptions}
+                                            value={selectedColumn.dateFormat}
+                                            data-field="dateFormat"
+                                            onchange={handleSelectedColumnChange}
+                                            placeholder="Predeterminado del sistema"
+                                            field-level-help="Cambia cómo se muestra la fecha en la vista previa y en Excel/PDF. 'Predeterminado' usa el locale del navegador.">
+                                        </lightning-combobox>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template if:false={selectedColumn}>
+                            <div class="ux-panel-header ux-panel-header--global">
+                                <div class="ux-panel-header__icon" aria-hidden="true">
+                                    <lightning-icon icon-name="utility:settings" size="small" alternative-text=""></lightning-icon>
+                                </div>
+                                <div class="ux-panel-header__text">
+                                    <div class="ux-header-subtitle">Configuración del reporte</div>
+                                    <div class="ux-header-title">{activeSheet.name}</div>
+                                </div>
+                            </div>
+
+                            <!-- Ola 3: sub-tabs del panel derecho.
+                                 Reorganizan los bloques existentes en 4 grupos. NO cambian
+                                 ningún handler ni propiedad: solo controlan qué se ve. -->
+                            <nav class="panel-tabs" role="tablist" aria-label="Secciones de configuración">
+                                <button type="button" role="tab" class={panelTabGeneralClass} data-paneltab="general" onclick={setPanelTab} title="Nombre, tipo y orden de la hoja">General</button>
+                                <button type="button" role="tab" class={panelTabFormatoClass} data-paneltab="formato" onclick={setPanelTab} title="Apariencia: colores, fuente, vista previa y logo">Formato</button>
+                                <button type="button" role="tab" class={panelTabFiltrosClass} data-paneltab="filtros" onclick={setPanelTab} title="Reglas que filtran las filas de esta hoja">Filtros</button>
+                                <button type="button" role="tab" class={panelTabExportClass} data-paneltab="export" onclick={setPanelTab} title="Tablas pivot y combinar datos de otro reporte">Más</button>
+                            </nav>
+
+                            <div class="ux-panel-body">
+                                <!-- Warning siempre visible: una mala configuración no debería ser fácil de ignorar. -->
+                                <template if:true={hasSheetConfigWarnings}>
+                                    <div class="hint-box slds-m-bottom_medium">
+                                        ⚠️ {sheetConfigWarningText}
+                                    </div>
+                                </template>
+
+                                <!-- ───── TAB GENERAL ─────
+                                     Rediseño U2-rev2: cards con icono en caja azul + cabecera con
+                                     separador. Layout responsivo en 2 columnas para "Ordenar por /
+                                     Dirección" emulando el mockup, sin añadir features nuevas. -->
+                                <template if:true={isPanelTabGeneral}>
+                                    <div class="ux-card">
+                                        <div class="ux-section-title">
+                                            <span class="section-icon"><lightning-icon icon-name="utility:rows" size="xx-small" alternative-text=""></lightning-icon></span>
+                                            <span>General</span>
+                                        </div>
+                                        <lightning-input label="Nombre de la hoja" value={activeSheet.name} onchange={handleActiveSheetNameChange}></lightning-input>
+                                        <lightning-combobox class="slds-m-top_small" label="Tipo de vista" options={sheetTypeOptions} value={activeSheet.type} onchange={handleActiveSheetTypeChange}></lightning-combobox>
+                                    </div>
+
+                                    <template if:true={isTableSheet}>
+                                        <div class="ux-card slds-m-top_medium">
+                                            <div class="ux-section-title">
+                                                <span class="section-icon"><lightning-icon icon-name="utility:sort" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                <span>Orden y totales</span>
+                                            </div>
+                                            <div class="two-columns">
+                                                <lightning-combobox label="Ordenar por" options={summaryOptions} value={activeSheet.settings.sortBy} onchange={handleSortByChange}></lightning-combobox>
+                                                <template if:true={activeSheet.settings.sortBy}>
+                                                    <lightning-combobox label="Dirección" options={sortDirectionOptions} value={activeSheet.settings.sortDirection} onchange={handleSortDirChange}></lightning-combobox>
+                                                </template>
+                                            </div>
+                                            <div class="toggle-stack slds-m-top_small">
+                                                <lightning-input type="toggle" label="Mostrar Fila de Totales" checked={activeSheet.settings.showTotals} onchange={handleShowTotalsChange} message-toggle-active="" message-toggle-inactive=""></lightning-input>
+                                                <!-- Ver conteo de registros: chip en el breadcrumb del lienzo. -->
+                                                <lightning-input type="toggle" label="Ver conteo de registros" checked={showRowCountChecked} onchange={handleShowRowCountChange} message-toggle-active="" message-toggle-inactive="" field-level-help="Muestra el número total de filas (tras filtros) como chip en el lienzo. No afecta a Excel/PDF/PPT."></lightning-input>
+                                            </div>
+                                        </div>
+
+                                        <!-- X6: auto-fit anchos de columna basado en contenido. -->
+                                        <div class="ux-card slds-m-top_medium">
+                                            <div class="ux-section-title">
+                                                <span class="section-icon"><lightning-icon icon-name="utility:expand_alt" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                <span>Anchos de columna</span>
+                                            </div>
+                                            <p class="ux-card__lead">Ajusta automáticamente el ancho de cada columna visible según su contenido.</p>
+                                            <lightning-button variant="brand-outline" label="Auto-ajustar anchos" icon-name="utility:resize" onclick={autoFitColumnWidths} class="full-width-btn"></lightning-button>
+                                        </div>
+                                    </template>
+
+                                </template>
+
+                                <!-- ───── TAB FORMATO ───── -->
+                                <template if:true={isPanelTabFormato}>
+                                    <template if:true={isTableSheet}>
+                                        <div class="ux-card">
+                                            <div class="ux-section-title">
+                                                <span class="section-icon"><lightning-icon icon-name="utility:preview" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                <span>Vista previa (lienzo)</span>
+                                            </div>
+                                            <lightning-combobox label="Texto en tabla" options={previewFontScaleOptions} value={activePreviewFontScaleValue} onchange={handlePreviewFontScaleChange} field-level-help="Solo afecta la tabla central; Excel/PDF siguen usando el tamaño de exportación habitual."></lightning-combobox>
+                                            <div class="toggle-stack slds-m-top_small">
+                                                <lightning-input type="toggle" label="Celdas vacías sin guión" checked={blankHyphenAsEmptyChecked} onchange={handleBlankHyphenAsEmptyChange} message-toggle-active="" message-toggle-inactive="" field-level-help="Si el informe devuelve «-» o guión para huecos, la vista previa y la exportación muestran celda en blanco (puedes desactivarlo para ver el texto original)."></lightning-input>
+                                                <lightning-input type="toggle" label="Ajustar texto (varias líneas)" checked={activeSheet.settings.previewCellWrapWords} onchange={handlePreviewCellWrapWordsChange} message-toggle-active="" message-toggle-inactive="" field-level-help="Las celdas se muestran con texto en múltiples líneas. Se aplica también al Excel y PDF exportados."></lightning-input>
+                                                <!-- X2: Filas alternadas (zebra striping). -->
+                                                <lightning-input type="toggle" label="Filas alternadas (banding)" checked={bandedRowsChecked} onchange={handleBandedRowsChange} message-toggle-active="" message-toggle-inactive="" field-level-help="Aplica un color de fondo alternado a filas pares. Solo en celdas sin color de columna personalizado. Se replica en Excel y PDF."></lightning-input>
+                                            </div>
+                                            <template if:true={bandedRowsChecked}>
+                                                <lightning-input class="slds-m-top_small" type="color" label="Color de banda" value={bandedRowColorValue} onchange={handleBandedRowColorChange}></lightning-input>
+                                            </template>
+                                            <!-- X4: altura de cabecera y de fila configurables por hoja. -->
+                                            <div class="two-columns slds-m-top_small">
+                                                <lightning-slider label="Alto de cabecera (px)" min="20" max="80" step="2" value={activeSheet.settings.headerHeight} onchange={handleHeaderHeightChange} field-level-help="Aplica a preview y Excel exportado."></lightning-slider>
+                                                <lightning-slider label="Alto de fila (px)" min="18" max="80" step="2" value={activeSheet.settings.dataRowHeight} onchange={handleDataRowHeightChange} field-level-help="Aplica a preview y Excel exportado (mínimo cuando 'Ajustar texto' está activo)."></lightning-slider>
+                                            </div>
+                                        </div>
+
+                                        <template if:true={isAdvancedMode}>
+                                            <div class="ux-card slds-m-top_medium">
+                                                <div class="ux-section-title">
+                                                    <span class="section-icon"><lightning-icon icon-name="utility:palette" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                    <span>Colores y fuente</span>
+                                                </div>
+                                                <lightning-combobox label="Fuente del reporte" options={fontOptions} value={workbookConfig.theme.font} onchange={handleGlobalFontChange} class="slds-m-bottom_small"></lightning-combobox>
+                                                <div class="color-grid">
+                                                    <lightning-input type="color" label="Fondo Enc." value={globalHeaderColorValue} onchange={handleGlobalHeaderColorChange}></lightning-input>
+                                                    <lightning-input type="color" label="Texto Enc." value={globalHeaderTextColorValue} onchange={handleGlobalHeaderTextColorChange}></lightning-input>
+                                                    <lightning-input type="color" label="Fondo Filas" value={globalDataColorValue} onchange={handleGlobalDataColorChange}></lightning-input>
+                                                    <lightning-input type="color" label="Texto Filas" value={globalDataTextColorValue} onchange={handleGlobalDataTextColorChange}></lightning-input>
+                                                </div>
+                                            </div>
+
+                                            <!-- X8: Bordes tipo Excel — afecta a preview, Excel y PDF. -->
+                                            <div class="ux-card slds-m-top_medium">
+                                                <div class="ux-section-title">
+                                                    <span class="section-icon"><lightning-icon icon-name="utility:table" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                    <span>Bordes</span>
+                                                </div>
+                                                <lightning-combobox
+                                                    label="Estilo de borde"
+                                                    options={borderStyleOptions}
+                                                    value={borderStyleValue}
+                                                    onchange={handleBorderStyleChange}
+                                                    field-level-help="Replica la herramienta Bordes de Excel. Se aplica a la vista previa, al Excel y al PDF exportados."></lightning-combobox>
+                                                <div class="two-columns slds-m-top_small">
+                                                    <lightning-input type="color" label="Color del borde" value={borderColorValue} onchange={handleBorderColorChange}></lightning-input>
+                                                    <lightning-slider label="Grosor (px)" min="1" max="3" step="1" value={borderWidthValue} onchange={handleBorderWidthChange} field-level-help="1 = fino, 2 = medio, 3 = grueso."></lightning-slider>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+
+                                    <template if:true={isAdvancedMode}>
+                                        <div class="ux-card slds-m-top_medium">
+                                            <div class="ux-section-title">
+                                                <span class="section-icon"><lightning-icon icon-name="utility:image" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                <span>Logo y tabla en Excel/PDF</span>
+                                            </div>
+                                            <lightning-input type="file" label="Logo en el encabezado" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" onchange={handleLogoUpload}></lightning-input>
+                                            <p class="slds-m-top_xx-small" style="font-size:10px;color:var(--pandora-text-muted);">PNG/JPEG/WebP/GIF, máx. ~1,8&nbsp;MB. Se normaliza a PNG (máx. 1280&nbsp;px) para previsualización y Excel/PDF.</p>
+                                            <template if:true={activeSheet.settings.logoBase64}>
+                                                <div class="logo-remove-box slds-m-vertical_small">
+                                                    <lightning-button variant="destructive-text" label="Quitar logo" onclick={removeLogo}></lightning-button>
+                                                </div>
+                                                <div class="two-columns slds-m-top_small">
+                                                    <lightning-input type="text" label="Columna" value={activeSheet.settings.logoCol} onchange={handleLogoColChange}></lightning-input>
+                                                    <lightning-input type="number" label="Fila" value={activeSheet.settings.logoRow} onchange={handleLogoRowChange}></lightning-input>
+                                                </div>
+                                            </template>
+                                            <lightning-input class="slds-m-top_small" type="number" label="Fila de inicio de tabla" value={activeSheet.settings.tableStartRow} onchange={handleTableStartRowChange} min="1"></lightning-input>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={showPanelFormatoEmpty}>
+                                        <div class="hint-box">
+                                            Esta hoja de tipo resumen no tiene opciones de formato aquí. Activa la <strong>experiencia libro multi-hoja</strong> en la tab <em>General</em> para mostrar opciones avanzadas (logo, fuente, colores).
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <!-- ───── TAB FILTROS ───── -->
+                                <template if:true={isPanelTabFiltros}>
+                                    <div class="ux-card filter-chips-card">
+                                        <div class="ux-section-title">
+                                            <span class="section-icon"><lightning-icon icon-name="utility:filter" size="xx-small" alternative-text=""></lightning-icon></span>
+                                            <span>Filtros activos</span>
+                                        </div>
+                                        <template if:true={hasActiveFilterChips}>
+                                            <ul class="filter-chip-list" role="list">
+                                                <template for:each={activeFilterChips} for:item="chip">
+                                                    <li key={chip.id} class="filter-chip" title={chip.title}>
+                                                        <span class="filter-chip__dot" aria-hidden="true"></span>
+                                                        <span class="filter-chip__label">{chip.label}</span>
+                                                        <button type="button" class="filter-chip__remove" data-fid={chip.id} onclick={removeSheetFilter} title="Quitar este filtro" aria-label="Quitar filtro">×</button>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                        <template if:false={hasActiveFilterChips}>
+                                            <p class="filter-chips-empty">Sin filtros activos en esta hoja.</p>
+                                        </template>
+                                        <div class="filter-chips-actions">
+                                            <lightning-button variant="neutral" label="+ Agregar filtro" onclick={openFiltersModal} title="Abre el editor de filtros con operadores avanzados (contiene, vacío, rango...)"></lightning-button>
+                                            <template if:true={hasActiveFilterChips}>
+                                                <lightning-button variant="base" label="Editar todos" icon-name="utility:edit" onclick={openFiltersModal} title="Abrir el editor completo"></lightning-button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- ───── TAB MÁS ───── -->
+                                <template if:true={isPanelTabExport}>
+                                    <!-- X7: vista previa de impresión + ajustes PDF. -->
+                                    <div class="ux-card">
+                                        <div class="ux-section-title">
+                                            <span class="section-icon"><lightning-icon icon-name="utility:print" size="xx-small" alternative-text=""></lightning-icon></span>
+                                            <span>Impresión / PDF</span>
+                                        </div>
+                                        <lightning-combobox label="Orientación" options={pdfOrientationOptions} value={pdfOrientationValue} onchange={handlePdfOrientationChange}></lightning-combobox>
+                                        <lightning-combobox class="slds-m-top_x-small" label="Márgenes" options={pdfMarginOptions} value={pdfMarginValue} onchange={handlePdfMarginChange}></lightning-combobox>
+                                        <lightning-button class="slds-m-top_small full-width-btn" variant="brand-outline" label="Vista previa de impresión" icon-name="utility:preview" onclick={openPrintPreviewModal}></lightning-button>
+                                    </div>
+
+                                    <template if:true={isAdvancedMode}>
+                                        <div class="ux-card">
+                                            <div class="pivot-section-toolbar slds-m-bottom_small">
+                                                <span class="ux-section-title pivot-section-toolbar__title">
+                                                    <span class="section-icon"><lightning-icon icon-name="utility:chart" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                    <span>Tablas pivot</span>
+                                                </span>
+                                                <lightning-button
+                                                    variant="neutral"
+                                                    label="Añadir pivot"
+                                                    icon-name="utility:add"
+                                                    onclick={handleAddSubTable}
+                                                    title="Crea una subtabla de resumen (pivot)"
+                                                ></lightning-button>
+                                            </div>
+                                            <template if:false={decoratedSubTables.length}><div class="hint-box slds-m-top_small">No hay resúmenes pivot. Pulsa «Añadir pivot» para crear uno.</div></template>
+                                            <template for:each={decoratedSubTables} for:item="sub">
+                                                <div key={sub.id} class="pivot-config-card slds-m-top_small">
+                                                    <div class="pivot-header">
+                                                        <span class="pivot-title">{sub.titleDisplay}</span>
+                                                        <lightning-button-icon icon-name="utility:delete" variant="bare" size="small" data-id={sub.id} alternative-text="Eliminar tabla pivot" onclick={handleRemoveSubTable}></lightning-button-icon>
+                                                    </div>
+
+                                                    <lightning-input label="Nombre de la Tabla (Opcional)" value={sub.title} data-id={sub.id} data-field="title" onchange={handleSubTableChange} placeholder="Ej: Demanda por Estado" class="slds-m-bottom_x-small"></lightning-input>
+                                                    <lightning-combobox label="Tipo de letra" options={fontOptions} value={sub.font} data-id={sub.id} data-field="font" onchange={handleSubTableChange} class="slds-m-bottom_x-small"></lightning-combobox>
+
+                                                    <lightning-combobox label="Agrupar por" options={summaryOptions} value={sub.groupByField} data-id={sub.id} data-field="groupByField" onchange={handleSubTableChange}></lightning-combobox>
+                                                    <lightning-combobox class="slds-m-top_x-small" label="Operación" options={operationOptions} value={sub.operation} data-id={sub.id} data-field="operation" onchange={handleSubTableChange}></lightning-combobox>
+                                                    <template if:true={sub.needsMetricField}><lightning-combobox class="slds-m-top_x-small" label="Campo a Calcular" options={numericSummaryOptions} value={sub.metricField} data-id={sub.id} data-field="metricField" onchange={handleSubTableChange}></lightning-combobox></template>
+                                                    <lightning-combobox class="slds-m-top_x-small" label="Orientación" options={orientationOptions} value={sub.orientation} data-id={sub.id} data-field="orientation" onchange={handleSubTableChange}></lightning-combobox>
+                                                    <template if:true={sub.groupByField}>
+                                                        <lightning-input type="number" class="slds-m-top_small" label="Fila en Excel (opcional)" value={sub.excelStartRow} data-id={sub.id} data-field="excelStartRow" onchange={handleSubTableChange} min="1" field-level-help="Vacío: el pivot va debajo de la tabla. Con número: se intenta anclar el bloque a esa fila."></lightning-input>
+                                                    </template>
+
+                                                    <div class="two-columns slds-m-top_small">
+                                                        <lightning-combobox label="Ordenar por" options={pivotSortByOptions} value={sub.sortBy} data-id={sub.id} data-field="sortBy" onchange={handleSubTableChange}></lightning-combobox>
+                                                        <lightning-combobox label="Dirección" options={sortDirectionOptions} value={sub.sortDirection} data-id={sub.id} data-field="sortDirection" onchange={handleSubTableChange}></lightning-combobox>
+                                                    </div>
+
+                                                    <div class="slds-m-top_small" style="padding: 8px; background: #ffffff; border-radius: 6px; border: 1px dashed #cbd5e1;">
+                                                        <lightning-input type="toggle" label="Auto Ajuste de Columnas" checked={sub.autoFit} data-id={sub.id} data-field="autoFit" onchange={handleSubTableChangeToggle} message-toggle-active="Activado" message-toggle-inactive="Manual"></lightning-input>
+                                                        <template if:false={sub.autoFit}>
+                                                            <lightning-slider class="slds-m-top_x-small" label="Ancho manual (px)" min="50" max="600" value={sub.manualWidth} data-id={sub.id} data-field="manualWidth" onchange={handleSubTableChangeSlider}></lightning-slider>
+                                                        </template>
+                                                    </div>
+
+                                                    <div class="ux-section-title slds-m-top_medium" style="font-size: 9px;">Colores Exclusivos</div>
+                                                    <div class="color-grid">
+                                                        <lightning-input type="color" label="Fondo Head" value={sub.headerColor} data-id={sub.id} data-field="headerColor" onchange={handleSubTableChange}></lightning-input>
+                                                        <lightning-input type="color" label="Texto Head" value={sub.headerTextColor} data-id={sub.id} data-field="headerTextColor" onchange={handleSubTableChange}></lightning-input>
+                                                        <lightning-input type="color" label="Fondo Data" value={sub.dataColor} data-id={sub.id} data-field="dataColor" onchange={handleSubTableChange}></lightning-input>
+                                                        <lightning-input type="color" label="Texto Data" value={sub.dataTextColor} data-id={sub.id} data-field="dataTextColor" onchange={handleSubTableChange}></lightning-input>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- F5: Gestión de gráficos por hoja. -->
+                                        <div class="ux-card slds-m-top_medium">
+                                            <div class="pivot-section-toolbar slds-m-bottom_small">
+                                                <span class="ux-section-title pivot-section-toolbar__title">
+                                                    <span class="section-icon"><lightning-icon icon-name="utility:chart" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                    <span>Gráficos</span>
+                                                </span>
+                                                <lightning-button
+                                                    variant="neutral"
+                                                    label="Añadir gráfico"
+                                                    icon-name="utility:add"
+                                                    onclick={openAddChartModal}
+                                                    title="Crea un gráfico (barras / líneas / pastel) basado en los datos de esta hoja">
+                                                </lightning-button>
+                                            </div>
+                                            <template if:false={hasActiveSheetCharts}>
+                                                <div class="hint-box slds-m-top_small">Aún no hay gráficos en esta hoja. Pulsa «Añadir gráfico» para crear el primero.</div>
+                                            </template>
+                                            <template if:true={hasActiveSheetCharts}>
+                                                <ul class="chart-config-list">
+                                                    <template for:each={activeSheetCharts} for:item="c">
+                                                        <li key={c.id} class="chart-config-item">
+                                                            <div class="chart-config-item__info">
+                                                                <span class="chart-config-item__title">{c.title}</span>
+                                                                <span class="chart-config-item__meta">{c.typeLabel}</span>
+                                                            </div>
+                                                            <lightning-button-icon icon-name="utility:edit" variant="bare" size="small" alternative-text="Editar gráfico" title="Editar" data-id={c.id} onclick={openEditChartModal}></lightning-button-icon>
+                                                            <lightning-button-icon icon-name="utility:delete" variant="bare" size="small" alternative-text="Eliminar gráfico" title="Eliminar" data-id={c.id} onclick={deleteChart}></lightning-button-icon>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </template>
+                                            <template if:true={chartjsUnavailable}>
+                                                <div class="hint-box slds-m-top_small" style="background:#FEE2E2;border-color:#FCA5A5;color:#7F1D1D;">
+                                                    No se pudo cargar Chart.js. Sube el Static Resource «chartjs» (archivo <code>chart.umd.js</code>) y recarga.
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <div class="ux-card ux-card--blend slds-m-top_medium">
+                                            <div class="ux-section-title">
+                                                <span class="section-icon"><lightning-icon icon-name="utility:link" size="xx-small" alternative-text=""></lightning-icon></span>
+                                                <span>Combinar otro reporte</span>
+                                            </div>
+                                            <p class="ux-card__lead">Crea una hoja nueva con datos de otro informe sin perder lo que ya tienes.</p>
+                                            <lightning-button variant="brand-outline" label="Añadir datos de otro informe" icon-name="utility:table" onclick={openBlendModal} class="full-width-btn"></lightning-button>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={showPanelExportEmpty}>
+                                        <div class="hint-box">
+                                            Pivots y combinaciones de datos están dentro de la <strong>experiencia libro multi-hoja</strong>. Actívala en la tab <em>General</em> para acceder a estas opciones.
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </aside>
+            </div>
+            </template>
+
+            <!-- Ola 2: Vista de Exportación.
+                 Solo aparece cuando activeStudioTab === 'export'. Cada tarjeta reusa los
+                 handlers existentes via exportFromTab/data-action; no duplica logica. -->
+            <template if:true={isStudioTabExport}>
+                <section class="studio-export-view" aria-label="Acciones de exportación">
+                    <div class="studio-export-view__intro">
+                        <h2>Exportar este reporte</h2>
+                        <p>Cuatro accesos directos para descargar tu trabajo. Las opciones que requieren tener una hoja activa quedan deshabilitadas mientras se carga el reporte.</p>
+                    </div>
+                    <div class="studio-export-grid">
+                        <button type="button" class="export-card export-card--ppt" data-action="ppt" onclick={exportFromTab} disabled={isActionDisabled} title="Avanzar al constructor de PowerPoint con el Excel actual">
+                            <span class="export-card__icon" aria-hidden="true">📊</span>
+                            <h3 class="export-card__title">Generar PPT</h3>
+                            <p class="export-card__desc">Abre el constructor de PowerPoint con los datos y plantilla actuales. Ideal para presentaciones.</p>
+                        </button>
+                        <button type="button" class="export-card export-card--excel" data-action="excel" onclick={exportFromTab} disabled={isActionDisabled} title="Descargar el reporte como archivo .xlsx con formato">
+                            <span class="export-card__icon" aria-hidden="true">📗</span>
+                            <h3 class="export-card__title">Exportar a Excel</h3>
+                            <p class="export-card__desc">Genera un libro .xlsx con todas las hojas, formatos, pivots y totales tal y como los ves.</p>
+                        </button>
+                        <button type="button" class="export-card export-card--pdf" data-action="pdf" onclick={exportFromTab} disabled={isActionDisabled} title="Descargar el reporte como PDF imprimible">
+                            <span class="export-card__icon" aria-hidden="true">📕</span>
+                            <h3 class="export-card__title">Exportar a PDF</h3>
+                            <p class="export-card__desc">Versión imprimible del reporte. Útil para compartir por correo o adjuntar a un caso.</p>
+                        </button>
+                        <button type="button" class="export-card export-card--config" data-action="config" onclick={exportFromTab} disabled={isActionDisabled} title="Descargar la definición del diseño en formato JSON">
+                            <span class="export-card__icon" aria-hidden="true">⚙️</span>
+                            <h3 class="export-card__title">Exportar configuración</h3>
+                            <p class="export-card__desc">Guarda un .json con tu plantilla (columnas, formato, filtros). Puedes importarlo en otro reporte.</p>
+                        </button>
+                    </div>
+                </section>
+            </template>
+
+        </template>
+
+        <!-- V: Modal de gestión de variantes (CRUD + selección).
+             Modo "picker" → cuando se abre automáticamente al cambiar de reporte; pide elegir antes de entrar al editor.
+             Modo "manager" → cuando se abre desde el botón "Gestionar variantes" en la cabecera; ya hay variante activa. -->
+        <template if:true={showVariantManagerModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="variant-manager-title" aria-modal="true" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container variant-manager-container">
+                    <header class="slds-modal__header variant-manager-header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeVariantManagerModal}>
+                            <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                        </button>
+                        <h2 id="variant-manager-title" class="slds-modal__title slds-hyphenate">{variantManagerTitle}</h2>
+                        <p class="slds-m-top_x-small variant-manager-subtitle">{variantManagerSubtitle}</p>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium variant-manager-content">
+                        <div class="variant-manager-actions">
+                            <lightning-button label="Guardar config actual como variante" variant="brand" icon-name="utility:add" onclick={openVariantSaveModal} disabled={variantsBusy}></lightning-button>
+                            <lightning-button label="Importar archivo .json como variante" icon-name="utility:upload" onclick={triggerImportVariantDialog} disabled={variantsBusy} title="Crea una variante nueva desde un archivo .json sin tocar la configuración que tienes abierta en el editor."></lightning-button>
+                            <template if:true={currentVariantId}>
+                                <lightning-button label="Editar variante activa" icon-name="utility:edit" onclick={editCurrentVariant} disabled={variantsBusy}></lightning-button>
+                                <lightning-button label="Duplicar variante activa" icon-name="utility:copy" onclick={duplicateCurrentVariant} disabled={variantsBusy}></lightning-button>
+                            </template>
+                            <input type="file" data-id="import-variant-file" accept="application/json,.json" class="variant-import-file-input" onchange={handleImportVariantFile} />
+                        </div>
+
+                        <!-- V-SEARCH: buscador del modal de variantes. Solo aparece cuando hay 6+ variantes
+                             para que no estorbe en reportes con pocas. Filtra por nombre, normalizando acentos. -->
+                        <template if:true={showVariantSearch}>
+                            <div class="variants-search">
+                                <lightning-input
+                                    type="search"
+                                    label="Buscar variante por nombre"
+                                    variant="label-hidden"
+                                    placeholder={variantSearchPlaceholder}
+                                    value={variantSearchQuery}
+                                    onchange={handleVariantSearchInput}
+                                    class="variants-search__input">
+                                </lightning-input>
+                            </div>
+                        </template>
+
+                        <template if:true={variantsBusy}>
+                            <div class="loading-row"><lightning-spinner size="small"></lightning-spinner><span>Procesando…</span></div>
+                        </template>
+
+                        <template if:false={hasAnyVariants}>
+                            <div class="variants-empty">
+                                <span class="empty-icon-wrapper" aria-hidden="true">🗂️</span>
+                                <h3>Todavía no hay variantes</h3>
+                                <p>Configura el reporte como quieres y guarda tu primera variante. Después podrás cargar, duplicar o eliminar versiones.</p>
+                            </div>
+                        </template>
+
+                        <template if:true={noResultsForFilter}>
+                            <div class="variants-empty variants-empty--filter">
+                                <span class="empty-icon-wrapper" aria-hidden="true">🔍</span>
+                                <h3>Sin coincidencias</h3>
+                                <p>{noResultsMessage}</p>
+                                <lightning-button label="Limpiar búsqueda" onclick={clearVariantSearch} variant="neutral"></lightning-button>
+                            </div>
+                        </template>
+
+                        <template if:true={hasFilteredVariants}>
+                            <ul class="variants-grid">
+                                <template for:each={filteredVariants} for:item="v">
+                                    <li key={v.varianteId} class="variant-card">
+                                        <button type="button" class="variant-card__pick-btn" data-id={v.varianteId} onclick={handlePickVariant} title="Cargar esta variante">
+                                            <div class="variant-card__header">
+                                                <span class="variant-card__name">{v.nombre}</span>
+                                                <span class={v.badgeClass}>{v.visibilityLabel}</span>
+                                            </div>
+                                            <div class="variant-card__meta">
+                                                <template if:true={v.esDefault}>
+                                                    <span class="variant-card__pill variant-card__pill--default">DEFAULT</span>
+                                                </template>
+                                                <template if:true={v.isCurrent}>
+                                                    <span class="variant-card__pill variant-card__pill--current">ACTIVA</span>
+                                                </template>
+                                                <template if:true={v.hasPpt}>
+                                                    <span class="variant-card__ppt-icon" title={v.pptChipTitle} role="img" aria-label="Presentación asociada">
+                                                        <lightning-icon icon-name="doctype:ppt" size="small" alternative-text="Presentación asociada"></lightning-icon>
+                                                    </span>
+                                                </template>
+                                                <span class="variant-card__date">Modificada: {v.lastModifiedDisplay}</span>
+                                                <template if:true={v.ownerUserName}>
+                                                    <span class="variant-card__owner">por {v.ownerUserName}</span>
+                                                </template>
+                                            </div>
+                                        </button>
+                                        <div class="variant-card__actions">
+                                            <lightning-button-icon icon-name="utility:download" variant="border" alternative-text="Descargar variante" title="Descargar esta variante como archivo .json" data-id={v.varianteId} onclick={exportVariantById} disabled={variantsBusy}></lightning-button-icon>
+                                            <lightning-button-icon icon-name="utility:delete" variant="border" alternative-text="Eliminar" title="Eliminar esta variante" data-id={v.varianteId} onclick={deleteVariantById} disabled={variantsBusy}></lightning-button-icon>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <template if:true={variantManagerIsPicker}>
+                            <lightning-button label="Empezar desde cero" onclick={startFreshNoVariant} title="Carga los datos del reporte sin aplicar ninguna variante. Tendrás que guardar como nueva variante para poder avanzar a PPT."></lightning-button>
+                        </template>
+                        <template if:false={variantManagerIsPicker}>
+                            <lightning-button label="Cerrar" onclick={closeVariantManagerModal}></lightning-button>
+                        </template>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={closeVariantManagerModal}></div>
+        </template>
+
+        <!-- V: Modal de guardar/editar variante (nombre, default, pública/privada). -->
+        <template if:true={showVariantSaveModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="variant-save-title" aria-modal="true" class="slds-modal slds-fade-in-open slds-modal_small">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeVariantSaveModal}>
+                            <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                        </button>
+                        <h2 id="variant-save-title" class="slds-modal__title slds-hyphenate">{variantSaveModalTitle}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <template if:true={isImportingVariant}>
+                            <div class="variant-import-hint">
+                                <lightning-icon icon-name="utility:upload" size="small" alternative-text="Importar"></lightning-icon>
+                                <div>
+                                    <p class="slds-text-body_small"><strong>Estás creando una variante nueva desde un archivo.</strong></p>
+                                    <p class="slds-text-body_small">No se modifica la configuración que tienes abierta en el editor.</p>
+                                    <template if:true={importMismatchNotice}>
+                                        <p class="slds-text-body_small variant-import-hint__warn">⚠ {importMismatchNotice}</p>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <lightning-input type="text" label="Nombre de la variante" value={variantSaveDraft.nombre} onchange={handleVariantSaveNombre} max-length="120" required></lightning-input>
+                        <div class="slds-m-top_small">
+                            <lightning-input type="checkbox" label="Marcar como variante por defecto del reporte" checked={variantSaveDraft.esDefault} onchange={handleVariantSaveDefault}></lightning-input>
+                            <lightning-input type="checkbox" label="Pública (visible para todo el equipo)" checked={variantSaveDraft.esPublica} onchange={handleVariantSavePublica}></lightning-input>
+                            <template if:true={isImportingVariant}>
+                                <lightning-input type="checkbox" label="Activarla al guardar (reemplaza la variante actual en el editor)" checked={variantSaveDraft.activateAfterSave} onchange={handleVariantSaveActivate}></lightning-input>
+                            </template>
+                        </div>
+                        <p class="slds-text-color_weak slds-m-top_small slds-text-body_small">
+                            • Las variantes <strong>públicas</strong> son visibles y editables por cualquier usuario con acceso al reporte.<br/>
+                            • Las variantes <strong>privadas</strong> solo aparecen para su creador.
+                        </p>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancelar" onclick={closeVariantSaveModal}></lightning-button>
+                        <lightning-button label="Guardar" variant="brand" onclick={submitVariantSave} disabled={variantsBusy} class="slds-m-left_x-small"></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" onclick={closeVariantSaveModal}></div>
+        </template>
+    </div>
+</template>

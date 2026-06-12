@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Servicios_Fallback__c</fullName>
+    <description>Si �Servicios AMS� est� vac�o, se usan estos valores antes de AMS-SAP / AMS-SAP-Mexico.</description>
+    <label>Servicios AMS (reserva)</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

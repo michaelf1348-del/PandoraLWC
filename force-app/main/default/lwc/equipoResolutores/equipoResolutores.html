@@ -1,0 +1,544 @@
+<template>
+    <lightning-card icon-name="standard:groups">
+        <span slot="title" class="card-title">
+            <span class="card-title-text">Estados y SLA</span>
+            <div class="status-badge-wrap">
+                <button type="button" class={statusBadgeClass} disabled={statusMenuDisabled} onclick={toggleStatusMenu}>
+                    <span class={statusDotClass}></span>
+                    <span class="status-badge-label">{statusLabel}</span>
+                    <lightning-icon icon-name={statusChevron} size="xx-small"></lightning-icon>
+                </button>
+                <template lwc:if={showStatusMenu}>
+                    <div class="status-menu">
+                        <template for:each={teamStatusOptions} for:item="st">
+                            <div key={st.key} class={st.itemClass}>
+                                <span class={st.dotClass}></span>
+                                <div class="status-menu-text">
+                                    <span class="status-menu-label">{st.label}</span>
+                                    <span class="status-menu-desc">{st.desc}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </span>
+        <div slot="actions" class="header-actions" role="toolbar" aria-label="Acciones SLA">
+            <lightning-button-icon
+                class="header-btn-monitor"
+                icon-name="utility:desktop"
+                variant="border-filled"
+                alternative-text="Monitor SLA"
+                title="Monitor SLA"
+                onclick={openSlaMonitorHome}>
+            </lightning-button-icon>
+            <lightning-button-icon
+                class="header-btn-clock"
+                icon-name="utility:clock"
+                variant="border-filled"
+                alternative-text="Ver historial completo"
+                title="Ver historial completo"
+                onclick={openHistoryModal}>
+            </lightning-button-icon>
+            <template lwc:if={canManageTeam}>
+                <lightning-button-icon
+                    class="header-btn-add"
+                    icon-name="utility:add"
+                    variant="border-filled"
+                    alternative-text="Añadir responsable"
+                    title="Añadir responsable"
+                    onclick={openAddModal}>
+                </lightning-button-icon>
+            </template>
+        </div>
+
+        <div class="er-body">
+            <!-- Summary: Estado + Resolutor del ticket -->
+            <div class="kpi-cells">
+                <div class="sb-seg sb-seg_sla">
+                    <span class="sla-ring" style={slaRingStyle}>
+                        <span class="sla-ring-inner">
+                            <lightning-icon icon-name={slaKpiIcon} size="small" variant={slaIconVariant}></lightning-icon>
+                        </span>
+                    </span>
+                    <div class="kpi-text">
+                        <span class="kpi-label">Estado</span>
+                        <span class="kpi-strong" title={estadoStrongLabel}>{estadoStrongLabel}</span>
+                        <template lwc:if={showTimerUnderEtapa}>
+                            <span class="kpi-sla-live">
+                                <span class={custodyTimerClass}>{custodyTimerValue}</span>
+                                <span class="kpi-sla-suffix">{custodyTimerSuffix}</span>
+                            </span>
+                        </template>
+                        <template lwc:elseif={showEtapaDueShort}>
+                            <span class="kpi-sub">{slaDueShort}</span>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="sb-seg sb-seg_owner">
+                    <lightning-avatar src={ownerPhotoUrl}
+                                      fallback-icon-name="standard:user"
+                                      size="small">
+                    </lightning-avatar>
+                    <div class="kpi-text">
+                        <span class="kpi-label">Resolutor del ticket</span>
+                        <span class="kpi-strong" title={ownerName}>{ownerName}</span>
+                    </div>
+                    <template lwc:if={showTransferToOwnerOption}>
+                        <lightning-button-menu
+                            class="sb-owner-menu"
+                            alternative-text="Acciones del resolutor"
+                            variant="bare"
+                            icon-name="utility:chevrondown"
+                            menu-alignment="right"
+                            onselect={handleOwnerMenuSelect}>
+                            <lightning-menu-item value="transferToOwner" label="Pasar responsabilidad al resolutor" prefix-icon-name="utility:adduser"></lightning-menu-item>
+                        </lightning-button-menu>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Fila de apoyos + Ver equipo -->
+            <div class={apoyosRowClass}>
+                <div class="apoyos-left">
+                    <div class="apoyos-chips-line">
+                        <span class="kpi-label">{responsablesLabel}</span>
+                        <div class="apoyo-chips">
+                            <template for:each={avatarChips} for:item="chip">
+                                <span key={chip.key} class="chip-wrap">
+                                    <div class="chip-menu-anchor">
+                                        <button type="button" class={chip.chipClass}
+                                                title={chip.title}
+                                                data-user-id={chip.userId}
+                                                data-can-remove={chip.canRemove}
+                                                disabled={chip.assignDisabled}
+                                                onclick={handleChipClick}>
+                                            <span class="chip-initials" style={chip.colorStyle}>{chip.initials}</span>
+                                            <template lwc:if={chip.isCurrentCustodian}>
+                                                <span class="avatar-dot avatar-dot_active chip-dot"></span>
+                                            </template>
+                                        </button>
+                                        <template lwc:if={chip.showDropdown}>
+                                            <div class="chip-dropdown" role="menu">
+                                                <template lwc:if={chip.showAssignInMenu}>
+                                                    <button type="button"
+                                                            class="chip-dropdown-item"
+                                                            data-user-id={chip.userId}
+                                                            onclick={handleChipMenuAssign}>
+                                                        Asignar responsable
+                                                    </button>
+                                                </template>
+                                                <button type="button"
+                                                        class="chip-dropdown-item chip-dropdown-item_danger"
+                                                        data-user-id={chip.userId}
+                                                        onclick={handleChipMenuRemove}>
+                                                    Quitar del equipo
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </span>
+                            </template>
+                            <template lwc:if={hasChipOverflow}>
+                                <span class="apoyo-chip apoyo-chip_more">+{chipOverflowCount}</span>
+                            </template>
+                            <template lwc:if={canManageTeam}>
+                                <button type="button" class="apoyo-chip apoyo-chip_add" title="Añadir responsable" onclick={openAddModal}>+</button>
+                            </template>
+                        </div>
+                    </div>
+                    <template lwc:if={showTimerUnderChips}>
+                        <p class="resp-caption" title={currentCustodianName}>
+                            <span class="resp-caption-name">{currentCustodianName}</span>
+                            <span class={custodyTimerClass}>{custodyTimerValue}</span>
+                            <span class="resp-caption-suffix">{custodyTimerSuffix}</span>
+                            <template lwc:if={custodyPaused}>
+                                <lightning-badge label="Pausado"></lightning-badge>
+                            </template>
+                        </p>
+                    </template>
+                </div>
+                <div class="apoyos-row-actions">
+                    <template lwc:if={showVerEquipo}>
+                        <button
+                            type="button"
+                            class="ver-equipo-btn"
+                            title="Ver equipo"
+                            aria-label="Ver equipo"
+                            aria-expanded={showTeamPanel}
+                            onclick={toggleTeamPanel}>
+                            <lightning-icon icon-name="utility:groups" size="x-small" alternative-text="Ver equipo"></lightning-icon>
+                            <lightning-icon icon-name={teamPanelChevron} size="xx-small" class="ver-equipo-chevron"></lightning-icon>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Drawer de equipo de apoyo (dentro de la fila, ancho completo) -->
+                <template lwc:if={showTeamPanel}>
+                    <div class="apoyos-team-drawer">
+                        <div class="team-panel">
+                    <div class="team-panel-pointer"></div>
+                    <div class="team-panel-header">
+                        <div class="tp-title">
+                            <lightning-icon icon-name="utility:people" size="x-small"></lightning-icon>
+                            <span>{teamSectionTitle}</span>
+                        </div>
+                        <div class="tp-tools">
+                            <lightning-button-icon
+                                class="tp-close"
+                                icon-name="utility:close"
+                                variant="bare"
+                                alternative-text="Cerrar"
+                                title="Cerrar"
+                                onclick={closeTeamPanel}>
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+
+                    <template lwc:if={hasMembers}>
+                        <template lwc:if={hasFilteredMembers}>
+                            <div class="member-scroll">
+                                <div class="member-list">
+                                    <template for:each={filteredMembers} for:item="m">
+                                        <article key={m.userId} class={m.cardClass}>
+                                            <span class="member-avatar">
+                                                <span class="member-initials" style={m.avatarStyle}>{m.initials}</span>
+                                                <template lwc:if={m.isCurrentCustodian}>
+                                                    <span class="avatar-dot avatar-dot_active"></span>
+                                                </template>
+                                            </span>
+                                            <div class="member-text">
+                                                <p class="member-name" title={m.userName}>{m.userName}</p>
+                                                <p class={m.statusClass}>
+                                                    <template lwc:if={m.isCurrentCustodian}>
+                                                        <lightning-icon icon-name="utility:success" size="xx-small" variant="success"></lightning-icon>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <span class="member-status-dot"></span>
+                                                    </template>
+                                                    {m.statusLabel}
+                                                </p>
+                                            </div>
+                                            <div class="member-actions">
+                                                <template lwc:if={m.showTomar}>
+                                                    <lightning-button
+                                                        class="tomar-btn"
+                                                        label={m.tomarLabel}
+                                                        variant="neutral"
+                                                        icon-name="utility:forward"
+                                                        data-user-id={m.userId}
+                                                        onclick={openTransferModal}>
+                                                    </lightning-button>
+                                                </template>
+                                                <template lwc:if={m.showMenu}>
+                                                    <lightning-button-menu
+                                                        alternative-text="Más acciones"
+                                                        variant="bare"
+                                                        icon-name="utility:threedots_vertical"
+                                                        menu-alignment="right"
+                                                        data-user-id={m.userId}
+                                                        onselect={handleMemberMenuSelect}>
+                                                        <template lwc:if={m.showEdit}>
+                                                            <lightning-menu-item value="edit" label="Editar" prefix-icon-name="utility:edit"></lightning-menu-item>
+                                                        </template>
+                                                        <template lwc:if={m.showRelease}>
+                                                            <lightning-menu-item value="release" label="Devolver al resolutor" prefix-icon-name="utility:undo"></lightning-menu-item>
+                                                        </template>
+                                                        <template lwc:if={m.showDelete}>
+                                                            <lightning-menu-item value="delete" label="Quitar del equipo" prefix-icon-name="utility:delete"></lightning-menu-item>
+                                                        </template>
+                                                    </lightning-button-menu>
+                                                </template>
+                                            </div>
+                                        </article>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state">Ningún miembro coincide con la búsqueda.</div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-state">
+                            Sin apoyos adicionales. Usá <strong>Añadir apoyo</strong>.
+                        </div>
+                    </template>
+
+                    <template lwc:if={hasHistory}>
+                        <button type="button" class="history-footer" onclick={openHistoryModal}>
+                            <span class="history-footer-left">
+                                <lightning-icon icon-name="utility:clock" size="x-small"></lightning-icon>
+                                <span class="history-footer-text">
+                                    <span class="hf-title">{historyAccordionLabel}</span>
+                                    <span class="hf-sub">{lastResponsibleSummary}</span>
+                                </span>
+                            </span>
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                        </button>
+                    </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Monitor SLA -->
+        <template lwc:if={showSlaMonitorModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">{slaModalTitle}</h2>
+                        <p class="slds-text-body_small slds-m-top_x-small slds-text-color_weak">{slaMonitorSummary}</p>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <template lwc:if={slaMonitorLoading}>
+                            <div class="monitor-loading">
+                                <lightning-spinner alternative-text="Cargando" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+                        <template lwc:elseif={hasSlaMonitorRows}>
+                            <div class="monitor-toolbar">
+                                <lightning-radio-group
+                                    type="button"
+                                    label="Filtrar SLA"
+                                    options={slaFilterOptions}
+                                    value={slaStatusFilter}
+                                    onchange={handleSlaFilterChange}>
+                                </lightning-radio-group>
+                                <lightning-input
+                                    type="search"
+                                    label="Buscar ticket"
+                                    placeholder="Número, asunto o hito..."
+                                    value={slaSearchTerm}
+                                    onchange={handleSlaSearchChange}>
+                                </lightning-input>
+                            </div>
+                            <template lwc:if={hasFilteredSlaRows}>
+                            <div class="monitor-table-wrap">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Ticket</th>
+                                            <th scope="col">Asunto</th>
+                                            <template lwc:if={showTeamColumn}>
+                                                <th scope="col">Consultor</th>
+                                            </template>
+                                            <th scope="col">Mi rol</th>
+                                            <th scope="col">Estado</th>
+                                            <th scope="col">SLA</th>
+                                            <th scope="col">Detalle</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={slaMonitorRows} for:item="row">
+                                            <tr key={row.key}
+                                                class="monitor-row"
+                                                data-case-id={row.caseId}
+                                                onclick={handleMonitorRowClick}>
+                                                <td><strong>{row.caseNumber}</strong></td>
+                                                <td title={row.subject}>{row.subject}</td>
+                                                <template lwc:if={showTeamColumn}>
+                                                    <td>{row.consultantName}</td>
+                                                </template>
+                                                <td><span class="badge-role">{row.myRole}</span></td>
+                                                <td>{row.caseStatus}</td>
+                                                <td><span class={row.badgeClass}>{row.badgeText}</span></td>
+                                                <td class="slds-text-body_small">{row.slaLabel}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="slds-m-top_small slds-text-body_small slds-text-color_weak">
+                                Clic en una fila para abrir el ticket.
+                            </p>
+                            </template>
+                            <template lwc:else>
+                                <p class="slds-text-align_center slds-p-vertical_medium slds-text-color_weak">
+                                    Ningún ticket coincide con el filtro o la búsqueda.
+                                </p>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <p class="slds-text-align_center slds-p-vertical_large slds-text-color_weak">
+                                No tenés tickets abiertos como resolutor, responsable o apoyo.
+                            </p>
+                        </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cerrar" onclick={closeSlaMonitorModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Añadir apoyo -->
+        <template lwc:if={showAddModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title">Añadir responsable al ticket</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-record-picker
+                            label="Usuario"
+                            placeholder="Buscar usuario..."
+                            object-api-name="User"
+                            onchange={handleUserPick}>
+                        </lightning-record-picker>
+                        <lightning-combobox
+                            class="slds-m-top_small"
+                            label="Especialidad"
+                            value={newMemberRole}
+                            options={roleOptions}
+                            placeholder="Seleccionar..."
+                            required
+                            onchange={handleRoleChange}>
+                        </lightning-combobox>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancelar" onclick={closeAddModal}></lightning-button>
+                        <lightning-button variant="brand" class="slds-m-left_x-small" label="Añadir"
+                            disabled={addDisabled} onclick={handleAddMember}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Editar apoyo -->
+        <template lwc:if={showEditModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title">Editar — {editMemberName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-combobox
+                            label="Especialidad"
+                            value={editRole}
+                            options={roleOptions}
+                            required
+                            onchange={handleEditRoleChange}>
+                        </lightning-combobox>
+                        <lightning-textarea class="slds-m-top_small" label="Notas" value={editNotes}
+                            onchange={handleEditNotesChange}>
+                        </lightning-textarea>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancelar" onclick={closeEditModal}></lightning-button>
+                        <lightning-button variant="brand" class="slds-m-left_x-small" label="Guardar"
+                            disabled={editDisabled} onclick={handleSaveEdit}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Monitor SLA (equipoResolutoresHome) -->
+        <template lwc:if={showMonitorHomeModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large monitor-home-modal">
+                <div class="slds-modal__container monitor-home-modal__container">
+                    <header class="slds-modal__header slds-modal__header_empty">
+                        <lightning-button-icon
+                            class="slds-modal__close"
+                            icon-name="utility:close"
+                            alternative-text="Cerrar"
+                            title="Cerrar"
+                            variant="bare"
+                            onclick={closeMonitorHomeModal}>
+                        </lightning-button-icon>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_none monitor-home-modal__content">
+                        <c-equipo-resolutores-home auto-refresh-minutes="1"></c-equipo-resolutores-home>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Historial completo de responsables -->
+        <template lwc:if={showHistoryModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title">{historyModalTitle}</h2>
+                        <p class="slds-text-body_small slds-m-top_x-small slds-text-color_weak">{lastResponsibleSummary}</p>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium history-modal-content">
+                        <ul class="history-list">
+                            <template for:each={modalHistoryRows} for:item="h">
+                                <li key={h.key} class={h.itemClass}>
+                                    <span class="hl-avatar" style={h.avatarStyle}>{h.initials}</span>
+                                    <div class="hl-body">
+                                        <div class="hl-line1">
+                                            <template lwc:if={h.showRecordLink}>
+                                                <a href="javascript:void(0);" class="hl-name hl-name_link" data-record-id={h.equipoRecordId} onclick={handleHistoryRecordNavigate}>{h.consultantName}</a>
+                                            </template>
+                                            <template lwc:else>
+                                                <span class="hl-name">{h.consultantName}</span>
+                                            </template>
+                                            <template lwc:if={h.isCurrentResponsible}>
+                                                <span class="hl-open">Actual</span>
+                                            </template>
+                                            <template lwc:if={h.hadViolation}>
+                                                <span class="hl-violation">Infracción SLA</span>
+                                            </template>
+                                        </div>
+                                        <div class="hl-line2">
+                                            <template lwc:if={h.estadoDisplay}>
+                                                <span class="hl-estado">{h.estadoDisplay}</span>
+                                            </template>
+                                            <span class="hl-dates">{h.rangeLabel}</span>
+                                        </div>
+                                    </div>
+                                    <div class="hl-right">
+                                        <span class="hl-duration" title={h.durationMeta}>{h.durationLabel}</span>
+                                        <span class="hl-dot" style={h.dotStyle}></span>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cerrar" onclick={closeHistoryModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Transferir / liberar custodia con motivo -->
+        <template lwc:if={showCustodyModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title">{custodyModalTitle}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <p class="slds-text-body_regular slds-m-bottom_small">{custodyModalMessage}</p>
+                        <lightning-textarea
+                            label="Motivo (opcional)"
+                            placeholder="Ej: a la espera de validación del cliente, derivado a otro equipo..."
+                            value={custodyReason}
+                            onchange={handleCustodyReasonChange}>
+                        </lightning-textarea>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancelar" onclick={closeCustodyModal}></lightning-button>
+                        <lightning-button variant="brand" class="slds-m-left_x-small"
+                            label={custodyConfirmLabel} onclick={confirmCustodyAction}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+    </lightning-card>
+</template>

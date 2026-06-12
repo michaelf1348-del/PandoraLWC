@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reversar_Provision2</fullName>
+    <active>false</active>
+    <description>Regla que condiciona que para poder Reversar una provisión debe tener folio</description>
+    <errorConditionFormula>ISBLANK( Folio__c )</errorConditionFormula>
+    <errorMessage>No puede reversar una Provisión sin Folio / Factura</errorMessage>
+</ValidationRule>

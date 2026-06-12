@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Variante_Id__c</fullName>
+    <description>Identificador de la variante de reporte a la que pertenece esta configuracion PPT. 'default' para configuraciones legacy promovidas automaticamente. Junto con Name (reportId) forma la PK logica.</description>
+    <externalId>true</externalId>
+    <label>Variante Id</label>
+    <length>36</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

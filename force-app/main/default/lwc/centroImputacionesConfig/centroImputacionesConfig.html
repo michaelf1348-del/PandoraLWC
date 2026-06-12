@@ -1,0 +1,1324 @@
+<template>
+    <div class="cc-app">
+        <header class="cc-header">
+            <div class="cc-header__brand">
+                <span class="cc-header__icon" aria-hidden="true">
+                    <lightning-icon icon-name="utility:settings" size="small" alternative-text=""></lightning-icon>
+                </span>
+                <div class="cc-header__titles">
+                    <span class="cc-header__title">Centro de Imputaciones AMS - Configuracion</span>
+                    <span class="cc-header__sub">Parametros operativos del centro de imputaciones</span>
+                </div>
+            </div>
+            <template if:true={loaded}>
+                <template if:true={canEdit}>
+                    <div class="cc-header__actions">
+                        <span class={dirtyBadgeClass} role="status">
+                            <span class="cc-dirty-dot" aria-hidden="true"></span>
+                            Cambios sin guardar
+                        </span>
+                        <lightning-button
+                            label="Valores efectivos"
+                            title="Ver que usa el centro en tiempo de ejecucion"
+                            icon-name="utility:preview"
+                            onclick={openDiagnosticsModal}
+                            disabled={isSaving}
+                        ></lightning-button>
+                        <lightning-button
+                            label="Descartar cambios"
+                            onclick={handleDiscard}
+                            disabled={discardDisabled}
+                        ></lightning-button>
+                        <lightning-button
+                            label="Recargar"
+                            title="Recargar desde el servidor"
+                            onclick={refresh}
+                            disabled={isSaving}
+                        ></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Guardar cambios"
+                            onclick={handleSave}
+                            disabled={saveDisabled}
+                        ></lightning-button>
+                    </div>
+                </template>
+            </template>
+        </header>
+
+        <main class="cc-main">
+            <template if:false={loaded}>
+                <div class="cc-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando" size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={loaded}>
+                <template if:true={canEdit}>
+                    <section class="cc-summary" aria-label="Resumen">
+                        <p class="cc-summary__text">
+                            <template if:true={leadMessage}>
+                                <strong>{leadMessage}</strong>
+                                &nbsp;·&nbsp;
+                            </template>
+                            Elige una seccion del mapa para configurar solo esa parte del centro. Los cambios se aplican al guardar.
+                        </p>
+                    </section>
+
+                    <section class="cc-map-wrap" aria-label="Secciones de configuracion del centro">
+                        <h2 class="cc-map__title">Secciones de Configuracion</h2>
+                        <p class="cc-map__hint">Selecciona una seccion. Solo veras los campos de esa zona.</p>
+                        <div class="cc-map" role="list">
+                            <template for:each={mapZones} for:item="zone">
+                                <button
+                                    key={zone.id}
+                                    type="button"
+                                    class={zone.mapClass}
+                                    data-section={zone.id}
+                                    role="listitem"
+                                    onclick={handleMapZoneClick}
+                                >
+                                    <span class="cc-map__zone-num">{zone.num}</span>
+                                    <span class="cc-map__zone-label">{zone.shortLabel}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </section>
+
+                    <div class="cc-section-host">
+                        <header class="cc-active-section">
+                            <span class="cc-active-section__num">{activeSection.num}</span>
+                            <div class="cc-active-section__text">
+                                <h2 class="cc-active-section__title">{activeSectionTitle}</h2>
+                                <p class="cc-active-section__desc">{activeSectionDesc}</p>
+                            </div>
+                        </header>
+
+                        <ul class="cc-status-pills" aria-label="Resumen de seccion">
+                            <template for:each={activeSectionStatusPills} for:item="pill">
+                                <li key={pill.key} class={pill.statusClass}>{pill.label}</li>
+                            </template>
+                        </ul>
+
+                        <template if:true={showHeaderArea}>
+                            <section class="cc-section" data-section-anchor="headerArea">
+                                <div class="cc-section__body">
+                                    <div class="cc-card-grid cc-card-grid--2">
+                                        <article class="cc-card-panel">
+                                            <h3 class="cc-card-panel__title">Identidad visible</h3>
+                                            <p class="cc-card-panel__desc">Textos del centro operativo.</p>
+                                        <lightning-input
+                                            label="Subtitulo cabecera"
+                                            value={textoSubtituloCentro}
+                                            data-field="textoSubtitulo"
+                                            onchange={handleChange}
+                                            max-length="255"
+                                        ></lightning-input>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Texto de ayuda bajo el titulo"
+                                            field-level-help="Banner informativo bajo el encabezado del centro."
+                                            value={ayudaTextoGeneral}
+                                            data-field="ayudaGen"
+                                            onchange={handleChange}
+                                            max-length="180"
+                                        ></lightning-textarea>
+                                        <lightning-input
+                                            type="toggle"
+                                            label="Mostrar guia de uso en el centro"
+                                            field-level-help="Boton Guia de uso para consultores y administradores en la cabecera del LWC."
+                                            checked={uiMostrarGuiaUso}
+                                            message-toggle-active="Visible"
+                                            message-toggle-inactive="Oculta"
+                                            data-field="uiGuiaUso"
+                                            onchange={handleChange}
+                                        ></lightning-input>
+                                        <lightning-textarea
+                                            class="cc-ta cc-ta--spaced"
+                                            label="Guia de uso - texto introductorio (opcional)"
+                                            field-level-help="Si esta vacio se usa el texto por defecto del componente."
+                                            value={guiaUsoTexto}
+                                            data-field="guiaUsoTxt"
+                                            onchange={handleChange}
+                                            max-length="1000"
+                                        ></lightning-textarea>
+                                        </article>
+                                        <article class="cc-card-panel">
+                                            <h3 class="cc-card-panel__title">Visibilidad</h3>
+                                            <div class="cc-field-stack">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Mostrar importar CSV"
+                                                    field-level-help="Muestra la opcion Importar en el menu CSV del centro de imputaciones."
+                                                    checked={uiImportCsvVisible}
+                                                    message-toggle-active="Visible"
+                                                    message-toggle-inactive="Oculto"
+                                                    onchange={handleToggleImportCsvVisible}
+                                                ></lightning-input>
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Mostrar exportar CSV"
+                                                    field-level-help="Muestra la opcion Exportar en el menu CSV del centro de imputaciones."
+                                                    checked={uiExportCsvVisible}
+                                                    message-toggle-active="Visible"
+                                                    message-toggle-inactive="Oculto"
+                                                    onchange={handleToggleExportCsvVisible}
+                                                ></lightning-input>
+                                            </div>
+                                        </article>
+                                    </div>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Panel de transparencia admin</h3>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Mensaje para monitor admin"
+                                            field-level-help="Texto extra en el panel de calculos para administradores."
+                                            value={ayudaAdminMonitor}
+                                            data-field="ayudaAdminMon"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:true={showRulesUi}>
+                            <section class="cc-section" data-section-anchor="rulesUi">
+                                <div class="cc-section__body cc-section__body--cards cc-rules-layout">
+                                    <p class="cc-rules-group__title">Dialogos y avisos</p>
+                                    <div class="cc-card-grid cc-card-grid--2">
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Confirmacion al guardar</h3>
+                                        <p class="cc-card-panel__desc">Texto extra en el dialogo antes de guardar el lote de imputaciones.</p>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Texto extra en el dialogo Confirmar imputacion"
+                                            field-level-help="Se anade al resumen estandar antes de guardar el lote."
+                                            value={textoConfirmacionImputacion}
+                                            data-field="textoConfirm"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Alertas por horas</h3>
+                                        <p class="cc-card-panel__desc">Aviso no bloqueante al guardar si el dia supera el umbral.</p>
+                                        <div class="cc-toggle-row cc-toggle-row--spaced">
+                                            <div class="cc-toggle-card">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Activar aviso por umbral al guardar"
+                                                    data-field="activarAvisoUmbral"
+                                                    checked={activarAvisoUmbralHoras}
+                                                    message-toggle-active="Activo"
+                                                    message-toggle-inactive="Desactivado"
+                                                    onchange={handleChange}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                        <lightning-input
+                                            type="number"
+                                            label="Umbral aviso mismo dia"
+                                            value={umbralAvisoHorasDia}
+                                            data-field="umbralAviso"
+                                            onchange={handleChange}
+                                            min="0.5"
+                                            max="24"
+                                            step="0.5"
+                                        ></lightning-input>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Mensaje de alerta del umbral"
+                                            field-level-help="Placeholders: {horas} y {detalle}. Vacio = mensaje por defecto."
+                                            value={textoAvisoUmbralHoras}
+                                            data-field="textoUmbralHoras"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                    </div>
+                                    <p class="cc-rules-group__title">Calendario y permisos</p>
+                                    <div class="cc-card-grid cc-card-grid--2">
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Fin de semana y festivos</h3>
+                                        <p class="cc-card-panel__desc">Permisos y avisos al imputar en sabado, domingo o dia festivo.</p>
+                                        <div class="cc-toggle-row">
+                                            <div class="cc-toggle-card">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Permitir imputar sabado y domingo"
+                                                    data-field="permitirFinSem"
+                                                    checked={permitirImputarFinSemana}
+                                                    message-toggle-active="Permitido"
+                                                    message-toggle-inactive="Bloqueado"
+                                                    onchange={handleChange}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Texto aviso fin de semana"
+                                            value={textoAvisoFinSemana}
+                                            data-field="textoFinSem"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                        <div class="cc-toggle-row cc-toggle-row--spaced">
+                                            <div class="cc-toggle-card">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Permitir imputar en festivos"
+                                                    data-field="permitirFeriado"
+                                                    checked={permitirImputarFeriados}
+                                                    message-toggle-active="Permitido"
+                                                    message-toggle-inactive="Bloqueado"
+                                                    onchange={handleChange}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Texto aviso feriado"
+                                            value={textoAvisoFeriado}
+                                            data-field="textoFeriado"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Excepcion fin de semana (por usuario)</h3>
+                                        <p class="cc-card-panel__desc">Usuarios cuyo campo User tenga uno de los valores indicados pueden imputar en sabado y domingo aunque el bloqueo global este activo.</p>
+                                        <div class="cc-field-pair">
+                                            <lightning-combobox
+                                                label="Campo User"
+                                                value={excepcionFinSemanaUserCampo}
+                                                options={userFieldOptions}
+                                                data-field="excFinSemUserCampo"
+                                                onchange={handleChange}
+                                            ></lightning-combobox>
+                                            <template lwc:if={excepcionFinSemanaUserValoresUi.usePicklist}>
+                                                <lightning-dual-listbox
+                                                    label="Valores User permitidos"
+                                                    source-label="Disponibles"
+                                                    selected-label="Seleccionados"
+                                                    options={excepcionFinSemanaUserValoresUi.valueOptions}
+                                                    value={excepcionFinSemanaUserValoresUi.selectedValues}
+                                                    data-target-field="excFinSemUserVals"
+                                                    onchange={handleUserRulePicklistValuesChange}
+                                                ></lightning-dual-listbox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-textarea
+                                                    class="cc-ta"
+                                                    label="Valores User permitidos"
+                                                    field-level-help={listFieldHint}
+                                                    value={excepcionFinSemanaUserValores}
+                                                    data-field="excFinSemUserVals"
+                                                    onchange={handleChange}
+                                                ></lightning-textarea>
+                                            </template>
+                                        </div>
+                                    </article>
+                                    </div>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Ventana de meses (no admin)</h3>
+                                        <p class="cc-card-panel__desc">
+                                            Excepcion a la regla «solo mes en curso» para imputar, editar o borrar.
+                                            Los consultores pueden ver cualquier mes en el calendario; estos valores solo amplian en que meses civiles pueden registrar horas.
+                                            0 o vacio = solo el mes actual; 1 hacia atras = tambien el mes anterior, etc.
+                                        </p>
+                                        <div class="cc-grid-2">
+                                            <lightning-input
+                                                type="number"
+                                                label="Meses hacia atras"
+                                                value={imputacionMesesRetro}
+                                                data-field="mesRetro"
+                                                onchange={handleChange}
+                                                min="0"
+                                                max="120"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Meses hacia adelante"
+                                                value={imputacionMesesAdelante}
+                                                data-field="mesAdelante"
+                                                onchange={handleChange}
+                                                min="0"
+                                                max="120"
+                                            ></lightning-input>
+                                        </div>
+                                        <lightning-textarea
+                                            class="cc-ta cc-ta--spaced"
+                                            label="Festivos adicionales (MM-DD)"
+                                            field-level-help="Uno por linea o separados por coma; ej. 12-08. Se suman al calendario estandar del centro."
+                                            value={festivosExtraMmDd}
+                                            data-field="festivosExtra"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                    <p class="cc-rules-group__title">Filtros de listados</p>
+                                    <div class="cc-card-grid cc-card-grid--2">
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Filtro servicio (listados)</h3>
+                                        <p class="cc-card-panel__desc">Solo tickets cuyo Servicio__c este en esta lista aparecen en las pestanas del centro. Vacio = sin filtro global.</p>
+                                        <lightning-textarea
+                                            class="cc-ta"
+                                            label="Servicios permitidos"
+                                            field-level-help={listFieldHint}
+                                            value={filtroServicioTickets}
+                                            data-field="filtroServicioTkt"
+                                            onchange={handleChange}
+                                        ></lightning-textarea>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Filtro consultores (admin)</h3>
+                                        <p class="cc-card-panel__desc">Limita quien aparece en los combos Resolutores y A nombre de para administradores de imputacion.</p>
+                                        <div class="cc-field-pair">
+                                            <lightning-combobox
+                                                label="Campo User"
+                                                value={filtroConsultorUserCampo}
+                                                options={userFieldOptions}
+                                                data-field="filtroConsUserCampo"
+                                                onchange={handleChange}
+                                            ></lightning-combobox>
+                                            <template lwc:if={filtroConsultorUserValoresUi.usePicklist}>
+                                                <lightning-dual-listbox
+                                                    label="Valores User requeridos"
+                                                    source-label="Disponibles"
+                                                    selected-label="Seleccionados"
+                                                    options={filtroConsultorUserValoresUi.valueOptions}
+                                                    value={filtroConsultorUserValoresUi.selectedValues}
+                                                    data-target-field="filtroConsUserVals"
+                                                    onchange={handleUserRulePicklistValuesChange}
+                                                ></lightning-dual-listbox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-textarea
+                                                    class="cc-ta"
+                                                    label="Valores User requeridos"
+                                                    field-level-help={listFieldHint}
+                                                    value={filtroConsultorUserValores}
+                                                    data-field="filtroConsUserVals"
+                                                    onchange={handleChange}
+                                                ></lightning-textarea>
+                                            </template>
+                                        </div>
+                                    </article>
+                                    </div>
+                                    <p class="cc-rules-group__title">Facturacion</p>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Reglas adicionales</h3>
+                                        <p class="cc-card-panel__desc">Excepciones y filtros administrables de facturacion.</p>
+                                        <h4 class="cc-rule-card__subtitle">Excepciones (siempre facturable)</h4>
+                                        <p class="cc-rule-card__hint">Opcional. Si rellenas solo uno de los dos campos (campo o valores), se ignora al guardar.</p>
+                                        <div class="cc-field-pair">
+                                            <lightning-combobox label="Case: campo excepcion" value={billableCaseExcFieldApi} options={caseFieldOptions} data-field="billableCaseExcField" onchange={handleChange}></lightning-combobox>
+                                            <template lwc:if={billableCaseExcValuesUi.usePicklist}>
+                                                <lightning-dual-listbox
+                                                    label="Case: valores excepcion"
+                                                    source-label="Disponibles"
+                                                    selected-label="Seleccionados"
+                                                    options={billableCaseExcValuesUi.valueOptions}
+                                                    value={billableCaseExcValuesUi.selectedValues}
+                                                    data-target-field="billableCaseExcVals"
+                                                    onchange={handleBillablePicklistValuesChange}
+                                                ></lightning-dual-listbox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-textarea class="cc-ta" label="Case: valores excepcion" value={billableCaseExcValues} data-field="billableCaseExcVals" onchange={handleChange}></lightning-textarea>
+                                            </template>
+                                        </div>
+                                        <div class="cc-field-pair">
+                                            <lightning-combobox label="Imputacion: campo excepcion" value={billableImputacionExcFieldApi} options={imputacionFieldOptions} data-field="billableImpExcField" onchange={handleChange}></lightning-combobox>
+                                            <template lwc:if={billableImputacionExcValuesUi.usePicklist}>
+                                                <lightning-dual-listbox
+                                                    label="Imputacion: valores excepcion"
+                                                    source-label="Disponibles"
+                                                    selected-label="Seleccionados"
+                                                    options={billableImputacionExcValuesUi.valueOptions}
+                                                    value={billableImputacionExcValuesUi.selectedValues}
+                                                    data-target-field="billableImpExcVals"
+                                                    onchange={handleBillablePicklistValuesChange}
+                                                ></lightning-dual-listbox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-textarea class="cc-ta" label="Imputacion: valores excepcion" value={billableImputacionExcValues} data-field="billableImpExcVals" onchange={handleChange}></lightning-textarea>
+                                            </template>
+                                        </div>
+                                        <h4 class="cc-rule-card__subtitle cc-rule-card__subtitle--spaced">Filtros adicionales</h4>
+                                        <template for:each={billableExtraFilterRows} for:item="bf">
+                                            <article key={bf.fkey} class="cc-billable-card">
+                                                <header class="cc-billable-card__head">
+                                                    <span class="cc-billable-card__title">Regla {bf.index}</span>
+                                                    <lightning-button-icon icon-name="utility:delete" variant="border-filled" alternative-text="Eliminar" data-fkey={bf.fkey} onclick={handleRemoveBillableExtraFilter}></lightning-button-icon>
+                                                </header>
+                                                <div class="cc-billable-card__row">
+                                                    <lightning-combobox label="Objeto" value={bf.objectApi} options={billableObjectOptions} data-fkey={bf.fkey} data-field="objectApi" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                    <lightning-combobox label="Campo" value={bf.fieldApi} options={bf.fieldOptions} data-fkey={bf.fkey} data-field="fieldApi" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                    <lightning-combobox label="Efecto" value={bf.effect} options={billableEffectOptions} data-fkey={bf.fkey} data-field="effect" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                </div>
+                                                <template lwc:if={bf.usePicklist}>
+                                                    <lightning-dual-listbox
+                                                        class="cc-ta--compact"
+                                                        label="Valores"
+                                                        source-label="Disponibles"
+                                                        selected-label="Seleccionados"
+                                                        options={bf.valueOptions}
+                                                        value={bf.selectedValues}
+                                                        data-fkey={bf.fkey}
+                                                        data-field="values"
+                                                        onchange={handleBillableExtraFilterChange}
+                                                    ></lightning-dual-listbox>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-textarea class="cc-ta cc-ta--compact" label="Valores" value={bf.values} data-fkey={bf.fkey} data-field="values" onchange={handleBillableExtraFilterChange}></lightning-textarea>
+                                                </template>
+                                            </article>
+                                        </template>
+                                        <div class="cc-inline-actions">
+                                            <lightning-button variant="neutral" label="+ Anadir regla" onclick={handleAddBillableExtraFilter} disabled={billableExtraFiltersFull}></lightning-button>
+                                            <lightning-button variant="neutral" label="Validar reglas" onclick={handleValidateBillableRules}></lightning-button>
+                                        </div>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:true={showDatesCalendar}>
+                            <section class="cc-section" data-section-anchor="datesCalendar">
+                                <div class="cc-section__body cc-section__body--cards">
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Parametros de la franja</h3>
+                                        <p class="cc-card-panel__desc">Dias visibles en la barra rapida y umbral de resalte por horas del dia.</p>
+                                        <div class="cc-grid-2">
+                                            <lightning-input
+                                                type="number"
+                                                label="Dias en franja calendario"
+                                                field-level-help="Recomendado 7-14 para una sola fila comoda; hasta 21 la UI reduce tamano. Maximo 21."
+                                                value={diasFranjaCalendario}
+                                                data-field="diasFranja"
+                                                onchange={handleChange}
+                                                min="1"
+                                                max="21"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Umbral horas (resalte)"
+                                                field-level-help="Resalta el dia si supera estas horas (1-24)."
+                                                value={umbralHorasDia}
+                                                data-field="umbral"
+                                                onchange={handleChange}
+                                                min="1"
+                                                max="24"
+                                                step="0.5"
+                                            ></lightning-input>
+                                        </div>
+                                        <p class="cc-card-panel__desc cc-card-panel__desc--inline">
+                                            El aviso al guardar por horas del dia se configura en Reglas.
+                                        </p>
+                                    </article>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Colores del calendario</h3>
+                                        <p class="cc-card-panel__desc">
+                                            Estados: vacio, parcial, meta, sobre umbral, fin de semana, feriado, seleccionado y bloqueado.
+                                        </p>
+                                        <div class="cc-color-grid cc-color-grid--palette">
+                                            <template for:each={colorPickerItems} for:item="cp">
+                                                <div key={cp.key} class="cc-color-cell">
+                                                    <div class="cc-color-cell__head">
+                                                        <span class="cc-color-swatch" style={cp.swatchStyle} title={cp.value}></span>
+                                                        <div class="cc-color-cell__titles">
+                                                            <span class="cc-color-cell__label">{cp.label}</span>
+                                                            <span class="cc-color-cell__sub">{cp.sub}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="cc-color-cell__row">
+                                                        <input
+                                                            type="color"
+                                                            class="cc-color-input"
+                                                            value={cp.value}
+                                                            data-field={cp.field}
+                                                            onchange={handleNativeInputChange}
+                                                            aria-label={cp.label}
+                                                        />
+                                                        <code class="cc-color-cell__hex">{cp.value}</code>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:true={showTicketTable}>
+                            <section class="cc-section cc-section--wide" data-section-anchor="ticketTable">
+                                <div class="cc-section__body">
+                                    <nav class="cc-subnav" aria-label="Subsecciones tickets">
+                                        <template for:each={ticketSubNavItems} for:item="sub">
+                                            <button
+                                                key={sub.id}
+                                                type="button"
+                                                class={sub.className}
+                                                data-id={sub.id}
+                                                onclick={handleTicketSubNav}
+                                            >
+                                                {sub.label}
+                                            </button>
+                                        </template>
+                                    </nav>
+
+                                    <template if:true={showTicketSubCatalog}>
+                                    <div class="cc-inner">
+                                        <h3 class="cc-inner__title">Catalogo de pestanas</h3>
+                                        <div class="cc-inline-actions cc-inline-actions--tabs">
+                                            <lightning-button
+                                                label="Anadir pestana"
+                                                variant="brand"
+                                                onclick={handleAddCustomTab}
+                                                disabled={customTabsFull}
+                                            ></lightning-button>
+                                        </div>
+                                        <template if:true={hasTicketTabRows}>
+                                            <div class="cc-ticket-layout">
+                                                <aside class="cc-tab-sidebar" aria-label="Pestanas configuradas">
+                                                    <template for:each={ticketTabSidebarItems} for:item="tabItem">
+                                                        <button
+                                                            key={tabItem.key}
+                                                            type="button"
+                                                            class={tabItem.itemClass}
+                                                            data-key={tabItem.rowKey}
+                                                            onclick={handleSelectTicketTab}
+                                                        >
+                                                            <span class="cc-tab-sidebar__label">{tabItem.label}</span>
+                                                            <span class="cc-tab-sidebar__meta">{tabItem.typeLabel} · {tabItem.hiddenLabel}</span>
+                                                        </button>
+                                                    </template>
+                                                </aside>
+                                                <div class="cc-ticket-editor">
+                                                <template for:each={ticketTabEditorRows} for:item="tab">
+                                                    <article key={tab.rowKey} class="cc-tab-card">
+                                                        <div class="cc-tab-card__head">
+                                                            <span class="cc-tab-card__badge">{tab.typeLabel}</span>
+                                                            <div class="cc-tab-card__actions">
+                                                                <lightning-button-icon
+                                                                    icon-name="utility:arrowup"
+                                                                    alternative-text="Subir"
+                                                                    data-key={tab.rowKey}
+                                                                    data-dir="up"
+                                                                    disabled={tab.moveUpDisabled}
+                                                                    onclick={handleMoveTicketTab}
+                                                                ></lightning-button-icon>
+                                                                <lightning-button-icon
+                                                                    icon-name="utility:arrowdown"
+                                                                    alternative-text="Bajar"
+                                                                    data-key={tab.rowKey}
+                                                                    data-dir="down"
+                                                                    disabled={tab.moveDownDisabled}
+                                                                    onclick={handleMoveTicketTab}
+                                                                ></lightning-button-icon>
+                                                                <lightning-button-icon
+                                                                    icon-name="utility:delete"
+                                                                    alternative-text="Eliminar"
+                                                                    data-key={tab.rowKey}
+                                                                    disabled={tab.deleteDisabled}
+                                                                    onclick={handleRemoveTicketTab}
+                                                                ></lightning-button-icon>
+                                                            </div>
+                                                        </div>
+                                                        <div class="cc-tab-card__identity">
+                                                            <lightning-combobox
+                                                                label="Tipo"
+                                                                value={tab.type}
+                                                                options={tabTypeOptions}
+                                                                data-key={tab.rowKey}
+                                                                data-field="type"
+                                                                onchange={handleTicketTabFieldChange}
+                                                                disabled={tab.isMine}
+                                                            ></lightning-combobox>
+                                                            <lightning-input
+                                                                label="Id (API)"
+                                                                value={tab.id}
+                                                                data-key={tab.rowKey}
+                                                                data-field="id"
+                                                                onchange={handleTicketTabFieldChange}
+                                                                disabled={tab.idLocked}
+                                                            ></lightning-input>
+                                                            <lightning-input
+                                                                label="Etiqueta visible"
+                                                                value={tab.label}
+                                                                data-key={tab.rowKey}
+                                                                data-field="label"
+                                                                onchange={handleTicketTabFieldChange}
+                                                            ></lightning-input>
+                                                        </div>
+                                                        <template if:true={tab.showsFilters}>
+                                                            <div class="cc-tab-card__section">
+                                                                <div class="cc-tab-card__section-head">
+                                                                    <p class="cc-tab-card__section-title">Criterios de tickets</p>
+                                                                    <p class="cc-tab-card__section-hint">
+                                                                        En Gestion AMS los criterios son opcionales; sin criterios no se aplica filtro Case adicional.
+                                                                    </p>
+                                                                </div>
+                                                                <div class="cc-tab-card__filters">
+                                                                    <template if:true={tab.showFilterLogic}>
+                                                                        <lightning-combobox
+                                                                            label="Combinar criterios con"
+                                                                            value={tab.filterLogic}
+                                                                            options={filterLogicOptions}
+                                                                            data-key={tab.rowKey}
+                                                                            data-field="filterLogic"
+                                                                            onchange={handleTicketTabFieldChange}
+                                                                        ></lightning-combobox>
+                                                                    </template>
+                                                                    <template for:each={tab.filterRows} for:item="flt">
+                                                                        <article key={flt.fkey} class="cc-filter-card">
+                                                                            <header class="cc-filter-card__head">
+                                                                                <span class="cc-filter-card__title">Filtro {flt.filterIndex}</span>
+                                                                                <template if:true={flt.canRemoveFilter}>
+                                                                                    <lightning-button-icon
+                                                                                        icon-name="utility:delete"
+                                                                                        variant="border-filled"
+                                                                                        alternative-text="Eliminar filtro"
+                                                                                        title="Eliminar filtro"
+                                                                                        data-key={tab.rowKey}
+                                                                                        data-fkey={flt.fkey}
+                                                                                        onclick={handleRemoveTabFilter}
+                                                                                    ></lightning-button-icon>
+                                                                                </template>
+                                                                            </header>
+                                                                            <lightning-combobox
+                                                                                label="Campo Case"
+                                                                                value={flt.fieldApi}
+                                                                                options={caseFieldOptions}
+                                                                                data-key={tab.rowKey}
+                                                                                data-fkey={flt.fkey}
+                                                                                data-field="fieldApi"
+                                                                                onchange={handleTabFilterFieldChange}
+                                                                            ></lightning-combobox>
+                                            <template lwc:if={flt.usePicklist}>
+                                                <lightning-dual-listbox
+                                                    label="Valores"
+                                                    source-label="Disponibles"
+                                                    selected-label="Seleccionados"
+                                                    options={flt.valueOptions}
+                                                    value={flt.selectedValues}
+                                                    data-key={tab.rowKey}
+                                                    data-fkey={flt.fkey}
+                                                    data-field="values"
+                                                    onchange={handleTabFilterFieldChange}
+                                                    disabled={flt.matchEmpty}
+                                                ></lightning-dual-listbox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-textarea
+                                                    class="cc-ta cc-ta--compact"
+                                                    label="Valores"
+                                                    field-level-help="Uno por linea o separados por coma."
+                                                    value={flt.values}
+                                                    data-key={tab.rowKey}
+                                                    data-fkey={flt.fkey}
+                                                    data-field="values"
+                                                    onchange={handleTabFilterFieldChange}
+                                                    disabled={flt.matchEmpty}
+                                                ></lightning-textarea>
+                                            </template>
+                                                                            <lightning-input
+                                                                                type="checkbox"
+                                                                                label="Incluir registros con campo vacio (null / blanco)"
+                                                                                checked={flt.matchEmpty}
+                                                                                data-key={tab.rowKey}
+                                                                                data-fkey={flt.fkey}
+                                                                                data-field="matchEmpty"
+                                                                                onchange={handleTabFilterFieldChange}
+                                                                            ></lightning-input>
+                                                                        </article>
+                                                                    </template>
+                                                                    <lightning-button
+                                                                        variant="neutral"
+                                                                        label="+ Anadir filtro"
+                                                                        data-key={tab.rowKey}
+                                                                        onclick={handleAddTabFilter}
+                                                                    ></lightning-button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="cc-tab-card__section cc-tab-card__section--options">
+                                                                <p class="cc-tab-card__section-title">Opciones de pestana</p>
+                                                                <div class="cc-tab-options-grid">
+                                                                    <template if:false={tab.isAms}>
+                                                                        <lightning-input
+                                                                            type="checkbox"
+                                                                            label="Filtro por fecha de creacion (mes en curso)"
+                                                                            checked={tab.supportsCreatedDateFilter}
+                                                                            data-key={tab.rowKey}
+                                                                            data-field="supportsCreatedDateFilter"
+                                                                            onchange={handleTicketTabFieldChange}
+                                                                        ></lightning-input>
+                                                                    </template>
+                                                                    <template if:true={tab.isAms}>
+                                                                        <p class="cc-tab-card__section-hint">
+                                                                            Gestion AMS: listado del mes en curso (CreatedDate).
+                                                                        </p>
+                                                                    </template>
+                                                                    <lightning-input
+                                                                        type="checkbox"
+                                                                        label="Ocultar esta pestana"
+                                                                        checked={tab.hidden}
+                                                                        data-key={tab.rowKey}
+                                                                        data-field="hidden"
+                                                                        onchange={handleTicketTabFieldChange}
+                                                                    ></lightning-input>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                        <div class="cc-tab-card__section cc-tab-card__section--compact">
+                                                            <lightning-textarea
+                                                                class="cc-ta"
+                                                                label="Texto bajo las pestanas"
+                                                                value={tab.hint}
+                                                                data-key={tab.rowKey}
+                                                                data-field="hint"
+                                                                onchange={handleTicketTabFieldChange}
+                                                            ></lightning-textarea>
+                                                        </div>
+                                                    </article>
+                                                </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template if:true={showTicketTabsJsonAdvanced}>
+                                            <lightning-textarea
+                                                class="cc-ta cc-ta--mono"
+                                                label="JSON avanzado"
+                                                value={pestanasCatalogoTickets}
+                                                data-field="pestanasCat"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                        </template>
+                                    </div>
+                                    </template>
+
+                                    <template if:true={showTicketSubBehavior}>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Comportamiento de la tabla</h3>
+                                        <p class="cc-card-panel__desc">Anclaje de tickets y tamano de pagina del listado central.</p>
+                                        <div class="cc-grid-2">
+                                            <lightning-input
+                                                type="number"
+                                                label="Max. tickets anclados"
+                                                field-level-help="Tope de tickets fijados arriba (1-99)."
+                                                value={maxTicketsAnclados}
+                                                data-field="maxPin"
+                                                onchange={handleChange}
+                                                min="1"
+                                                max="99"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Tamano pagina (tickets)"
+                                                field-level-help="Filas por peticion (1-500; tipico 200)."
+                                                value={tamanoPaginaTickets}
+                                                data-field="tamPag"
+                                                onchange={handleChange}
+                                                min="1"
+                                                max="500"
+                                            ></lightning-input>
+                                        </div>
+                                    </article>
+                                    </template>
+
+                                    <template if:true={showTicketSubLists}>
+                                    <div class="cc-card-grid cc-card-grid--2">
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Limites SOQL</h3>
+                                        <p class="cc-callout cc-callout--help">{soqlLimitsInstructivo}</p>
+                                        <div class="cc-grid-3">
+                                            <lightning-input
+                                                type="number"
+                                                label="Desglose por dia"
+                                                value={limiteSoqlDesgloseDia}
+                                                data-field="limSoqlDia"
+                                                onchange={handleChange}
+                                                min="50"
+                                                max="2000"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Agregacion mensual"
+                                                value={limiteSoqlMesAgregacion}
+                                                data-field="limSoqlMes"
+                                                onchange={handleChange}
+                                                min="2000"
+                                                max="50000"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Opciones consultores"
+                                                value={limiteSoqlOwnerOpciones}
+                                                data-field="limSoqlOwner"
+                                                onchange={handleChange}
+                                                min="10"
+                                                max="2000"
+                                            ></lightning-input>
+                                        </div>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Listas principales</h3>
+                                        <p class="cc-card-panel__desc">Reserva y marcado AMS global. Los filtros de cada pestana se configuran en Catalogo.</p>
+                                        <p class="cc-callout">{listFieldHint}</p>
+                                        <div class="cc-field-stack">
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="PEP siempre facturables"
+                                                field-level-help="Nombres PEP__r.Name que permiten imputar siempre como facturables."
+                                                value={pepSiempreFacturables}
+                                                data-field="pep"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Motivos Gestion AMS (fallback)"
+                                                field-level-help="Solo si la pestana AMS no define filtros en el catalogo."
+                                                value={motivosGestionAms}
+                                                data-field="motivos"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Servicios AMS (fallback)"
+                                                field-level-help="Segundo filtro de reserva para AMS si no hay catalogo."
+                                                value={serviciosAms}
+                                                data-field="servicios"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                        </div>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Reservas (fallback)</h3>
+                                        <p class="cc-card-panel__desc">{fallbackReservaHint}</p>
+                                        <div class="cc-field-stack">
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="PEP facturables - reserva"
+                                                value={pepFallback}
+                                                data-field="pepFb"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Motivos AMS - reserva"
+                                                value={motivosFallback}
+                                                data-field="motivosFb"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Servicios AMS - reserva"
+                                                value={serviciosFallback}
+                                                data-field="serviciosFb"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                        </div>
+                                    </article>
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Ultimo recurso (codigo)</h3>
+                                        <p class="cc-card-panel__desc">{fallbackUltimoHint}</p>
+                                        <div class="cc-grid-2">
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Servicios - ultimo recurso"
+                                                value={serviciosUltimoRecurso}
+                                                data-field="servUr"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                            <lightning-textarea
+                                                class="cc-ta"
+                                                label="Motivos - ultimo recurso"
+                                                value={motivosUltimoRecurso}
+                                                data-field="motivUr"
+                                                onchange={handleChange}
+                                            ></lightning-textarea>
+                                        </div>
+                                    </article>
+                                    </div>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:false={amsLegacyBlockRemoved}>
+                            <section class="cc-section cc-section--hidden" data-section-anchor="amsTabRemoved">
+                                <div class="cc-section__body">
+                                    <div class="cc-inner">
+                                        <h3 class="cc-inner__title">Campo Case para filtro AMS</h3>
+                                        <lightning-input
+                                            label="API del campo en Case"
+                                            field-level-help="Ej. Reason. Vacio = Reason estandar si existe."
+                                            value={campoCaseMotivoAms}
+                                            data-field="campoCaseAms"
+                                            onchange={handleChange}
+                                        ></lightning-input>
+                                    </div>
+                                    <div class="cc-inner">
+                                        <h3 class="cc-inner__title">Alcance de fechas</h3>
+                                        <lightning-input
+                                            type="number"
+                                            label="Dias hacia atras (CreatedDate)"
+                                            field-level-help="Mayor que 0: tickets entre hoy-N y hoy. 0 o vacio: mes en curso."
+                                            value={amsFiltroCreadoDiasAtras}
+                                            data-field="amsFiltroDias"
+                                            onchange={handleChange}
+                                            min="0"
+                                            max="365"
+                                        ></lightning-input>
+                                    </div>
+                                    <div class="cc-inner">
+                                        <h3 class="cc-inner__title">Visibilidad</h3>
+                                        <div class="cc-toggle-row">
+                                            <div class="cc-toggle-card">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Ocultar pestana Gestion AMS"
+                                                    data-field="uiHideAmsTab"
+                                                    checked={uiOcultarTabGestionAms}
+                                                    message-toggle-active="Oculto"
+                                                    message-toggle-inactive="Visible"
+                                                    onchange={handleChange}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:true={showRightPanel}>
+                            <section class="cc-section" data-section-anchor="rightPanel">
+                                <div class="cc-section__body cc-section__body--cards">
+                                    <div class="cc-card-grid cc-card-grid--2 cc-chart-grid">
+                                    <article class="cc-card-panel cc-card-panel--full">
+                                        <h3 class="cc-card-panel__title">Colores del grafico</h3>
+                                        <p class="cc-card-panel__desc">
+                                            Facturable, no facturable, imputable y barra de meta mensual. Se aplican en dona, leyenda, detalle trimestral, barra de progreso e iconos de tipo de vista.
+                                        </p>
+                                        <div class="cc-color-grid cc-color-grid--palette">
+                                            <template for:each={chartColorPickerItems} for:item="cp">
+                                                <div key={cp.key} class="cc-color-cell">
+                                                    <div class="cc-color-cell__head">
+                                                        <span class="cc-color-swatch" style={cp.swatchStyle} title={cp.value}></span>
+                                                        <div class="cc-color-cell__titles">
+                                                            <span class="cc-color-cell__label">{cp.label}</span>
+                                                            <span class="cc-color-cell__sub">{cp.sub}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="cc-color-cell__row">
+                                                        <input
+                                                            type="color"
+                                                            class="cc-color-input"
+                                                            value={cp.value}
+                                                            data-field={cp.field}
+                                                            onchange={handleNativeInputChange}
+                                                            aria-label={cp.label}
+                                                        />
+                                                        <code class="cc-color-cell__hex">{cp.value}</code>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Metas del panel</h3>
+                                        <p class="cc-card-panel__desc">Valores de negocio.</p>
+                                        <div class="cc-grid-2">
+                                            <lightning-input
+                                                type="number"
+                                                label="Meta facturable mensual"
+                                                field-level-help="Porcentaje objetivo en barras del panel derecho."
+                                                value={metaFacturablePct}
+                                                data-field="metaPct"
+                                                onchange={handleChange}
+                                                min="1"
+                                                max="100"
+                                                step="0.01"
+                                            ></lightning-input>
+                                            <lightning-input
+                                                type="number"
+                                                label="Horas dia laboral"
+                                                field-level-help="Jornada para metas y franja de dias."
+                                                value={horasMetaDiaLab}
+                                                data-field="horasMetaLab"
+                                                onchange={handleChange}
+                                                min="0.5"
+                                                max="24"
+                                                step="0.25"
+                                            ></lightning-input>
+                                        </div>
+                                        <div class="cc-toggle-row cc-toggle-row--spaced">
+                                            <div class="cc-toggle-card">
+                                                <lightning-input
+                                                    type="toggle"
+                                                    label="Mostrar panel trimestral"
+                                                    checked={uiShowQuarterPanel}
+                                                    message-toggle-active="Activo"
+                                                    message-toggle-inactive="Oculto"
+                                                    onchange={handleToggleShowQuarterPanel}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Criterios tecnicos</h3>
+                                        <p class="cc-card-panel__desc">Campos y valores usados en el calculo.</p>
+                                        <div class="cc-field-pair cc-field-pair--triple">
+                                            <lightning-input
+                                                label="Campo indicador imputacion"
+                                                field-level-help="API del campo formula FA/NF en Imputacion."
+                                                value={billableImputacionIndField}
+                                                data-field="billableIndField"
+                                                onchange={handleChange}
+                                            ></lightning-input>
+                                            <lightning-input
+                                                label="Valor facturable"
+                                                value={billableImputacionFaValues}
+                                                data-field="billableFaVals"
+                                                onchange={handleChange}
+                                            ></lightning-input>
+                                            <lightning-input
+                                                label="Valor no facturable"
+                                                value={billableImputacionNfValues}
+                                                data-field="billableNfVals"
+                                                onchange={handleChange}
+                                            ></lightning-input>
+                                        </div>
+                                        <p class="cc-card-panel__desc cc-card-panel__desc--inline">
+                                            Los tickets AMS se definen solo en Catalogo → Gestion AMS (criterios de pestana), no aqui.
+                                        </p>
+                                        <details class="cc-collapse cc-collapse--muted">
+                                            <summary class="cc-collapse__summary">Resumen de criterios (auto)</summary>
+                                            <div class="cc-criteria-readonly">
+                                                <p class="cc-criteria-readonly__label">Facturable</p>
+                                                <p class="cc-criteria-readonly__text">{criterioCalculoFacturable}</p>
+                                            </div>
+                                            <div class="cc-criteria-readonly">
+                                                <p class="cc-criteria-readonly__label">No facturable</p>
+                                                <p class="cc-criteria-readonly__text">{criterioCalculoNoFacturable}</p>
+                                            </div>
+                                        </details>
+                                    </article>
+                                    <article class="cc-card-panel">
+                                        <h3 class="cc-card-panel__title">Mensajes por rango</h3>
+                                        <p class="cc-card-panel__desc">Cards editables y colapsables por tramo de meta.</p>
+                                        <div class="cc-range-accordion">
+                                            <template for:each={panelMetaRangeItems} for:item="rng">
+                                                <details key={rng.key} class="cc-range-collapse">
+                                                    <summary class="cc-range-collapse__summary">
+                                                        <span class={rng.pillClass}>{rng.range}</span>
+                                                        <span class="cc-range-collapse__preview">{rng.summaryPreview}</span>
+                                                    </summary>
+                                                    <div class="cc-range-collapse__body">
+                                                        <lightning-textarea class="cc-ta" label="Mensaje largo" value={rng.message} data-field={rng.msgField} onchange={handleChange}></lightning-textarea>
+                                                        <lightning-input label="Badge corto" value={rng.badge} data-field={rng.badgeField} onchange={handleChange}></lightning-input>
+                                                        <div class="cc-icon-field">
+                                                            <lightning-combobox label="Icono SLDS" value={rng.icon} options={badgeIconOptions} data-field={rng.iconField} onchange={handleChange}></lightning-combobox>
+                                                            <div class="cc-icon-preview">
+                                                                <lightning-icon icon-name={rng.icon} size="small"></lightning-icon>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </details>
+                                            </template>
+                                        </div>
+                                    </article>
+                                    </div>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template if:true={showRecord}>
+                            <section class="cc-section" data-section-anchor="record">
+                                <div class="cc-section__body">
+                                    <div class="cc-inner">
+                                        <h3 class="cc-inner__title">Identificacion en Salesforce</h3>
+                                        <p class="cc-inner__desc">
+                                            Solo cambia si necesitas otra etiqueta visible en el listado de configuracion.
+                                        </p>
+                                        <div class="cc-record-name-row">
+                                            <lightning-input
+                                                class="cc-record-name-input"
+                                                label="Nombre visible"
+                                                value={recordName}
+                                                data-field="recordName"
+                                                onchange={handleChange}
+                                                disabled={recordNameLocked}
+                                            ></lightning-input>
+                                            <lightning-button
+                                                label={recordNameEditLabel}
+                                                title="Habilitar o bloquear edicion del nombre"
+                                                onclick={toggleRecordNameEdit}
+                                                class="cc-record-name-btn"
+                                            ></lightning-button>
+                                        </div>
+                                        <div class="cc-record-name-row cc-record-name-row--spaced">
+                                            <lightning-input
+                                                class="cc-record-name-input"
+                                                label="Origen imputacion por defecto"
+                                                field-level-help="Valor en Origen__c. Por defecto coincide con el nombre visible."
+                                                value={origenImputacionDefault}
+                                                data-field="origenDef"
+                                                onchange={handleChange}
+                                                disabled={origenImputacionLocked}
+                                                max-length="80"
+                                            ></lightning-input>
+                                            <lightning-button
+                                                label={origenImputacionEditLabel}
+                                                title="Habilitar o bloquear edicion del origen"
+                                                onclick={toggleOrigenImputacionEdit}
+                                                class="cc-record-name-btn"
+                                            ></lightning-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </template>
+                    </div>
+
+                    <footer class={footerBarClass} role="contentinfo">
+                        <p class="cc-section-footer__hint">
+                            <template if:true={isDirty}>Cambios sin guardar</template>
+                            <template if:false={isDirty}>Sin cambios pendientes</template>
+                        </p>
+                        <div class="cc-section-footer__actions">
+                            <lightning-button
+                                label="Restaurar seccion"
+                                onclick={handleRestoreActiveSection}
+                                disabled={isSaving}
+                            ></lightning-button>
+                            <lightning-button
+                                label="Cancelar"
+                                onclick={handleSectionCancel}
+                                disabled={discardDisabled}
+                            ></lightning-button>
+                            <lightning-button
+                                variant="brand"
+                                label="Guardar cambios"
+                                onclick={handleSave}
+                                disabled={saveDisabled}
+                            ></lightning-button>
+                        </div>
+                    </footer>
+                </template>
+
+                <template if:false={canEdit}>
+                    <div class="cc-error-box" role="alert">
+                        <lightning-icon
+                            icon-name="utility:error"
+                            size="small"
+                            alternative-text=""
+                            class="cc-error-icon"
+                        ></lightning-icon>
+                        <p class="cc-error-text">{leadMessage}</p>
+                    </div>
+                </template>
+            </template>
+        </main>
+
+        <template if:true={diagnosticsModalOpen}>
+            <section class="cc-modal" role="dialog" aria-modal="true" aria-labelledby="cc-modal-title">
+                <div
+                    class="cc-modal__backdrop"
+                    data-modal-backdrop="true"
+                    onclick={handleDiagnosticsBackdropClick}
+                ></div>
+                <div class="cc-modal__panel">
+                    <header class="cc-modal__head">
+                        <h2 id="cc-modal-title" class="cc-modal__title">Monitor de valores efectivos</h2>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            alternative-text="Cerrar"
+                            title="Cerrar"
+                            onclick={closeDiagnosticsModal}
+                        ></lightning-button-icon>
+                    </header>
+                    <div class="cc-modal__body">
+                        <p class="cc-modal__hint">
+                            Valores que el centro de imputaciones esta usando ahora. Prioridad: constantes en codigo, luego calculados en runtime y configuracion del objeto.
+                        </p>
+                        <template if:true={hasDiagnostics}>
+                            <template if:true={hasDiagnosticCodeRows}>
+                                <h3 class="cc-diag__section-title cc-diag__section-title--code">Solo en codigo (no editable en esta pantalla)</h3>
+                                <div class="cc-diag__table-wrap cc-diag__table-wrap--code">
+                                    <table class="cc-diag__table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Parametro</th>
+                                                <th scope="col">Valor efectivo</th>
+                                                <th scope="col">Origen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={diagnosticCodeRows} for:item="row">
+                                                <tr key={row.key} class="cc-diag__row--code">
+                                                    <td>{row.label}</td>
+                                                    <td><code class="cc-diag__val">{row.effectiveValue}</code></td>
+                                                    <td>{row.source}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <template if:true={hasDiagnosticRuntimeRows}>
+                                <h3 class="cc-diag__section-title">Calculados en runtime</h3>
+                                <div class="cc-diag__table-wrap">
+                                    <table class="cc-diag__table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Parametro</th>
+                                                <th scope="col">Valor efectivo</th>
+                                                <th scope="col">Origen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={diagnosticRuntimeRows} for:item="row">
+                                                <tr key={row.key}>
+                                                    <td>{row.label}</td>
+                                                    <td><code class="cc-diag__val">{row.effectiveValue}</code></td>
+                                                    <td>{row.source}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <template if:true={hasDiagnosticConfigRows}>
+                                <h3 class="cc-diag__section-title">Configuracion y objeto operativo</h3>
+                                <div class="cc-diag__table-wrap">
+                                    <table class="cc-diag__table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Parametro</th>
+                                                <th scope="col">Valor efectivo</th>
+                                                <th scope="col">Origen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={diagnosticConfigRows} for:item="row">
+                                                <tr key={row.key}>
+                                                    <td>{row.label}</td>
+                                                    <td><code class="cc-diag__val">{row.effectiveValue}</code></td>
+                                                    <td>{row.source}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:false={hasDiagnostics}>
+                            <p class="cc-modal__empty">No hay datos de diagnostico disponibles.</p>
+                        </template>
+                    </div>
+                    <footer class="cc-modal__foot">
+                        <lightning-button label="Cerrar" onclick={closeDiagnosticsModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+        </template>
+    </div>
+</template>

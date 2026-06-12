@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Horas_Meta_Dia_Lab__c</fullName>
+    <description>Horas de jornada para metas facturables y calculo de dias habiles en el LWC (sustituye al valor del CMDT si esta informado).</description>
+    <externalId>false</externalId>
+    <label>Horas meta jornada laboral</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

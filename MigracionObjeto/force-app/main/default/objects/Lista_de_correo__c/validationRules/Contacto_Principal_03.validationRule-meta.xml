@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contacto_Principal_03</fullName>
+    <active>true</active>
+    <description>Evita crear con email errones</description>
+    <errorConditionFormula>OR(
+  AND(
+    NOT(ISBLANK(ContactoP__c)),
+    OR(
+      ISBLANK(ContactoP__r.Email),
+      NOT(REGEX(ContactoP__r.Email,&quot;^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$&quot;))
+    )
+  ),
+  AND(
+    NOT(ISBLANK(UsuarioP__c)),
+    OR(
+      ISBLANK(UsuarioP__r.Email),
+      NOT(REGEX(UsuarioP__r.Email,&quot;^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$&quot;))
+    )
+  )
+)</errorConditionFormula>
+    <errorMessage>El destinatario principal debe tener un Email válido.</errorMessage>
+</ValidationRule>

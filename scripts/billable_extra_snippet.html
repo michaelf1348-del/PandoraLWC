@@ -1,0 +1,19 @@
+                                        <h4 class="cc-inner__subtitle cc-inner__subtitle--spaced">Excepciones (siempre facturable)</h4>
+                                        <div class="cc-grid-2">
+                                            <lightning-combobox label="Case: campo excepcion" value={billableCaseExcFieldApi} options={caseFieldOptions} data-field="billableCaseExcField" onchange={handleChange}></lightning-combobox>
+                                            <lightning-textarea class="cc-ta" label="Case: valores excepcion" value={billableCaseExcValues} data-field="billableCaseExcVals" onchange={handleChange}></lightning-textarea>
+                                            <lightning-input label="Imputacion: campo excepcion (API)" value={billableImputacionExcFieldApi} data-field="billableImpExcField" onchange={handleChange}></lightning-input>
+                                            <lightning-textarea class="cc-ta" label="Imputacion: valores excepcion" value={billableImputacionExcValues} data-field="billableImpExcVals" onchange={handleChange}></lightning-textarea>
+                                        </div>
+                                        <h4 class="cc-inner__subtitle cc-inner__subtitle--spaced">Filtros adicionales</h4>
+                                        <template for:each={billableExtraFilterRows} for:item="bf">
+                                            <motion key={bf.fkey} class="cc-billable-filter-row">
+                                                <span class="cc-filter-row__label">Regla {bf.index}</span>
+                                                <lightning-combobox label="Objeto" value={bf.objectApi} options={billableObjectOptions} data-fkey={bf.fkey} data-field="objectApi" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                <lightning-combobox label="Campo" value={bf.fieldApi} options={bf.fieldOptions} data-fkey={bf.fkey} data-field="fieldApi" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                <lightning-combobox label="Efecto" value={bf.effect} options={billableEffectOptions} data-fkey={bf.fkey} data-field="effect" onchange={handleBillableExtraFilterChange}></lightning-combobox>
+                                                <lightning-textarea class="cc-ta" label="Valores" value={bf.values} data-fkey={bf.fkey} data-field="values" onchange={handleBillableExtraFilterChange}></lightning-textarea>
+                                                <lightning-button-icon icon-name="utility:delete" alternative-text="Quitar" data-fkey={bf.fkey} onclick={handleRemoveBillableExtraFilter}></lightning-button-icon>
+                                            </motion>
+                                        </template>
+                                        <lightning-button label="+ Anadir filtro" onclick={handleAddBillableExtraFilter} disabled={billableExtraFiltersFull}></lightning-button>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VP01_ValidacionPEP_01</fullName>
+    <active>true</active>
+    <description>Validacion para que el pep si es de C1 tenga categoria oblgatoria</description>
+    <errorConditionFormula>AND( 
+    TEXT(Categoria_PEP__c)= NULL,
+    BEGINS(Name , &quot;C1&quot;)
+    )</errorConditionFormula>
+    <errorDisplayField>Categoria_PEP__c</errorDisplayField>
+    <errorMessage>Para todos los pep de la División C1, debe indicar la categoria (Cod:VP01)</errorMessage>
+</ValidationRule>

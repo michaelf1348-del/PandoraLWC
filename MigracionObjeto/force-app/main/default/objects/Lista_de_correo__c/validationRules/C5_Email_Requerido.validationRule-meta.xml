@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>C5_Email_Requerido</fullName>
+    <active>true</active>
+    <description>Evita crear con email vacio en contacto</description>
+    <errorConditionFormula>AND(
+  NOT(ISBLANK(Contacto5__c)),
+  ISBLANK(Correo_electronico_C5__c)
+)</errorConditionFormula>
+    <errorMessage>El Contacto 5 tiene el email vacío.</errorMessage>
+</ValidationRule>

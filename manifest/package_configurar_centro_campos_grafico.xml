@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_No_Facturable__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Color_Grafico_Meta_Progreso__c</members>
+        <name>CustomField</name>
+    </types>
+    <version>66.0</version>
+</Package>

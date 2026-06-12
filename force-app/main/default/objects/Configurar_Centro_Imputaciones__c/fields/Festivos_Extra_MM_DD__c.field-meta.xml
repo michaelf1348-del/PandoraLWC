@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Festivos_Extra_MM_DD__c</fullName>
+    <description>Festivos adicionales al calendario base Chile (formato MM-DD, comas o saltos de linea). Ej: 12-24</description>
+    <label>Festivos extra (MM-DD)</label>
+    <length>32768</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

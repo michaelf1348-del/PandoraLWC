@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>NotificacionporcambioDisponibilidad</name>
+        <label>Notificación por cambio Disponibilidad</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>recipientAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>ccAddresses</name>
+            <value/>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>AMS | Un consultor ha cambiado su disponibilidad</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!MensajeDisponibilidad_v2}&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>attachmentIdCollection</name>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientId</name>
+        </inputParameters>
+        <inputParameters>
+            <name>relatedRecordId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>65.0</apiVersion>
+    <assignments>
+        <name>Colecci_n_de_LIderes</name>
+        <label>Colección de LIderes</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>col_Email_Lideres</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Evaluar_Lideres.Lider_de_Celula__r.Email</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Evaluar_Lideres</targetReference>
+        </connector>
+    </assignments>
+    <environments>Default</environments>
+    <formulas>
+        <name>f_EstadoDisponibilidadHTML</name>
+        <dataType>String</dataType>
+        <expression>IF(ISPICKVAL({!$Record.Disponibilidad__c}, &quot;Disponible&quot;), 
+&quot;&lt;span style=&apos;background-color:#2e7d32; color:#ffffff; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold;&apos;&gt;DISPONIBLE&lt;/span&gt;&quot;,
+&quot;&lt;span style=&apos;background-color:#d32f2f; color:#ffffff; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:bold;&apos;&gt;NO DISPONIBLE&lt;/span&gt;&quot;)</expression>
+    </formulas>
+    <interviewLabel>AMS - Disponibilidad Consultor {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>AMS - Disponibilidad Consultor</label>
+    <loops>
+        <name>Evaluar_Lideres</name>
+        <label>Evaluar Lideres</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Lider_de_Celula</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Colecci_n_de_LIderes</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>NotificacionporcambioDisponibilidad</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Lider_de_Celula</name>
+        <label>Lider de Celula</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Evaluar_Lideres</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Consultor_Principal__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Matriz_Asignacion_AMS__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Lider_de_Celula</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Disponibilidad__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Division</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>C1</stringValue>
+            </value>
+        </filters>
+        <object>User</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <name>CuerpoMensajeDisponibilidad</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+	&lt;title&gt;Alerta de Disponibilidad - SEIDOR&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0px; padding: 0px; background-color: rgb(243, 246, 249); font-family: &apos;Segoe UI&apos;, Roboto, Helvetica, Arial, sans-serif; height: auto; min-height: auto;&quot;&gt;
+&lt;table bgcolor=&quot;#f3f6f9&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td align=&quot;center&quot; style=&quot;padding:20px 0;&quot;&gt;
+			&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;max-width:550px; background-color:#ffffff; border:1px solid #e3e8ee; border-radius:10px; border-collapse:separate; overflow:hidden;&quot; width=&quot;100%&quot;&gt;
+				&lt;tbody&gt;
+					&lt;tr&gt;
+						&lt;td height=&quot;6&quot; style=&quot;background:#263B7A; background:linear-gradient(90deg,#263B7A 0%,#FF9800 100%); line-height:6px; font-size:6px;&quot;&gt;&amp;nbsp;&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td bgcolor=&quot;#263B7A&quot; style=&quot;padding:20px 25px;&quot;&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;color:#ffffff; font-size:18px; font-weight:600;&quot;&gt;SEIDOR &lt;span style=&quot;font-weight:300; opacity:.8; margin-left:10px;&quot;&gt;| Gesti&amp;oacute;n de Capacidad&lt;/span&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;padding:30px 25px; color:#1f2d3d;&quot;&gt;
+						&lt;p style=&quot;margin:0 0 15px 0; font-size:16px;&quot;&gt;&lt;strong&gt;Atenci&amp;oacute;n L&amp;iacute;der de C&amp;eacute;lula,&lt;/strong&gt;&lt;/p&gt;
+
+						&lt;p style=&quot;margin:0 0 20px 0; font-size:15px; line-height:1.5;&quot;&gt;Se informa que un consultor ha actualizado su estado de disponibilidad en el sistema:&lt;/p&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;10&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#fff9f0; border:1px solid #ffe0b2; border-radius:8px; margin-bottom:25px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px; border-bottom:1px solid #ffe0b2;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Consultor:&lt;/span&gt;&lt;/td&gt;
+									&lt;td style=&quot;font-size:14px; border-bottom:1px solid #ffe0b2;&quot;&gt;&lt;strong&gt;{!$Record.FirstName} {!$Record.LastName}&lt;/strong&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px; border-bottom:1px solid #ffe0b2;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;C&amp;eacute;lula:&lt;/span&gt;&lt;/td&gt;
+									&lt;td style=&quot;font-size:14px; border-bottom:1px solid #ffe0b2;&quot;&gt;&lt;strong&gt;{!$Record.Celula__c}&lt;/strong&gt;&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px;&quot;&gt;&lt;span style=&quot;color:#53657a;&quot;&gt;Estado Actual:&lt;/span&gt;&lt;/td&gt;
+									&lt;td&gt;{!f_EstadoDisponibilidadHTML}&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+
+						&lt;p style=&quot;margin:0 0 20px 0; font-size:14px; color:#53657a; font-style: italic;&quot;&gt;Nota: Por favor, considera este cambio para la asignaci&amp;oacute;n de nuevos tickets y la carga de trabajo de la c&amp;eacute;lula.&lt;/p&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td align=&quot;center&quot;&gt;
+										&lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/User/{!$Record.Id}/view&quot; style=&quot;background-color:#263B7A; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:14px; display:inline-block;&quot;&gt;Ver perfil&lt;/a&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;background-color:#ffffff; padding:20px 25px; border-top:1px solid #e3e8ee; color:#8a96a3; font-size:11px; text-align:center;&quot;&gt;
+						&lt;div&gt;Seidor Chile &amp;bull; Sistema de Gesti&amp;oacute;n de Recursos&lt;/div&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+				&lt;/tbody&gt;
+			&lt;/table&gt;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <name>MensajeDisponibilidad_v2</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;html lang=&quot;es&quot;&gt;
+&lt;head&gt;
+	&lt;title&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0px; padding: 0px; background-color: rgb(246, 246, 246); font-family: Arial, Helvetica, sans-serif; height: auto; min-height: auto;&quot;&gt;
+&lt;table bgcolor=&quot;#f6f6f6&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td align=&quot;center&quot; style=&quot;padding:28px 14px;&quot;&gt;&lt;!-- Contenedor principal --&gt;
+			&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;max-width:640px; background-color:#ffffff; border:1px solid #d9e2ec; border-radius:18px;&quot; width=&quot;100%&quot;&gt;&lt;!-- Header superior --&gt;
+				&lt;tbody&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;background-color:#07153a; border-top-left-radius:18px; border-top-right-radius:18px; padding:0;&quot;&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;height:6px; line-height:6px; font-size:6px; background-color:#66b6ff; border-top-left-radius:18px; border-top-right-radius:18px;&quot;&gt;&amp;nbsp;&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:26px 28px 10px 28px; color:#ffffff; font-size:24px; line-height:28px; font-weight:bold; letter-spacing:0.6px;&quot;&gt;SEIDOR&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 28px 24px 28px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;background-color:#263c7a; color:#ffffff; font-size:12px; line-height:16px; padding:8px 14px; border-radius:20px; letter-spacing:0.3px;&quot;&gt;Disponibilidad de consultores&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;!-- Cuerpo --&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;padding:30px 28px 28px 28px; color:#242528;&quot;&gt;&lt;!-- Intro --&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin-bottom:22px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:18px; line-height:24px; color:#07153a; font-weight:bold; padding-bottom:8px;&quot;&gt;Estimado L&amp;iacute;der,&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;font-size:14px; line-height:22px; color:#575756;&quot;&gt;Se ha registrado una actualizaci&amp;oacute;n en el estado de disponibilidad de un consultor dentro del sistema.&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;!-- Card principal --&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#fafcfe; border:1px solid #d9e2ec; border-radius:16px; margin-bottom:18px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:18px 20px 8px 20px; font-size:15px; line-height:20px; font-weight:bold; color:#263c7a;&quot;&gt;Resumen del cambio&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;!-- Consultor --&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 20px 14px 20px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e7edf4; border-radius:12px;&quot; width=&quot;100%&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:12px; line-height:18px; color:#6c7a89; text-transform:uppercase; letter-spacing:0.4px;&quot; width=&quot;38%&quot;&gt;Consultor&lt;/td&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:14px; line-height:20px; color:#242528; font-weight:bold;&quot;&gt;{!$Record.FirstName} {!$Record.LastName}&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;!-- Celula --&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 20px 14px 20px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e7edf4; border-radius:12px;&quot; width=&quot;100%&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:12px; line-height:18px; color:#6c7a89; text-transform:uppercase; letter-spacing:0.4px;&quot; width=&quot;38%&quot;&gt;C&amp;eacute;lula&lt;/td&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:14px; line-height:20px; color:#242528; font-weight:bold;&quot;&gt;{!$Record.Celula__c}&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;!-- Estado --&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 20px 14px 20px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#eef6ff; border:1px solid #cfe4ff; border-radius:12px;&quot; width=&quot;100%&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:12px; line-height:18px; color:#263c7a; text-transform:uppercase; letter-spacing:0.4px;&quot; width=&quot;38%&quot;&gt;Estado actual&lt;/td&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:14px; line-height:20px; color:#242528;&quot;&gt;{!f_EstadoDisponibilidadHTML}&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;!-- Modificado por --&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 20px 14px 20px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e7edf4; border-radius:12px;&quot; width=&quot;100%&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:12px; line-height:18px; color:#6c7a89; text-transform:uppercase; letter-spacing:0.4px;&quot; width=&quot;38%&quot;&gt;Modificado por&lt;/td&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:14px; line-height:20px; color:#242528; font-weight:bold;&quot;&gt;{!$Record.LastModifiedBy.FirstName} {!$Record.LastModifiedBy.LastName}&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+								&lt;!-- Fecha --&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:0 20px 20px 20px;&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color:#ffffff; border:1px solid #e7edf4; border-radius:12px;&quot; width=&quot;100%&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:12px; line-height:18px; color:#6c7a89; text-transform:uppercase; letter-spacing:0.4px;&quot; width=&quot;38%&quot;&gt;Fecha de modificaci&amp;oacute;n&lt;/td&gt;
+												&lt;td style=&quot;padding:14px 16px; font-size:14px; line-height:20px; color:#242528; font-weight:bold;&quot;&gt;{!$Record.LastModifiedDate}&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;!-- Nota operativa --&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin-bottom:24px; background-color:#f3f8ff; border:1px solid #dbeafe; border-radius:14px;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td style=&quot;padding:16px 18px; font-size:13px; line-height:21px; color:#575756;&quot;&gt;&lt;span style=&quot;color:#263c7a; font-weight:bold;&quot;&gt;Nota operativa:&lt;/span&gt; Considera este cambio para la asignaci&amp;oacute;n de nuevos tickets y la gesti&amp;oacute;n de la carga de trabajo de la c&amp;eacute;lula.&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;!-- CTA --&gt;
+
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td align=&quot;center&quot;&gt;
+									&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+										&lt;tbody&gt;
+											&lt;tr&gt;
+												&lt;td align=&quot;center&quot; style=&quot;background-color:#263c7a; border-radius:28px;&quot;&gt;&lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/User/{!$Record.Id}/view&quot; style=&quot;display:inline-block; padding:14px 26px; font-size:14px; line-height:18px; font-weight:bold; color:#ffffff; text-decoration:none; border-radius:28px; letter-spacing:0.2px;&quot;&gt;Ver perfil &lt;/a&gt;&lt;/td&gt;
+											&lt;/tr&gt;
+										&lt;/tbody&gt;
+									&lt;/table&gt;
+									&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+					&lt;!-- Footer --&gt;
+					&lt;tr&gt;
+						&lt;td style=&quot;padding:0 28px 24px 28px;&quot;&gt;
+						&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-top:1px solid #e7edf4;&quot; width=&quot;100%&quot;&gt;
+							&lt;tbody&gt;
+								&lt;tr&gt;
+									&lt;td align=&quot;center&quot; style=&quot;padding-top:18px; font-size:11px; line-height:18px; color:#919191;&quot;&gt;SEIDOR Chile &amp;bull; Equipo AMS - C1&lt;/td&gt;
+								&lt;/tr&gt;
+							&lt;/tbody&gt;
+						&lt;/table&gt;
+						&lt;/td&gt;
+					&lt;/tr&gt;
+				&lt;/tbody&gt;
+			&lt;/table&gt;
+			&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</text>
+    </textTemplates>
+    <variables>
+        <name>col_Email_Lideres</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <environments>Default</environments>
+    <formulas>
+        <name>fml_newname</name>
+        <dataType>String</dataType>
+        <expression>LEFT(
+  TRIM(
+    IF(NOT(ISBLANK(TEXT($Record.Servicio__c))), TEXT($Record.Servicio__c), &quot;&quot;) &amp;
+    IF(
+      AND(
+        NOT(ISBLANK(TEXT($Record.Servicio__c))),
+        NOT(ISBLANK(TEXT($Record.Tipo_de_Operacion__c)))
+      ),
+      &quot; - &quot;,
+      &quot;&quot;
+    ) &amp;
+    IF(NOT(ISBLANK(TEXT($Record.Tipo_de_Operacion__c))), TEXT($Record.Tipo_de_Operacion__c), &quot;&quot;) &amp;
+    IF(
+      AND(
+        OR(
+          NOT(ISBLANK(TEXT($Record.Servicio__c))),
+          NOT(ISBLANK(TEXT($Record.Tipo_de_Operacion__c)))
+        ),
+        NOT(ISBLANK($Record.Nombre_Cliente__r.Name))
+      ),
+      &quot; - &quot;,
+      &quot;&quot;
+    ) &amp;
+    IF(NOT(ISBLANK($Record.Nombre_Cliente__r.Name)), $Record.Nombre_Cliente__r.Name, &quot;&quot;) &amp;
+    IF(
+      AND(
+        OR(
+          NOT(ISBLANK(TEXT($Record.Servicio__c))),
+          NOT(ISBLANK(TEXT($Record.Tipo_de_Operacion__c))),
+          NOT(ISBLANK($Record.Nombre_Cliente__r.Name))
+        ),
+        NOT(ISBLANK(TEXT($Record.Version__c)))
+      ),
+      &quot; - &quot;,
+      &quot;&quot;
+    ) &amp;
+    IF(NOT(ISBLANK(TEXT($Record.Version__c))), TEXT($Record.Version__c), &quot;&quot;) &amp;
+    IF(
+      AND(
+        OR(
+          NOT(ISBLANK(TEXT($Record.Servicio__c))),
+          NOT(ISBLANK(TEXT($Record.Tipo_de_Operacion__c))),
+          NOT(ISBLANK($Record.Nombre_Cliente__r.Name)),
+          NOT(ISBLANK(TEXT($Record.Version__c)))
+        ),
+        NOT(ISBLANK($Record.Comentario_adicional__c))
+      ),
+      &quot; - &quot;,
+      &quot;&quot;
+    ) &amp;
+    IF(NOT(ISBLANK($Record.Comentario_adicional__c)), $Record.Comentario_adicional__c, &quot;&quot;)
+  ),
+  80
+)</expression>
+    </formulas>
+    <interviewLabel>Asigna nombre Lista {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Asigna nombre Lista</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Actualiza_name</name>
+        <label>Actualiza name</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>Name</field>
+            <value>
+                <elementReference>fml_newname</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Actualiza_name</targetReference>
+        </connector>
+        <filterLogic>(1 OR 2 OR 3 OR 4)</filterLogic>
+        <filters>
+            <field>Tipo_de_Operacion__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Nombre_Cliente__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Servicio__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Name</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <object>Lista_de_correo__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

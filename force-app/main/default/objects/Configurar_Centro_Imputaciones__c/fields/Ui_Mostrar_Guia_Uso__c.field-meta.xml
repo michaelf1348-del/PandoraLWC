@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ui_Mostrar_Guia_Uso__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Muestra el boton Guia de uso en el centro de imputaciones para consultores y administradores.</description>
+    <externalId>false</externalId>
+    <label>Mostrar guia de uso</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

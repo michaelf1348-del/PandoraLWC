@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cabecera_Item</fullName>
+    <fields>Name</fields>
+    <fields>ESTADO_GENERAL__c</fields>
+    <fields>Marcado_para_Borrar__c</fields>
+    <label>Cabecera Item</label>
+</CompactLayout>

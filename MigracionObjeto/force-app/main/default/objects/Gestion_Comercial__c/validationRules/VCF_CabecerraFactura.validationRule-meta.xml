@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VCF_CabecerraFactura</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+  ISPICKVAL( Estatus_Facturacion__c , &quot;Enviado a Facturar&quot;),
+    OR(
+    ISBLANK(Cliente_seidor__c),
+    ISBLANK(Precio_Total__c),
+    ISBLANK(TEXT(Moneda__c)),
+    ISBLANK(OrgVenta__c),
+    ISBLANK(Fecha_Facturacin__c),
+    ISBLANK(OC_Cliente__c),
+    ISBLANK(HES__c)
+  ))</errorConditionFormula>
+    <errorMessage>Faltan datos generales para el encabezafo de la factura (revisa No. Cliente, Precio Total, Moneda, Org. de Venta, Fecha, OC y HES).”</errorMessage>
+</ValidationRule>

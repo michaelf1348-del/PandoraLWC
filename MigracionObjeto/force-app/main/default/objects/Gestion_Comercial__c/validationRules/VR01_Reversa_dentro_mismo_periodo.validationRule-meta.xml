@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VR01_Reversa_dentro_mismo_periodo</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+  ISPICKVAL( Estatus_Facturacion__c , &quot;Solicitud de reversa&quot;),
+  NOT( ISBLANK( Fecha_Prevista__c ) ),
+  YEAR(TODAY()) = YEAR( Fecha_Prevista__c ),
+  MONTH(TODAY()) = MONTH( Fecha_Prevista__c )
+)</errorConditionFormula>
+    <errorMessage>No puedes enviar a &quot;Solicitud de reversa&quot; dentro del mismo mes de la Fecha Prevista.</errorMessage>
+</ValidationRule>

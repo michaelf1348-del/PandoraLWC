@@ -1,0 +1,397 @@
+<template>
+    <div class="cc">
+
+        <!-- ── HEADER ── -->
+        <header class="cc__header">
+            <div class="cc__header-brand">
+                <div class="cc__header-icon">
+                    <lightning-icon icon-name="standard:work_order" size="small" variant="inverse"></lightning-icon>
+                </div>
+                <div>
+                    <div class="cc__header-title-row">
+                        <h1 class="cc__header-title">Backlog Kaufmann</h1>
+                        <span class="cc__badge-control">Control Center</span>
+                    </div>
+                    <p class="cc__header-sub">Gestión de demandas, planificación y avance operativo</p>
+                </div>
+            </div>
+            <div class="cc__header-right">
+                <template lwc:if={lastUpdatedLabel}>
+                    <span class="cc__updated">
+                        <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                        Actualizado: {lastUpdatedLabel}
+                    </span>
+                </template>
+                <lightning-button
+                    label="Recalcular"
+                    icon-name="utility:apex"
+                    variant="brand"
+                    onclick={handleRecalcular}
+                    disabled={isBusy}
+                ></lightning-button>
+                <lightning-button
+                    label="Actualizar"
+                    icon-name="utility:refresh"
+                    onclick={handleRefresh}
+                    disabled={isBusy}
+                ></lightning-button>
+            </div>
+        </header>
+
+        <!-- ── KPI CARDS ── -->
+        <section class="cc__kpis">
+            <article class="cc__kpi">
+                <div class="cc__kpi-head">
+                    <div class="cc__kpi-icon cc__kpi-icon--blue">
+                        <lightning-icon icon-name="utility:apps" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="cc__kpi-content">
+                        <p class="cc__kpi-label">TOTAL DEMANDAS</p>
+                        <p class="cc__kpi-value">{summary.totalRecords}</p>
+                        <p class="cc__kpi-sub">Inventario total</p>
+                    </div>
+                </div>
+                <div class="cc__kpi-spark cc__kpi-spark--blue"></div>
+            </article>
+
+            <article class="cc__kpi">
+                <div class="cc__kpi-head">
+                    <div class="cc__kpi-icon cc__kpi-icon--amber">
+                        <lightning-icon icon-name="utility:play" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="cc__kpi-content">
+                        <p class="cc__kpi-label">EN CURSO</p>
+                        <p class="cc__kpi-value">{summary.enCurso}</p>
+                        <p class="cc__kpi-sub">Activas</p>
+                    </div>
+                </div>
+                <div class="cc__kpi-bar-wrap">
+                    <div class="cc__kpi-bar cc__kpi-bar--amber" style={enCursoBarStyle}></div>
+                </div>
+                <div class="cc__kpi-spark cc__kpi-spark--amber"></div>
+            </article>
+
+            <article class="cc__kpi">
+                <div class="cc__kpi-head">
+                    <div class="cc__kpi-icon cc__kpi-icon--yellow">
+                        <lightning-icon icon-name="utility:clock" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="cc__kpi-content">
+                        <p class="cc__kpi-label">PENDIENTES</p>
+                        <p class="cc__kpi-value">{summary.pendiente}</p>
+                        <p class="cc__kpi-sub">Por iniciar</p>
+                    </div>
+                </div>
+                <div class="cc__kpi-bar-wrap">
+                    <div class="cc__kpi-bar cc__kpi-bar--yellow" style={pendienteBarStyle}></div>
+                </div>
+                <div class="cc__kpi-spark cc__kpi-spark--yellow"></div>
+            </article>
+
+            <article class="cc__kpi">
+                <div class="cc__kpi-head">
+                    <div class="cc__kpi-icon cc__kpi-icon--purple">
+                        <lightning-icon icon-name="utility:people" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="cc__kpi-content">
+                        <p class="cc__kpi-label">HH TOTALES</p>
+                        <p class="cc__kpi-value">{totalHorasLabel}</p>
+                        <p class="cc__kpi-sub">Horas planificadas</p>
+                    </div>
+                </div>
+                <div class="cc__kpi-spark cc__kpi-spark--purple"></div>
+            </article>
+
+            <article class="cc__kpi">
+                <div class="cc__kpi-head">
+                    <div class="cc__kpi-icon cc__kpi-icon--green">
+                        <lightning-icon icon-name="utility:chart" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+                    <div class="cc__kpi-content">
+                        <p class="cc__kpi-label">AVANCE PROMEDIO</p>
+                        <div class="cc__kpi-ring" style={avanceRingStyle}>
+                            <span class="cc__kpi-ring-val">{avancePromedio}%</span>
+                        </div>
+                        <p class="cc__kpi-sub">Avance real promedio</p>
+                    </div>
+                </div>
+                <div class="cc__kpi-spark cc__kpi-spark--green"></div>
+            </article>
+        </section>
+
+        <!-- ── FILTERS ── -->
+        <section class="cc__filters">
+            <div class="cc__filters-grid">
+                <div class="cc__filters-search">
+                    <lightning-input
+                        type="search"
+                        label="Buscar"
+                        variant="label-hidden"
+                        placeholder="Buscar demanda, proyecto o consultor..."
+                        value={searchTerm}
+                        onchange={handleSearchChange}
+                        onkeyup={handleSearchKeyUp}
+                    ></lightning-input>
+                </div>
+                <lightning-combobox
+                    label="Tipo de tarea"
+                    value={tipoTareaFilter}
+                    options={tipoTareaOptions}
+                    onchange={handleTipoTareaChange}
+                ></lightning-combobox>
+                <lightning-combobox
+                    label="Estado"
+                    value={estadoFilter}
+                    options={estadoOptions}
+                    onchange={handleEstadoChange}
+                ></lightning-combobox>
+                <lightning-combobox
+                    label="Consultor Seidor"
+                    value={consultorFilter}
+                    options={consultorOptions}
+                    onchange={handleConsultorChange}
+                ></lightning-combobox>
+                <div class="cc__filters-btn">
+                    <lightning-button
+                        label="Buscar"
+                        variant="brand"
+                        onclick={handleApplyFilters}
+                        disabled={isBusy}
+                    ></lightning-button>
+                </div>
+            </div>
+
+            <template lwc:if={hasActiveFilters}>
+                <div class="cc__chips">
+                    <span class="cc__chips-label">Filtros activos:</span>
+                    <template for:each={activeFilterChips} for:item="chip">
+                        <span key={chip.key} class="cc__chip">
+                            {chip.label}
+                            <button type="button" class="cc__chip-remove" data-field={chip.field}
+                                onclick={handleRemoveChip} title="Quitar filtro">✕</button>
+                        </span>
+                    </template>
+                    <button type="button" class="cc__chips-clear" onclick={handleClearFilters}>Limpiar filtros</button>
+                </div>
+            </template>
+        </section>
+
+        <!-- ── ERROR ── -->
+        <template lwc:if={errorMessage}>
+            <div class="cc__error" role="alert">{errorMessage}</div>
+        </template>
+
+        <!-- ── TABS ── -->
+        <div class="cc__tabs-bar">
+            <nav class="cc__tabs" role="tablist">
+                <button type="button" class={tablaTabClass} data-tab="tabla" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:table" size="xx-small"></lightning-icon>
+                    Tabla editable
+                </button>
+                <button type="button" class={resumenTabClass} data-tab="resumen" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:chart" size="xx-small"></lightning-icon>
+                    Resumen por estado
+                </button>
+            </nav>
+            <template lwc:if={isTablaActive}>
+                <div class="cc__toolbar-right">Ordenar: {sortOrderLabel}</div>
+            </template>
+        </div>
+
+        <!-- ── LOADING ── -->
+        <template lwc:if={isLoading}>
+            <div class="cc__loading">
+                <lightning-spinner alternative-text="Cargando backlog" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- ── TAB: TABLA ── -->
+        <template lwc:elseif={isTablaActive}>
+            <template lwc:if={hasRows}>
+                <div class="cc__table-panel">
+                    <div class="cc__table-topbar">
+                        <span class="cc__table-info">{paginationLabel}</span>
+                        <template lwc:if={hasDrafts}>
+                            <div class="cc__save-top">
+                                <span class="cc__save-top-hint">{draftCount} sin guardar</span>
+                                <lightning-button label="Descartar" variant="neutral" size="small"
+                                    onclick={handleDiscardDrafts} disabled={isSaving}></lightning-button>
+                                <lightning-button label="Guardar cambios" variant="brand" size="small"
+                                    icon-name="utility:save" onclick={handleSaveDrafts} disabled={isSaving}></lightning-button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="cc__table-scroll">
+                        <table class="bk-table">
+                            <colgroup>
+                                <template for:each={tableColumns} for:item="col">
+                                    <col key={col.key} style={col.colStyle} />
+                                </template>
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <template for:each={tableColumns} for:item="col">
+                                        <th key={col.key} class={col.thClass} data-field={col.field}
+                                            onclick={handleHeaderClick} title={col.label}>
+                                            <span class="bk-th__label">{col.label}</span>
+                                            <span class="bk-th__sort">{col.indicator}</span>
+                                        </th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={displayRows} for:item="row">
+                                    <tr key={row.id} class={row.rowClass}>
+                                        <td class="bk-td bk-td--num">{row.rowNum}</td>
+                                        <td class="bk-td">
+                                            <a href={row.recordUrl} target="_blank" class="bk-link">{row.idRef}</a>
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="text" class="bk-input" value={row.proyecto}
+                                                data-id={row.id} data-field="Proyecto_Principal__c"
+                                                onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="text" class="bk-input" value={row.descripcion}
+                                                title={row.descripcion}
+                                                data-id={row.id} data-field="Descripci_n_breve__c"
+                                                onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <select class="bk-select" data-id={row.id} data-field="Tipo_de_Tarea__c"
+                                                onchange={handleCellEdit}>
+                                                <template for:each={row.tipoOptions} for:item="opt">
+                                                    <option key={opt.value} value={opt.value}
+                                                        selected={opt.selectedFlag}>{opt.label}</option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td class="bk-td bk-td--center">
+                                            <span class={row.estadoBadgeClass}>{row.estado}</span>
+                                        </td>
+                                        <td class="bk-td bk-td--truncate" title={row.consultorKaufmann}>
+                                            {row.consultorKaufmann}
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="text" class="bk-input" value={row.consultorSeidor}
+                                                data-id={row.id} data-field="Consultor_Seidor__c"
+                                                onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="number" step="0.1" class="bk-input bk-input--num"
+                                                value={row.hhTotal} data-id={row.id} data-field="HH_Total__c"
+                                                onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="date" class="bk-input bk-input--date"
+                                                value={row.fechaInicioVal} data-id={row.id}
+                                                data-field="Fecha_de_Inicio__c" onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <input type="date" class="bk-input bk-input--date"
+                                                value={row.fechaPlanVal} data-id={row.id}
+                                                data-field="Fecha_Plan_QA__c" onchange={handleCellEdit} />
+                                        </td>
+                                        <td class="bk-td">
+                                            <div class="bk-bar">
+                                                <span class="bk-bar__val">{row.asignLabel}</span>
+                                                <div class="bk-bar__track">
+                                                    <div class="bk-bar__fill" style={row.asignBarStyle}></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="bk-td">
+                                            <div class="bk-bar">
+                                                <span class="bk-bar__val">{row.avanceLabel}</span>
+                                                <div class="bk-bar__track">
+                                                    <div class="bk-bar__fill" style={row.avanceBarStyle}></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination footer -->
+                    <footer class="cc__pag">
+                        <span class="cc__pag-info">{paginationLabel}</span>
+                        <div class="cc__pag-right">
+                            <label class="cc__pag-size-label">
+                                Filas por página:
+                                <select class="cc__pag-select" onchange={handlePageSizeChange}>
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </label>
+                            <div class="cc__pag-nav">
+                                <button type="button" class="cc__pag-btn cc__pag-arrow"
+                                    onclick={handlePrevPage} disabled={prevDisabled}>‹</button>
+                                <template for:each={pageNumbers} for:item="p">
+                                    <template lwc:if={p.isEllipsis}>
+                                        <span key={p.key} class="cc__pag-ellipsis">…</span>
+                                    </template>
+                                    <template lwc:else>
+                                        <button key={p.key} type="button" class={p.btnClass}
+                                            data-page={p.num} onclick={handlePageClick}>{p.label}</button>
+                                    </template>
+                                </template>
+                                <button type="button" class="cc__pag-btn cc__pag-arrow"
+                                    onclick={handleNextPage} disabled={nextDisabled}>›</button>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="cc__empty">
+                    <lightning-icon icon-name="utility:search" size="medium"></lightning-icon>
+                    <p>No hay registros con los filtros actuales.</p>
+                    <button type="button" class="cc__empty-link" onclick={handleClearFilters}>Limpiar filtros</button>
+                </div>
+            </template>
+
+            <!-- Sticky save bar -->
+            <template lwc:if={hasDrafts}>
+                <div class="cc__draft-bar">
+                    <span class="cc__draft-msg">
+                        <lightning-icon icon-name="utility:edit" size="xx-small" variant="inverse"></lightning-icon>
+                        <span class="cc__draft-count">{draftCount}</span>
+                        cambio(s) pendiente(s) — haz clic en «Guardar cambios» para confirmar.
+                    </span>
+                    <div class="cc__draft-actions">
+                        <lightning-button label="Descartar cambios" variant="neutral"
+                            onclick={handleDiscardDrafts} disabled={isSaving}></lightning-button>
+                        <lightning-button label="Guardar cambios" variant="brand" icon-name="utility:save"
+                            onclick={handleSaveDrafts} disabled={isSaving}></lightning-button>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- ── TAB: RESUMEN ── -->
+        <template lwc:elseif={isResumenActive}>
+            <section class="cc__resumen">
+                <h2 class="cc__resumen-title">Distribución por estado</h2>
+                <p class="cc__resumen-sub">{summary.totalRecords} demandas en el backlog actual</p>
+                <div class="cc__resumen-list">
+                    <template for:each={resumenEstados} for:item="item">
+                        <article key={item.key} class="cc__resumen-row">
+                            <span class={item.badgeClass}>{item.estado}</span>
+                            <div class="cc__resumen-bar-wrap">
+                                <div class="cc__resumen-bar" style={item.barStyle}></div>
+                            </div>
+                            <span class="cc__resumen-count">{item.count}</span>
+                            <span class="cc__resumen-pct">{item.pct}%</span>
+                        </article>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+    </div>
+</template>

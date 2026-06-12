@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Custodio_Actual__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Consultor que tiene la custodia operativa del ticket (sincronizado desde Equipo de Resolutores).</description>
+    <externalId>false</externalId>
+    <label>Custodio actual</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Casos en custodia</relationshipLabel>
+    <relationshipName>Casos_En_Custodia</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <type>Lookup</type>
+</CustomField>

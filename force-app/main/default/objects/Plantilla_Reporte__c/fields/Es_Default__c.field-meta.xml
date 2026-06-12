@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Es_Default__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Marca la variante por defecto para el reporte. Solo deberia haber una marcada por reporte; la app garantiza ese invariante en saveVariant.</description>
+    <externalId>false</externalId>
+    <label>Es default</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

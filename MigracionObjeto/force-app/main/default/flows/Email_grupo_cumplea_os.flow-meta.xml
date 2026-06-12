@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Copia_1_de_Send_Email_Cumplea_eros</name>
+        <label>Copia 1 de Send Email Cumpleañeros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+        </inputParameters>
+        <inputParameters>
+            <name>emailAddressesArray</name>
+            <value>
+                <elementReference>colTo</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>ccRecipientAddressList</name>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>🎂 Cumpleañeros de hoy  {!Fechadehoy}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;{!ttBody}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>64.0</apiVersion>
+    <assignments>
+        <name>asignacolto</name>
+        <label>asignacolto</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>colTo</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Get_User_del_miembro.Email</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Miembros</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Asignar_linea_cumpleanero</name>
+        <label>Asignar linea cumpleañeros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>varlista</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>fmtLineaCumple</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Get_Grupo_AMS_Chile</targetReference>
+        </connector>
+    </assignments>
+    <constants>
+        <name>correomio</name>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>marlonjso75@gmail.com</stringValue>
+        </value>
+    </constants>
+    <decisions>
+        <name>Hay_Cumpleaneros</name>
+        <label>Hay Cumpleañeros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>NO</defaultConnectorLabel>
+        <rules>
+            <name>SI</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Cumpleaneros</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Loop_Cumpleaneros</targetReference>
+            </connector>
+            <label>SI</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Userdevuelto</name>
+        <label>Userdevuelto</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Loop_Miembros</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>NO1</defaultConnectorLabel>
+        <rules>
+            <name>SI1</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>formulaobteneruser</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>asignacolto</targetReference>
+            </connector>
+            <label>SI1</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>fmtLineaCumple</name>
+        <dataType>String</dataType>
+        <expression>{!varlista} &amp;
+&quot;&lt;li&gt;&quot; &amp;IF(NOT(ISBLANK({!Loop_Cumpleaneros.Name})), {!Loop_Cumpleaneros.Name}, &quot;&quot;)</expression>
+    </formulas>
+    <formulas>
+        <name>formulaobteneruser</name>
+        <dataType>Boolean</dataType>
+        <expression>NOT(ISBLANK({!Get_User_del_miembro.Id}))</expression>
+    </formulas>
+    <formulas>
+        <name>Validadorfecha</name>
+        <dataType>String</dataType>
+        <expression>RIGHT(&quot;00&quot;&amp;TEXT(DAY(TODAY())),2)
+&amp; &quot;.&quot; &amp;
+CASE(
+MONTH(TODAY()),
+1,&quot;Ene&quot;,
+2,&quot;Feb&quot;,
+3,&quot;Mar&quot;,
+4,&quot;Abr&quot;,
+5,&quot;May&quot;,
+6,&quot;Jun&quot;,
+7,&quot;Jul&quot;,
+8,&quot;Ago&quot;,
+9,&quot;Sep&quot;,
+10,&quot;Oct&quot;,
+11,&quot;Nov&quot;,
+12,&quot;Dic&quot;,
+&quot;&quot;
+)</expression>
+    </formulas>
+    <interviewLabel>Email grupo cumpleaños {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Email grupo cumpleaños</label>
+    <loops>
+        <name>Loop_Cumpleaneros</name>
+        <label>Loop Cumpleañeros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Cumpleaneros</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Asignar_linea_cumpleanero</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Copia_1_de_Send_Email_Cumplea_eros</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Miembros</name>
+        <label>Loop Miembros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <collectionReference>Get_Miembros_Grupo</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Get_User_del_miembro</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Loop_Cumpleaneros</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Cumpleaneros</name>
+        <label>Get Cumpleañeros</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Hay_Cumpleaneros</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Dia_Mes_Cumplea_os__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Validadorfecha</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Division</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>C1</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>IsActive</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>User</object>
+        <sortField>LastName</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Grupo_AMS_Chile</name>
+        <label>Get Grupo AMS Chile</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Miembros_Grupo</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Type</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Regular</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>00GWQ00000HhpOr</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Group</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Miembros_Grupo</name>
+        <label>Get Miembros Grupo</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Miembros</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GroupId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Grupo_AMS_Chile.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>GroupMember</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_User_del_miembro</name>
+        <label>Get User del miembro</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Userdevuelto</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Loop_Miembros.UserOrGroupId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Cumpleaneros</targetReference>
+        </connector>
+        <schedule>
+            <frequency>Daily</frequency>
+            <startDate>2025-09-17</startDate>
+            <startTime>09:00:00.000Z</startTime>
+        </schedule>
+        <triggerType>Scheduled</triggerType>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <description>Cuerpo del correo de cumpleañeros  {!Fechadehoy}</description>
+        <name>ttBody</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>&lt;h2&gt;🎉 &lt;strong&gt;Cumpleañeros de hoy&lt;/strong&gt; 🎉&lt;/h2&gt;
+&lt;p&gt;Hoy&amp;nbsp;{!Fechadehoy} queremos enviar muchas felicitaciones a los cumpleañeros de hoy, ellos son:&lt;/p&gt;
+
+&lt;ul style=&quot;margin:0 0 12px 20px;padding:0;list-style:disc;&quot;&gt;
+  {!varlista}
+&lt;/ul&gt;
+
+&lt;p&gt;¡Muchas felicidades en su día!&lt;/p&gt;
+&lt;p&gt;División Soporte AMS&lt;/p&gt;
+
+&lt;p&gt;&lt;em style=&quot;font-size:11px;&quot;&gt;
+Si desea conocer su fecha de cumpleaños registrada, le invitamos a revisar su perfil de usuario haciendo clic en su imagen o avatar. 
+Si no puede actualizarla, comuníquese con el equipo de administración.
+&lt;/em&gt;&lt;/p&gt;</text>
+    </textTemplates>
+    <variables>
+        <name>Colectornombres</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>colTo</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>Fechadehoy</name>
+        <dataType>Date</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Flow.CurrentDate</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>varlista</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

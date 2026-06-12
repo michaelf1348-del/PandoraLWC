@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lista_de_Cierre__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <externalId>false</externalId>
+    <label>Lista de Cierre</label>
+    <lookupFilter>
+        <active>true</active>
+        <filterItems>
+            <field>Lista_de_correo__c.Tipo_de_Operacion__c</field>
+            <operation>equals</operation>
+            <value>Cierre</value>
+        </filterItems>
+        <isOptional>false</isOptional>
+    </lookupFilter>
+    <referenceTo>Lista_de_correo__c</referenceTo>
+    <relationshipLabel>Gestiones Comerciales (Lista de Cierre)</relationshipLabel>
+    <relationshipName>Gestiones_Comerciales2</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fecha_Inicio_Ciclo__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+  ISBLANK(Fecha_Prevista__c),
+  NULL,
+  CASE(
+    Ciclo_AMS__c,
+    &quot;Mes Calendario&quot;,
+      DATE( YEAR(Fecha_Prevista__c), MONTH(Fecha_Prevista__c), 1),
+
+    &quot;Dia 15&quot;,
+      DATE(
+        YEAR( ADDMONTHS(Fecha_Prevista__c, -1) ),
+        MONTH( ADDMONTHS(Fecha_Prevista__c, -1) ),
+        16
+      ),
+
+    &quot;Dia 25&quot;,
+      DATE(
+        YEAR( ADDMONTHS(Fecha_Prevista__c, -1) ),
+        MONTH( ADDMONTHS(Fecha_Prevista__c, -1) ),
+        26
+      ),
+
+    /* default: Mes Calendario */
+    DATE( YEAR(Fecha_Prevista__c), MONTH(Fecha_Prevista__c), 1)
+  )
+)</formula>
+    <label>Fecha Inicio Ciclo</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

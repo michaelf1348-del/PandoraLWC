@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Monitor SLA: mis tickets, apoyos y equipo, con acciones rapidas.</description>
+    <label>Monitor SLA</label>
+    <lwcComponent>equipoResolutoresHome</lwcComponent>
+    <motif>Custom20: Stopwatch</motif>
+</CustomTab>

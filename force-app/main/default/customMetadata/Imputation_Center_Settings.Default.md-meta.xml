@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Default</label>
+    <protected>false</protected>
+    <values>
+        <field>Ayuda_Admin__c</field>
+        <value xsi:type="xsd:string">Parametros de referencia para el centro de imputaciones (vista previa).</value>
+    </values>
+    <values>
+        <field>Campo_PEP_Case__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Horas_Dia_Lab__c</field>
+        <value xsi:type="xsd:double">8.0</value>
+    </values>
+    <values>
+        <field>Lista_PEP_AMS__c</field>
+        <value xsi:type="xsd:string">Sin_Asignacion, Sin_asignacion, Sin asignacion, Gestion_Interna, Gestion Interna</value>
+    </values>
+    <values>
+        <field>Meta_Fact_Pct__c</field>
+        <value xsi:type="xsd:double">85.0</value>
+    </values>
+</CustomMetadata>

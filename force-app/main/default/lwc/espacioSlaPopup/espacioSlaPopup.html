@@ -1,0 +1,116 @@
+<template>
+    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open sla-popup-modal">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <h2 class="slds-modal__title slds-hyphenate">{popupTitle}</h2>
+                <p class="popup-lead">
+                    Cambi&#225; el estado o envi&#225; un comentario al cliente sin abrir el ticket.
+                </p>
+            </header>
+
+            <div class="slds-modal__content slds-p-around_medium popup-content">
+
+                <template lwc:if={isReadOnly}>
+                    <div class="popup-closed-banner" role="status">
+                        <lightning-icon icon-name="utility:lock" size="x-small"></lightning-icon>
+                        <span>{closedBannerMessage}</span>
+                    </div>
+                </template>
+
+                <section class="popup-section popup-section_readonly">
+                    <div class="popup-section-head">
+                        <lightning-icon icon-name="utility:paste" size="small"></lightning-icon>
+                        <div>
+                            <h3 class="popup-section-title">Estado del ticket</h3>
+                            <p class="popup-section-desc">Actualiz&#225; el estado actual del ticket.</p>
+                        </div>
+                    </div>
+                    <lightning-record-edit-form
+                        record-id={caseId}
+                        object-api-name="Case"
+                        onsubmit={handleEstadoSubmit}
+                        onsuccess={handleEstadoSuccess}
+                        onerror={handleEstadoError}>
+                        <div class="estado-grid">
+                            <template for:each={estadoFieldList} for:item="f">
+                                <lightning-input-field key={f} field-name={f} disabled={isReadOnly}></lightning-input-field>
+                            </template>
+                        </div>
+                        <div class="popup-section-actions">
+                            <lightning-button
+                                type="submit"
+                                variant="brand"
+                                label="Guardar estado"
+                                icon-name="utility:save"
+                                disabled={isReadOnly}>
+                            </lightning-button>
+                        </div>
+                    </lightning-record-edit-form>
+                </section>
+
+                <section class="popup-section">
+                    <div class="popup-section-head">
+                        <lightning-icon icon-name="utility:comments" size="small"></lightning-icon>
+                        <div>
+                            <h3 class="popup-section-title">Comentario al cliente</h3>
+                            <p class="popup-section-desc">
+                                Envi&#225; un comentario p&#250;blico que el cliente podr&#225; ver.
+                            </p>
+                        </div>
+                    </div>
+                    <lightning-combobox
+                        label="Plantilla (opcional)"
+                        placeholder="Seleccion&#225; una plantilla de comentario..."
+                        options={plantillasOptions}
+                        value={selectedPlantillaName}
+                        disabled={isReadOnly}
+                        onchange={handlePlantillaChange}>
+                    </lightning-combobox>
+                    <div class="comment-wrap">
+                        <lightning-textarea
+                            label="Comentario"
+                            placeholder="Escrib&#237; o ajust&#225; la plantilla. Se enviar&#225; como comentario p&#250;blico al cliente."
+                            value={commentText}
+                            maxlength="1000"
+                            disabled={isReadOnly}
+                            onchange={handleCommentChange}>
+                        </lightning-textarea>
+                        <span class="char-count">{commentCharCount} / 1000</span>
+                    </div>
+                    <div class="popup-tip">
+                        <lightning-icon icon-name="utility:light_bulb" size="x-small"></lightning-icon>
+                        <span>Tip: S&#233; claro, conciso y brind&#225; informaci&#243;n relevante al cliente.</span>
+                    </div>
+                    <div class="popup-section-actions">
+                        <lightning-button
+                            variant="brand"
+                            label="Enviar al cliente"
+                            icon-name="utility:send"
+                            disabled={sendDisabled}
+                            onclick={handleSendComment}>
+                        </lightning-button>
+                    </div>
+                </section>
+
+            </div>
+
+            <footer class="slds-modal__footer popup-footer">
+                <div class="popup-footer-btns">
+                    <lightning-button
+                        label="Cerrar"
+                        icon-name="utility:close"
+                        onclick={handleClose}>
+                    </lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        class="slds-m-left_x-small"
+                        label="Abrir ticket completo"
+                        icon-name="utility:new_window"
+                        onclick={handleOpenTicket}>
+                    </lightning-button>
+                </div>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

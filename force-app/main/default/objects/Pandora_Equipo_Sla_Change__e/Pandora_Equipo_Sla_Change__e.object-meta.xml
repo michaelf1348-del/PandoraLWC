@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Notifica a LWCs de equipo/SLA que un Case cambió (multi-usuario en tiempo casi real).</description>
+    <eventType>StandardVolume</eventType>
+    <label>Pandora Equipo SLA Change</label>
+    <pluralLabel>Pandora Equipo SLA Changes</pluralLabel>
+    <publishBehavior>PublishAfterCommit</publishBehavior>
+</CustomObject>

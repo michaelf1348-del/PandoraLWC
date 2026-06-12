@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Umbral_Aviso_Horas_Dia__c</fullName>
+    <description>Umbral en horas para avisos de �muchas horas en un mismo d�a� en el LWC (por defecto 10).</description>
+    <externalId>false</externalId>
+    <label>Umbral aviso horas/d�a</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>1</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

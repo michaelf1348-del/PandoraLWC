@@ -1,0 +1,31 @@
+:host {
+    display: block;
+}
+
+.bkbar {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 2px 0;
+}
+
+.bkbar__val {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1b1f2a;
+    line-height: 1.2;
+}
+
+.bkbar__track {
+    height: 5px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.bkbar__fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}

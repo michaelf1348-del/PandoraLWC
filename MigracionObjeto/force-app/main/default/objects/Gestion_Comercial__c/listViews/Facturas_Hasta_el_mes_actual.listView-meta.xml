@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Facturas_Hasta_el_mes_actual</fullName>
+    <columns>Cliente__c</columns>
+    <columns>DenPosicin__c</columns>
+    <columns>Cometario__c</columns>
+    <columns>NAME</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>RECORDTYPE</field>
+        <operation>equals</operation>
+        <value>Gestion_Comercial__c.Factura_Cliente</value>
+    </filters>
+    <filters>
+        <field>Grupo_AMS__c</field>
+        <operation>equals</operation>
+        <value>Grupo D</value>
+    </filters>
+    <filters>
+        <field>Fecha_Prevista__c</field>
+        <operation>lessOrEqual</operation>
+        <value>THIS_MONTH</value>
+    </filters>
+    <label>Facturas Hasta el mes actual D</label>
+    <sharedTo>
+        <group>Gcia_Servicios_AMS</group>
+    </sharedTo>
+</ListView>

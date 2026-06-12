@@ -1,0 +1,1751 @@
+<template>
+    <div class={pandoraWrapperClass} style={calendarThemeStyle}>
+        <template if:true={isLoading}>
+            <div class="loading-overlay">
+                <lightning-spinner alternative-text={loadingStatusText} size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <div class="header-banner">
+            <div class="header-banner-left">
+                <span class="header-icon-wrap" aria-hidden="true">
+                    <lightning-icon icon-name="utility:clock" size="small" alternative-text="Centro de imputaciones AMS"></lightning-icon>
+                </span>
+                <div class="header-titles">
+                    <div class="header-title-row">
+                        <h2>Centro de imputaciones AMS</h2>
+                        <template if:true={isQuickActionMode}>
+                            <lightning-badge label="Acción rápida" class="slds-m-left_x-small quick-action-badge"></lightning-badge>
+                        </template>
+                    </div>
+                    <template if:false={isQuickActionMode}>
+                        <p class="header-tagline">{headerCenterTagline}</p>
+                    </template>
+                </div>
+            </div>
+            <div class="header-banner-right">
+                <template if:true={showUsageGuideButton}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Guía de uso"
+                        title="Instrucciones del centro de imputaciones"
+                        icon-name="utility:info"
+                        onclick={openUsageGuideModal}
+                        class="header-import-btn">
+                    </lightning-button>
+                </template>
+                <template if:true={isImputationAdmin}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Monitor Centro Imputaciones"
+                        title="Monitor: cómo se calcula la meta mensual y la meta facturable"
+                        onclick={openImputationCenterSettingsModal}
+                        class="header-import-btn">
+                    </lightning-button>
+                </template>
+                <template if:true={showImportExportMenu}>
+                    <lightning-button-menu
+                        alternative-text="Importar o exportar imputaciones"
+                        icon-name="utility:table"
+                        menu-alignment="right"
+                        variant="border"
+                        onselect={handleImportExportMenuSelect}
+                        class="header-import-btn header-csv-menu">
+                        <template if:true={showExportCsvButton}>
+                            <lightning-menu-item
+                                value="export"
+                                label="Exportar imputaciones"
+                                icon-name="utility:download"
+                                title="CSV del mes visible: ticket, horas, fecha, no facturable, comentario e Id">
+                            </lightning-menu-item>
+                        </template>
+                        <template if:true={showImportCsvButton}>
+                            <lightning-menu-item
+                                value="import"
+                                label="Importar imputaciones"
+                                icon-name="utility:upload"
+                                title="Cargar desde plantilla CSV">
+                            </lightning-menu-item>
+                        </template>
+                    </lightning-button-menu>
+                </template>
+                <label class="month-picker-wrap">
+                    <span>Mes de imputación</span>
+                    <input
+                        type="month"
+                        value={monthPickerValue}
+                        onchange={handleMonthPickerChange} />
+                </label>
+                <template if:false={isQuickActionMode}>
+                    <div class="layout-settings-anchor slds-is-relative" data-layout-settings-root>
+                        <lightning-button-icon
+                            variant="border-filled"
+                            icon-name="utility:settings"
+                            alternative-text="Ajustes de vista"
+                            title="Ajustes de vista"
+                            onclick={toggleLayoutSettingsPopover}>
+                        </lightning-button-icon>
+                        <template if:true={layoutSettingsOpen}>
+                            <div class="layout-settings-pop" role="dialog" aria-label="Preferencias de vista">
+                                <p class="layout-settings-heading">Preferencias</p>
+                                <lightning-input
+                                    type="toggle"
+                                    label="Activar vista calendario"
+                                    name="preferSidebarCalendar"
+                                    checked={preferenceSidebarCalendar}
+                                    message-toggle-active=""
+                                    message-toggle-inactive=""
+                                    onchange={handlePreferenceSidebarCalendarChange}>
+                                </lightning-input>
+                                <p class="layout-settings-help">
+                                    Desactivado: misma barra de días que en acción rápida; activado: panel con calendario mensual lateral.
+                                </p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <template if:true={helpBannerText}>
+            <div class="config-help-banner" role="status">
+                <lightning-icon
+                    icon-name="utility:info"
+                    size="x-small"
+                    class="config-help-banner-icon"
+                    alternative-text="">
+                </lightning-icon>
+                <p class="config-help-banner-text">{helpBannerText}</p>
+            </div>
+        </template>
+
+        <template if:true={showFullPageWeekStripBanner}>
+            <section class="fullscreen-page-strip quick-action-dates-bar" aria-label="Mes de imputación">
+                <div class="strip-inner-fs qa-strip-inner compact-date-strip-card">
+                    <div class="strip-head strip-head--qa">
+                        <span class="strip-title">Mes de imputación · <span class="strip-month-inline">{stripRangeMonthLabel}</span></span>
+                    </div>
+                    <div class="strip-nav-row strip-nav-row--qa" onmousedown={handleStripNavRowMouseDown}>
+                        <lightning-button-icon
+                            icon-name="utility:chevronleft"
+                            variant="border-filled"
+                            size="small"
+                            alternative-text="Mes anterior"
+                            title="Mes anterior"
+                            onclick={handleStripPrevMonth}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                        <div class={stripDaysWrapClass} style={stripDaysWrapStyle} tabindex="-1">
+                            <template for:each={stripDays} for:item="day">
+                                <div key={day.key} class="strip-day-cell">
+                                    <button
+                                        type="button"
+                                        class={day.buttonClass}
+                                        style={day.buttonStyle}
+                                        title={day.dayTooltip}
+                                        data-date={day.iso}
+                                        disabled={day.disabled}
+                                        onmousedown={handleStripDayMouseDown}
+                                        onmouseenter={handleStripDayMouseEnter}
+                                        onclick={handleStripDayClick}>
+                                        <span class="strip-day-week">{day.weekdayLetter}</span>
+                                        <span class="strip-day-num">{day.dayNumber}</span>
+                                        <span class="strip-day-hh">{day.hoursChip}</span>
+                                    </button>
+                                    <template if:true={day.showDetailIcon}>
+                                        <button
+                                            type="button"
+                                            class="strip-day-detail-btn"
+                                            title="Detalle de imputaciones de este día"
+                                            aria-label="Ver detalle de imputaciones de este día"
+                                            data-date={day.iso}
+                                            onclick={handleDayDetailBreakdownClick}>
+                                            <lightning-icon
+                                                class="strip-day-clock-icon"
+                                                icon-name="utility:clock"
+                                                size="x-small"
+                                                alternative-text="Detalle del día">
+                                            </lightning-icon>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        <lightning-button-icon
+                            icon-name="utility:chevronright"
+                            variant="border-filled"
+                            size="small"
+                            alternative-text="Mes siguiente"
+                            title="Mes siguiente"
+                            onclick={handleStripNextMonth}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                    </div>
+                    <p class="strip-selection-summary">{quickBatchProjectionLabel}</p>
+                </div>
+            </section>
+        </template>
+
+        <!-- Quick action: fechas en ancho completo, arrastre igual que calendario -->
+        <template if:true={isQuickActionMode}>
+            <section class="quick-action-dates-bar" aria-label="Mes de imputación para el lote">
+                <div class="qa-strip-inner compact-date-strip-card">
+                    <div class="strip-head strip-head--qa">
+                        <span class="strip-title">Mes de imputación · <span class="strip-month-inline">{stripRangeMonthLabel}</span></span>
+                    </div>
+                    <div class="strip-nav-row strip-nav-row--qa" onmousedown={handleStripNavRowMouseDown}>
+                        <lightning-button-icon
+                            icon-name="utility:chevronleft"
+                            variant="border-filled"
+                            size="small"
+                            alternative-text="Mes anterior"
+                            title="Mes anterior"
+                            onclick={handleStripPrevMonth}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                        <div class={stripDaysWrapClass} style={stripDaysWrapStyle} tabindex="-1">
+                            <template for:each={stripDays} for:item="day">
+                                <div key={day.key} class="strip-day-cell">
+                                    <button
+                                        type="button"
+                                        class={day.buttonClass}
+                                        style={day.buttonStyle}
+                                        title={day.dayTooltip}
+                                        data-date={day.iso}
+                                        disabled={day.disabled}
+                                        onmousedown={handleStripDayMouseDown}
+                                        onmouseenter={handleStripDayMouseEnter}
+                                        onclick={handleStripDayClick}>
+                                        <span class="strip-day-week">{day.weekdayLetter}</span>
+                                        <span class="strip-day-num">{day.dayNumber}</span>
+                                        <span class="strip-day-hh">{day.hoursChip}</span>
+                                    </button>
+                                    <template if:true={day.showDetailIcon}>
+                                        <button
+                                            type="button"
+                                            class="strip-day-detail-btn"
+                                            title="Detalle de imputaciones de este día"
+                                            aria-label="Ver detalle de imputaciones de este día"
+                                            data-date={day.iso}
+                                            onclick={handleDayDetailBreakdownClick}>
+                                            <lightning-icon
+                                                class="strip-day-clock-icon"
+                                                icon-name="utility:clock"
+                                                size="x-small"
+                                                alternative-text="Detalle del día">
+                                            </lightning-icon>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        <lightning-button-icon
+                            icon-name="utility:chevronright"
+                            variant="border-filled"
+                            size="small"
+                            alternative-text="Mes siguiente"
+                            title="Mes siguiente"
+                            onclick={handleStripNextMonth}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                    </div>
+                    <p class="strip-selection-summary">{quickBatchProjectionLabel}</p>
+                </div>
+            </section>
+        </template>
+
+        <div class={mainLayoutClass}>
+            <!-- Tabla primero: foco principal; en móvil queda arriba -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_8-of-12 pandora-main-col">
+                <div class="right-panel pandora-table-area">
+                    <div class="table-card slds-is-relative">
+                        <div class="table-header">
+                            <div class="table-header-top">
+                                <div class={headerLeftTableClass}>
+                                    <div class="table-title-row table-title-row--with-tabs">
+                                        <div class="table-title-tabs table-title-tabs--main-row">
+                                            <div class="tickets-title-with-help">
+                                                <h3 class="tickets-heading-inline">{ticketsSectionTitle}</h3>
+                                                <div class="selection-hours-preview selection-hours-preview--tickets-title" role="status" aria-live="polite">
+                                                    <span class="selection-hours-preview__label">Horas en selección</span>
+                                                    <strong class="selection-hours-preview__value">{totalHoursPreview} h</strong>
+                                                </div>
+                                            </div>
+                                            <div class="tabs-and-resolutor-cluster">
+                                                <div
+                                                    class="ticket-catalog-segmented"
+                                                    role="tablist"
+                                                    aria-label="Lista de tickets">
+                                                    <template for:each={ticketCatalogTabButtons} for:item="tab">
+                                                        <button
+                                                            key={tab.id}
+                                                            type="button"
+                                                            role="tab"
+                                                            class={tab.btnClass}
+                                                            data-tab-id={tab.id}
+                                                            aria-selected={tab.isSelected}
+                                                            onclick={handleTicketCatalogTabClick}>
+                                                            {tab.label}
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                                <template if:true={isImputationAdmin}>
+                                                    <div class="resolutores-row">
+                                                <span class="resolutores-row-label" id="resolutores-inline-label">Resolutores</span>
+                                                <lightning-combobox
+                                                    name="resolutores"
+                                                    label="Resolutores"
+                                                    variant="label-hidden"
+                                                    aria-labelledby="resolutores-inline-label"
+                                                    value={selectedOwnerId}
+                                                    options={ownerOptions}
+                                                    placeholder="Todos los resolutores"
+                                                    dropdown-alignment="bottom-left"
+                                                    class="resolutores-by-tabs-combobox"
+                                                    onchange={handleOwnerChange}>
+                                                </lightning-combobox>
+                                            </div>
+                                            <div class="resolutores-row impute-behalf-row">
+                                                <span class="resolutores-row-label" id="impute-behalf-inline-label">A nombre de</span>
+                                                <lightning-combobox
+                                                    name="imputarEnNombreDe"
+                                                    label="A nombre de"
+                                                    variant="label-hidden"
+                                                    aria-labelledby="impute-behalf-inline-label"
+                                                    value={adminImputeOnBehalfUserId}
+                                                    options={imputeOnBehalfComboboxOptions}
+                                                    placeholder="Usuario conectado"
+                                                    dropdown-alignment="bottom-left"
+                                                    class="resolutores-by-tabs-combobox impute-behalf-combobox"
+                                                    title="Consultor que quedará en el registro de imputación al guardar. Independiente del filtro «Resolutores»."
+                                                    onchange={handleImputeOnBehalfChange}>
+                                                </lightning-combobox>
+                                            </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <template if:true={showCatalogTabExtra}>
+                                            <div class="catalog-tab-extra">
+                                                <template if:true={showCatalogTabHint}>
+                                                    <p class="ams-tab-backend-hint">{catalogTabHintText}</p>
+                                                </template>
+                                                <template if:true={showCatalogTabCreatedFilter}>
+                                                    <div class="ams-created-filter">
+                                                        <span class="ams-created-filter__label">Creado entre</span>
+                                                        <lightning-input
+                                                            type="date"
+                                                            variant="label-hidden"
+                                                            label="Desde"
+                                                            placeholder="Desde"
+                                                            value={amsCreatedFromDate}
+                                                            onchange={handleAmsCreatedFromChange}
+                                                            class="ams-created-filter__input">
+                                                        </lightning-input>
+                                                        <span class="ams-created-filter__sep">y</span>
+                                                        <lightning-input
+                                                            type="date"
+                                                            variant="label-hidden"
+                                                            label="Hasta"
+                                                            placeholder="Hasta"
+                                                            value={amsCreatedToDate}
+                                                            onchange={handleAmsCreatedToChange}
+                                                            class="ams-created-filter__input">
+                                                        </lightning-input>
+                                                        <template if:true={hasAmsCreatedFilter}>
+                                                            <lightning-button-icon
+                                                                icon-name="utility:close"
+                                                                variant="bare"
+                                                                size="small"
+                                                                alternative-text="Limpiar filtro de fechas"
+                                                                title="Limpiar filtro de fechas"
+                                                                onclick={handleAmsCreatedFilterClear}>
+                                                            </lightning-button-icon>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="header-right table-header-actions">
+                                    <div class="pending-chip">{pendingChipLabel}</div>
+                                </div>
+                            </div>
+
+                            <div class={tableToolbarInnerClass}>
+                                <div class="table-toolbar-search-block">
+                                    <lightning-input
+                                        type="search"
+                                        label="Buscar"
+                                        variant="label-stacked"
+                                        placeholder="Nº ticket o asunto"
+                                        value={searchTerm}
+                                        onchange={handleSearchChange}>
+                                    </lightning-input>
+                                </div>
+                                <div class="selection-actions">
+                                    <lightning-button
+                                        class="confirm-inline-btn"
+                                        label="Confirmar imputación"
+                                        variant="brand"
+                                        onclick={saveSelected}
+                                        disabled={disableSave}>
+                                    </lightning-button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="custom-table-container">
+                            <template if:true={hasRows}>
+                                <div class="ticket-table" role="table" aria-label="Tickets para imputar">
+                                    <div class="ticket-table-head" role="rowgroup">
+                                        <div class="ticket-table-row ticket-table-row--head" role="row">
+                                            <div class="ticket-table-cell ticket-table-cell--check" role="columnheader">
+                                                <input
+                                                    type="checkbox"
+                                                    class="ticket-native-check"
+                                                    aria-label="Seleccionar todos visibles"
+                                                    checked={allFilteredSelected}
+                                                    onchange={handleSelectAllFiltered} />
+                                            </div>
+                                            <div class="ticket-table-cell ticket-table-cell--ticket" role="columnheader">Nº ticket</div>
+                                            <div class="ticket-table-cell ticket-table-cell--subject" role="columnheader" title="Asunto del ticket">Asunto</div>
+                                            <div class="ticket-table-cell ticket-table-cell--prior" role="columnheader" title="Horas ya imputadas en el ticket">
+                                                <span class="th-lines"><span class="th-l1">Imp.</span><span class="th-l2">Ticket</span></span>
+                                            </div>
+                                            <div class="ticket-table-cell ticket-table-cell--hours" role="columnheader" title="Horas de este guardado">Horas</div>
+                                            <div class="ticket-table-cell ticket-table-cell--nofact" role="columnheader" title="Marcar solo si el tiempo no es facturable">No fact.</div>
+                                            <div class="ticket-table-cell ticket-table-cell--actions" role="columnheader">Acciones</div>
+                                        </div>
+                                    </div>
+                                    <div class="ticket-table-body" role="rowgroup">
+                                        <template for:each={displayTicketRows} for:item="row">
+                                            <div key={row.caseId} class={row.trClass} role="row">
+                                                <div class="ticket-table-cell ticket-table-cell--check" role="cell">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="ticket-native-check"
+                                                        aria-label="Seleccionar fila"
+                                                        data-row-id={row.caseId}
+                                                        checked={row.rowSelected}
+                                                        onchange={handleRowSelectionChange} />
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--ticket" role="cell">
+                                                    <div class="ticket-number-cell">
+                                                        <div class="ticket-number">
+                                                            <a href={row.caseRecordUrl} target="_blank" rel="noopener noreferrer" title={row.ticketHoverDetails}>{row.caseNumber}</a>
+                                                        </div>
+                                                        <template if:true={row.hasImportDateFromCsv}>
+                                                            <span class="import-fecha-chip" title={row.importDateTooltip}>
+                                                                Carga&nbsp;·&nbsp;<span>{row.importDateDmY}</span>
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--subject" role="cell">
+                                                    <span class="ticket-subject-compact" title={row.subject}>{row.subject}</span>
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--prior" role="cell">
+                                                    <template if:true={row.hasPriorHours}>
+                                                        <span class="imputed-pill" title={row.imputedHoursHover}>
+                                                            <span class="imputed-pill-num">{row.alreadyImputedHoursFormatted}</span>
+                                                            <span class="imputed-pill-unit">H</span>
+                                                        </span>
+                                                    </template>
+                                                    <template if:false={row.hasPriorHours}>
+                                                        <span class="imputed-empty" title={row.imputedHoursHover}>-</span>
+                                                    </template>
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--hours" role="cell">
+                                                    <input
+                                                        type="number"
+                                                        class="ticket-hours-native"
+                                                        aria-label="Horas"
+                                                        step="0.25"
+                                                        min="0.25"
+                                                        value={row.hoursDisplay}
+                                                        data-row-id={row.caseId}
+                                                        data-row-index={row.rowIndex}
+                                                        onkeydown={handleRowHoursKeyDown}
+                                                        onchange={handleRowHoursChange}
+                                                        oninput={handleRowHoursChange} />
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--nofact" role="cell">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="ticket-native-check"
+                                                        aria-label="No facturable"
+                                                        data-row-id={row.caseId}
+                                                        checked={row.plannedNoFacturable}
+                                                        disabled={row.amsNoFactLocked}
+                                                        onchange={handleRowNfChange} />
+                                                </div>
+                                                <div class="ticket-table-cell ticket-table-cell--actions" role="cell">
+                                                    <div class="td-actions-inner">
+                                                    <lightning-button-icon
+                                                        icon-name="utility:note"
+                                                        variant="border-filled"
+                                                        size="x-small"
+                                                        alternative-text="Editar comentario"
+                                                        title="Comentario rápido (popup)"
+                                                        class={row.commentActionClass}
+                                                        data-row-id={row.caseId}
+                                                        onclick={openRowCommentModal}>
+                                                    </lightning-button-icon>
+                                                    <lightning-button-icon
+                                                        icon-name="utility:edit"
+                                                        variant="border-filled"
+                                                        size="x-small"
+                                                        alternative-text="Ver imputaciones del ticket"
+                                                        title="Ver y editar las imputaciones de este ticket"
+                                                        class="row-mini-action"
+                                                        data-case-id={row.caseId}
+                                                        data-case-number={row.caseNumber}
+                                                        onclick={openTicketRowEditImputation}>
+                                                    </lightning-button-icon>
+                                                    <lightning-button-icon
+                                                        icon-name={row.pinIconName}
+                                                        variant="border-filled"
+                                                        size="x-small"
+                                                        alternative-text={row.pinIconTitle}
+                                                        title={row.pinIconTitle}
+                                                        class={row.pinActionClass}
+                                                        data-row-id={row.caseId}
+                                                        disabled={row.pinDisabled}
+                                                        onclick={handleTogglePin}>
+                                                    </lightning-button-icon>
+                                                    </div>
+                                                    <template if:true={row.hasRowError}>
+                                                        <div class="row-error row-error--grid" role="alert">{row.rowErrorText}</div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template if:false={hasRows}>
+                                <template if:true={showAmsTabPlaceholderBody}>
+                                    <div class="empty-state-cell empty-state-standalone empty-state-ams-placeholder">
+                                        <span class="empty-icon-visual" aria-hidden="true">
+                                            <lightning-icon icon-name="utility:strategy" size="small" class="empty-icon" alternative-text=""></lightning-icon>
+                                        </span>
+                                        <p class="empty-title">Gestión AMS</p>
+                                        <p class="empty-subtitle">
+                                            Tickets abiertos del servicio AMS-SAP o AMS-SAP-Mexico. Si no aparecen filas, no hay tickets que cumplan estos criterios.
+                                        </p>
+                                    </div>
+                                </template>
+                                <template if:true={emptyDueToSearch}>
+                                    <template if:false={showAmsTabPlaceholderBody}>
+                                    <div class="empty-state-cell empty-state-standalone">
+                                        <span class="empty-icon-visual" aria-hidden="true">
+                                            <lightning-icon icon-name="utility:filterList" size="small" class="empty-icon" alternative-text=""></lightning-icon>
+                                        </span>
+                                        <p class="empty-title">Ningún ticket coincide con la búsqueda</p>
+                                        <p class="empty-subtitle">Amplía el criterio o quita el filtro para volver a ver la tabla cargada.</p>
+                                        <lightning-button variant="neutral" label="Quitar filtro de búsqueda" onclick={clearSearchFilter} class="empty-action-btn"></lightning-button>
+                                    </div>
+                                    </template>
+                                </template>
+                                <template if:false={emptyDueToSearch}>
+                                    <template if:false={showAmsTabPlaceholderBody}>
+                                    <div class="empty-state-cell empty-state-standalone">
+                                        <span class="empty-icon-visual" aria-hidden="true">
+                                            <lightning-icon icon-name="utility:topics" size="small" class="empty-icon" alternative-text=""></lightning-icon>
+                                        </span>
+                                        <p class="empty-title">No hay tickets para mostrar</p>
+                                        <p class="empty-subtitle">
+                                            Si colaboras en tickets de otros consultores, pide que te añadan al equipo del caso (Case Team).
+                                        </p>
+                                        <template if:true={isImputationAdmin}>
+                                            <p class="empty-subtitle empty-subtitle-admin">
+                                                Como administrador, revisa «Resolutores» junto a las pestañas: si está filtrada, puedes no ver todos los casos hasta elegir «Todos los resolutores».
+                                            </p>
+                                        </template>
+                                    </div>
+                                    </template>
+                                </template>
+                            </template>
+                        </div>
+
+                        <template if:true={showLoadMoreTickets}>
+                            <div class="load-more-bar">
+                                <lightning-button
+                                    label="Cargar más tickets"
+                                    title="Siguiente página (200 filas). Mantiene lo ya cargado y lo añade a la tabla."
+                                    onclick={loadMoreTickets}
+                                    disabled={isLoading}
+                                    variant="neutral">
+                                </lightning-button>
+                            </div>
+                        </template>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel lateral: calendario + métricas + plantilla (sin acordeón) -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_4-of-12 pandora-side-col">
+                <div class="left-panel pandora-side-panel">
+
+                    <template if:false={isQuickActionMode}>
+                        <template if:true={showSidebarCalendarPanel}>
+                        <div class="calendar-card ams-calendar-card">
+                            <div class="cal-header">
+                                <lightning-button-icon
+                                    icon-name="utility:chevronleft"
+                                    variant="border-filled"
+                                    size="x-small"
+                                    alternative-text="Mes anterior"
+                                    onclick={handlePrevMonth}>
+                                </lightning-button-icon>
+                                <h3 class="cal-title">{currentMonthName} {currentYear}</h3>
+                                <lightning-button-icon
+                                    icon-name="utility:chevronright"
+                                    variant="border-filled"
+                                    size="x-small"
+                                    alternative-text="Mes siguiente"
+                                    onclick={handleNextMonth}>
+                                </lightning-button-icon>
+                            </div>
+                            <div class="cal-grid cal-weekdays" aria-label="Días de la semana de domingo a sábado">
+                                <template for:each={weekdays} for:item="weekday">
+                                    <div key={weekday.key}>{weekday.label}</div>
+                                </template>
+                            </div>
+                            <ul class="cal-legend" aria-label="Leyenda del calendario por horas cargadas ese día">
+                                <li>
+                                    <span class="cal-legend-sample cal-legend-sample--success" aria-hidden="true"></span>
+                                    <span>≈ día completo (≥ 8 h)</span>
+                                </li>
+                                <li>
+                                    <span class="cal-legend-sample cal-legend-sample--partial" aria-hidden="true"></span>
+                                    <span>horas ese día pero &lt; 8</span>
+                                </li>
+                                <li>
+                                    <span class="cal-legend-sample cal-legend-sample--active" aria-hidden="true"></span>
+                                    <span>fecha enfocada / selección multi</span>
+                                </li>
+                            </ul>
+
+                            <div class="cal-grid cal-days" onmousedown={handleCalDaysSurfaceMouseDown}>
+                                <template for:each={calendarDays} for:item="day">
+                                    <template if:true={day.isEmpty}>
+                                        <div key={day.key} class="cal-day empty"></div>
+                                    </template>
+                                    <template if:false={day.isEmpty}>
+                                        <div key={day.key} class="cal-day-slot">
+                                            <button
+                                                type="button"
+                                                class={day.buttonClass}
+                                                style={day.buttonStyle}
+                                                data-date={day.isoDate}
+                                                onmousedown={handleDayMouseDown}
+                                                onmouseenter={handleDayMouseEnter}
+                                                onclick={handleDayClick}
+                                                disabled={day.disabled}>
+                                                <span>{day.label}</span>
+                                            </button>
+                                            <template if:true={day.showDetailIcon}>
+                                                <button
+                                                    type="button"
+                                                    class="cal-day-detail-btn"
+                                                    title="Detalle de imputaciones de este día"
+                                                    aria-label="Ver detalle de imputaciones de este día"
+                                                    data-date={day.isoDate}
+                                                    onclick={handleDayDetailBreakdownClick}>
+                                                    <lightning-icon
+                                                        class="cal-day-clock-icon"
+                                                        icon-name="utility:clock"
+                                                        size="x-small"
+                                                        alternative-text="Detalle del día">
+                                                    </lightning-icon>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                            <div class="cal-mode-row">
+                                <div class="cal-mode-label-row">
+                                    <span class="cal-mode-label">Fecha de imputación</span>
+                                    <lightning-helptext content={helpCalendarModes}></lightning-helptext>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </template>
+
+                    <div class="summary-card billable-chart-card">
+                        <div class="chart-title-row chart-title-row--with-icons">
+                            <div class="summary-title">Imputación mensual</div>
+                            <div class="chart-type-icons" role="radiogroup" aria-label="Tipo de gráfico">
+                                <button
+                                    type="button"
+                                    class={chartTypeIconBtnClassDonut}
+                                    data-chart-type="donut"
+                                    title="Vista dona (porcentaje en anillo)"
+                                    aria-label="Gráfico dona"
+                                    aria-pressed={isMonthlyChartDonut}
+                                    onclick={handleMonthlyChartTypePick}>
+                                    <span class="chart-type-visual chart-type-visual--donut" aria-hidden="true"></span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class={chartTypeIconBtnClassBars}
+                                    data-chart-type="bars"
+                                    title="Vista barras horizontales"
+                                    aria-label="Gráfico barras"
+                                    aria-pressed={isMonthlyChartBars}
+                                    onclick={handleMonthlyChartTypePick}>
+                                    <span class="chart-type-visual chart-type-visual--bars" aria-hidden="true"></span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class={chartTypeIconBtnClassStacked}
+                                    data-chart-type="stacked"
+                                    title="Vista franja apilada"
+                                    aria-label="Gráfico apilado"
+                                    aria-pressed={isMonthlyChartStacked}
+                                    onclick={handleMonthlyChartTypePick}>
+                                    <span class="chart-type-visual chart-type-visual--stacked" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="month-total-row month-total-row--hero">
+                            <span class="month-total-label-wrap">
+                                <span class="month-total-label">Horas imputadas del mes</span>
+                                <lightning-button-icon
+                                    icon-name="utility:info"
+                                    size="xx-small"
+                                    alternative-text="Ver metas del mes"
+                                    title="Ver metas del mes"
+                                    variant="bare"
+                                    class="month-total-info-btn"
+                                    onclick={openMonthMetaHelpModal}>
+                                </lightning-button-icon>
+                            </span>
+                            <span class="month-total-value month-total-value--hero">{monthlyHoursTotalFormatted}</span>
+                        </div>
+                        <div class="month-goal-wrap">
+                            <div class="month-goal-label-row">
+                                <span class="month-goal-label">Meta Imputación</span>
+                                <span class="month-goal-hint">Meta facturable apartir del {codeFacturableTargetPct}%</span>
+                            </div>
+                            <div class="month-goal-bar-wrap">
+                                <div
+                                    class="progress-bar month-goal-progress"
+                                    role="progressbar"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                    aria-valuenow={monthlyFacturableProgressPctRounded}
+                                    aria-valuetext={monthlyFacturableProgressLabel}>
+                                    <div class="progress-fill month-goal-fill" style={monthlyFacturableGoalStyle}></div>
+                                </div>
+                                <div class="month-goal-bono-marker" style={monthlyBonoMarkerStyle} aria-hidden="true">
+                                    <span class="month-goal-bono-marker-tick"></span>
+                                    <span class="month-goal-bono-marker-label">{codeFacturableTargetPct}%</span>
+                                </div>
+                            </div>
+                            <div class="progress-foot">{monthlyFacturableProgressLabel}</div>
+                            <div class="goal-fun-row">
+                                <span class="goal-fun-label">{monthlyGoalFunLabel}</span>
+                                <span class={monthlyGoalBadgeClass}>
+                                    <lightning-icon icon-name={monthlyGoalBadgeIcon} size="xx-small" alternative-text=""></lightning-icon>
+                                    <span>{monthlyGoalBadgeLabel}</span>
+                                </span>
+                                <div class="goal-pips" aria-label={monthlyGoalPipsAria} role="img">
+                                    <template for:each={goalProgressPips} for:item="pip">
+                                        <span key={pip.key} class={pip.className}></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <template if:true={hasBillableChartData}>
+                            <template if:true={isMonthlyChartDonut}>
+                                <div
+                                    class="donut-chart"
+                                    role="img"
+                                    aria-label={billableChartAriaLabel}>
+                                    <div class="donut-chart-ring" style={billableDonutStyle}></div>
+                                    <div class="donut-chart-center">
+                                        <span class="donut-chart-pct-main">{billablePctFactLabel}</span>
+                                        <span class="donut-chart-pct-sub">{billableDonutSubLabel}</span>
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:true={isMonthlyChartBars}>
+                                <div class="monthly-bars-wrap" role="img" aria-label={billableChartAriaLabel}>
+                                    <div class="monthly-bars-row">
+                                        <span>Facturable</span>
+                                        <div class="monthly-bars-track">
+                                            <div class="monthly-bars-fill monthly-bars-fill--fact" style={monthlyBarFactStyle}></div>
+                                        </div>
+                                        <strong>{billableHoursFactFormatted}</strong>
+                                    </div>
+                                    <div class="monthly-bars-row">
+                                        <span>No facturable</span>
+                                        <div class="monthly-bars-track">
+                                            <div class="monthly-bars-fill monthly-bars-fill--nofact" style={monthlyBarNoFactStyle}></div>
+                                        </div>
+                                        <strong>{billableHoursNoFactFormatted}</strong>
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:true={isMonthlyChartStacked}>
+                                <div class="monthly-stacked-wrap" role="img" aria-label={billableChartAriaLabel}>
+                                    <div class="monthly-stacked-track">
+                                        <div class="monthly-stacked-segment monthly-stacked-segment--fact" style={monthlyBarFactStyle}></div>
+                                        <div class="monthly-stacked-segment monthly-stacked-segment--nofact" style={monthlyBarNoFactStyle}></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <ul class="chart-legend-list">
+                                <li
+                                    class="chart-legend-item"
+                                    role="button"
+                                    tabindex="0"
+                                    title="Ver tickets facturables del mes"
+                                    onclick={openFacturableTicketList}
+                                    onkeydown={handleTicketListLegendKey}>
+                                    <span class="chart-swatch chart-swatch--fact" style={chartSwatchFactStyle} aria-hidden="true"></span>
+                                    Facturable
+                                    <strong>{billableFactLegendText}</strong>
+                                </li>
+                                <li
+                                    class="chart-legend-item"
+                                    role="button"
+                                    tabindex="0"
+                                    title="Ver tickets no facturables del mes"
+                                    onclick={openNoFacturableTicketList}
+                                    onkeydown={handleTicketListLegendKey}>
+                                    <span class="chart-swatch chart-swatch--nofact" style={chartSwatchNoFactStyle} aria-hidden="true"></span>
+                                    No facturable
+                                    <strong>{billableNoFactLegendText}</strong>
+                                </li>
+                                <li class="chart-legend-imputable">
+                                    <span class="chart-swatch chart-swatch--imputable" aria-hidden="true"></span>
+                                    Imputable
+                                    <strong>{billableImputableLegendText}</strong>
+                                </li>
+                            </ul>
+                        </template>
+                        <template if:false={hasBillableChartData}>
+                            <p class="chart-empty">Sin desglose facturable/no facturable para el mes actual.</p>
+                        </template>
+                        <template if:true={showQuarterFacturablePanel}>
+                            <div class="quarter-card" role="region" aria-label="Resumen trimestral facturable del año actual">
+                                <div class="quarter-head">
+                                    <span class="quarter-title">Facturable trimestral actual</span>
+                                    <span class="quarter-chip">Tu trimestre Q{currentQuarterNumber}: {currentQuarterPctText}</span>
+                                </div>
+                                <ul class="quarter-list">
+                                    <template for:each={quarterFacturableRows} for:item="q">
+                                        <li key={q.key} class="quarter-li">
+                                            <button
+                                                type="button"
+                                                class={q.rowClass}
+                                                data-q={q.qValue}
+                                                aria-label={q.ariaLabel}
+                                                title={q.summary}
+                                                onclick={handleQuarterRowClick}>
+                                                <span>{q.label}</span>
+                                                <strong>{q.pctText}</strong>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template if:true={imputationCenterSettingsOpen}>
+            <div class="import-modal-backdrop" onclick={closeImputationCenterSettingsModal}></div>
+            <div class="import-modal-panel imputation-center-modal" role="dialog" aria-modal="true" aria-labelledby="imputation-center-heading">
+                <div class="import-modal-header">
+                    <h2 id="imputation-center-heading" class="import-modal-title">Monitor Centro Imputaciones</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeImputationCenterSettingsModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body import-modal-body--calc-transparency">
+                    <p class="import-modal-lead">
+                        Incluye el mes de referencia respecto al calendario de la pantalla, la fecha de última revisión de la lista de festivos en código, enlaces de consulta y el desglose numérico (días hábiles, festivos y meta). Usa las pestañas <strong>Cálculos</strong> e <strong>Información</strong> para separar el desglose del contexto. Solo los administradores de imputación ven esta ventana.
+                    </p>
+                    <template if:true={adminCalcTransparencyModel}>
+                        <div class="admin-calc-transparency__body admin-calc-transparency__body--modal">
+                            <lightning-tabset class="monitor-modal-tabset" active-tab-value={monitorModalTab}>
+                                <lightning-tab label="Cálculos" value="calc" onactive={handleMonitorTabActive}>
+                                    <h3 class="admin-calc-transparency__h3">Desglose numérico del mes</h3>
+                                    <ul class="admin-calc-transparency__facts">
+                                        <li>Días del mes (calendario civil): {adminCalcTransparencyModel.calendarDays}</li>
+                                        <li>Fines de semana (sábado y domingo): {adminCalcTransparencyModel.weekendCount}</li>
+                                        <li>
+                                            Festivos Chile (lista fija mes-día en código): {adminCalcTransparencyModel.holidayCount}
+                                            <template if:true={adminCalcTransparencyModel.holidayCount}>
+                                                <ul class="admin-calc-transparency__sublist">
+                                                    <template for:each={adminCalcTransparencyModel.holidayRows} for:item="hr">
+                                                        <li key={hr.key}>{hr.label}</li>
+                                                    </template>
+                                                </ul>
+                                            </template>
+                                        </li>
+                                        <li>
+                                            <strong>Días hábiles contados</strong> (lun–vie que no son festivo fijo):
+                                            {adminCalcTransparencyModel.businessDays}
+                                        </li>
+                                        <li>
+                                            Jornada objetivo usada en el gráfico:
+                                            <strong>{adminCalcTransparencyModel.jornada} h/día</strong>
+                                            (constante en código)
+                                        </li>
+                                        <li>
+                                            Meta facturable del gráfico (100% imputable) = días hábiles × jornada =
+                                            <strong>{adminCalcTransparencyModel.metaHorasFormatted}</strong>
+                                        </li>
+                                        <li>
+                                            Bono facturable (umbral) = meta × {adminCalcTransparencyModel.pct}% =
+                                            <strong>{adminCalcTransparencyModel.metaFacturableFormatted}</strong>
+                                        </li>
+                                    </ul>
+                                    <p class="admin-calc-transparency__logic">{adminCalcTransparencyModel.chartLogicLabel}</p>
+                                    <p class="admin-calc-transparency__note">{adminCalcTransparencyModel.holidayCatalogNote}</p>
+                                    <p class="admin-calc-transparency__note">{adminCalcTransparencyModel.quarterNote}</p>
+                                    <template if:true={adminCalcTransparencyHasWarnings}>
+                                        <div class="admin-calc-transparency__warnbox" role="status">
+                                            <p class="admin-calc-transparency__warntitle">{adminCalcTransparencyModel.warningsReferenceTitle}</p>
+                                            <ul>
+                                                <template for:each={adminCalcTransparencyModel.warnings} for:item="wr">
+                                                    <li key={wr.key}>{wr.text}</li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </lightning-tab>
+                                <lightning-tab label="Información" value="info" onactive={handleMonitorTabActive}>
+                                    <div class="admin-calc-transparency__monitor-section">
+                                        <h3 class="admin-calc-transparency__h3">Mes de referencia</h3>
+                                        <p class="admin-calc-transparency__p">
+                                            Mes mostrado en el calendario de imputación:
+                                            <strong>{adminCalcTransparencyModel.monthTitle}</strong>
+                                        </p>
+                                        <p class="admin-calc-transparency__p">{adminCalcTransparencyModel.referenceMonthExplanation}</p>
+                                        <p class="admin-calc-transparency__p admin-calc-transparency__p--key">
+                                            <span class="admin-calc-transparency__kbd">{adminCalcTransparencyModel.monthYearKey}</span>
+                                            — {adminCalcTransparencyModel.referenceMonthKeyLabel}
+                                        </p>
+                                    </div>
+                                    <div class="admin-calc-transparency__monitor-section">
+                                        <h3 class="admin-calc-transparency__h3">Última revisión de la lista de festivos (código)</h3>
+                                        <p class="admin-calc-transparency__p">
+                                            Se actualizó la lista embebida en el componente el
+                                            <strong>{adminCalcTransparencyModel.holidayListLastReviewDisplay}</strong>
+                                            <span class="admin-calc-transparency__mono slds-m-left_xx-small">({adminCalcTransparencyModel.holidayListLastReviewIso})</span>.
+                                            Cambiad la constante en código y esta fecha cuando modifiquéis feriados fijos.
+                                        </p>
+                                    </div>
+                                    <div class="admin-calc-transparency__monitor-section">
+                                        <h3 class="admin-calc-transparency__h3">Enlaces útiles (referencia externa)</h3>
+                                        <ul class="admin-calc-transparency__linklist">
+                                            <template for:each={adminCalcTransparencyModel.policyLinks} for:item="lnk">
+                                                <li key={lnk.key}>
+                                                    <a href={lnk.href} target="_blank" rel="noopener noreferrer">{lnk.label}</a>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <p class="admin-calc-transparency__note admin-calc-transparency__note--policy">
+                                            {adminCalcTransparencyModel.internalPolicyNote}
+                                        </p>
+                                    </div>
+                                </lightning-tab>
+                            </lightning-tabset>
+                        </div>
+                    </template>
+                    <div class="import-preview-actions">
+                        <lightning-button variant="brand" label="Cerrar" onclick={closeImputationCenterSettingsModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={quarterDetailOpen}>
+            <div class="import-modal-backdrop" onclick={closeQuarterDetailModal}></div>
+            <div class="import-modal-panel quarter-detail-modal" role="dialog" aria-modal="true" aria-labelledby="quarter-detail-heading">
+                <template if:true={quarterDetailModel}>
+                    <div class="import-modal-header qd-header">
+                        <span class="qd-header-icon" aria-hidden="true">
+                            <lightning-icon icon-name="utility:chart" size="small" alternative-text=""></lightning-icon>
+                        </span>
+                        <h2 id="quarter-detail-heading" class="import-modal-title">{quarterDetailModel.heading}</h2>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            alternative-text="Cerrar"
+                            title="Cerrar"
+                            variant="border-filled"
+                            onclick={closeQuarterDetailModal}>
+                        </lightning-button-icon>
+                    </div>
+                    <div class="import-modal-body qd-body">
+                        <div class="qd-info-banner" role="note">
+                            <lightning-icon icon-name="utility:info" size="x-small" alternative-text=""></lightning-icon>
+                            <p>{quarterDetailModel.description}</p>
+                        </div>
+                        <table class="quarter-detail-table quarter-detail-table--rich">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Mes</th>
+                                    <th scope="col" class="qd-col-num">
+                                        <span class="qd-th">
+                                            <lightning-icon icon-name="utility:user" size="xx-small" alternative-text="" class="qd-th-icon qd-th-icon--imputable"></lightning-icon>
+                                            Imputable
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="qd-col-num">
+                                        <span class="qd-th">
+                                            <lightning-icon icon-name="utility:check" size="xx-small" alternative-text="" class="qd-th-icon qd-th-icon--fact"></lightning-icon>
+                                            Facturable
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="qd-col-num">
+                                        <span class="qd-th">
+                                            <lightning-icon icon-name="utility:dash" size="xx-small" alternative-text="" class="qd-th-icon qd-th-icon--nofact"></lightning-icon>
+                                            No facturable
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="qd-col-num">
+                                        <span class="qd-th">
+                                            <lightning-icon icon-name="utility:clock" size="xx-small" alternative-text="" class="qd-th-icon qd-th-icon--meta"></lightning-icon>
+                                            Meta
+                                        </span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={quarterDetailModel.rows} for:item="m">
+                                    <tr key={m.key} class={m.rowClass}>
+                                        <td>
+                                            <span class="qd-month">
+                                                <lightning-icon icon-name="utility:event" size="xx-small" alternative-text="" class="qd-month-icon"></lightning-icon>
+                                                {m.monthName}
+                                            </span>
+                                        </td>
+                                        <td class="qd-col-num">
+                                            <div class="qd-metric qd-metric--stacked">
+                                                <span class="qd-metric-hours">{m.imputableHoursText}</span>
+                                                <span class="qd-metric-pct qd-metric-pct--imputable">{m.imputablePctText}</span>
+                                            </div>
+                                        </td>
+                                        <td class="qd-col-num">
+                                            <div class="qd-metric qd-metric--stacked">
+                                                <span class="qd-metric-hours qd-metric-hours--strong">{m.factHoursText}</span>
+                                                <span class="qd-metric-pct qd-metric-pct--fact">{m.factPctText}</span>
+                                            </div>
+                                        </td>
+                                        <td class="qd-col-num">
+                                            <div class="qd-metric qd-metric--stacked">
+                                                <span class="qd-metric-hours">{m.noFactHoursText}</span>
+                                                <span class="qd-metric-pct qd-metric-pct--nofact">{m.noFactPctText}</span>
+                                            </div>
+                                        </td>
+                                        <td class="qd-col-num">
+                                            <span class="qd-meta-hours">{m.metaText}</span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr class="quarter-detail-total">
+                                    <td class="qd-total-label">Total {quarterDetailModel.title}</td>
+                                    <td class="qd-col-num qd-total-cell">
+                                        <div class="qd-metric qd-metric--stacked">
+                                            <span class="qd-metric-hours qd-metric-hours--total">{quarterDetailModel.totalImputableHoursText}</span>
+                                            <span class="qd-metric-pct qd-metric-pct--imputable">{quarterDetailModel.totalImputablePctText}</span>
+                                        </div>
+                                    </td>
+                                    <td class="qd-col-num qd-total-cell">
+                                        <div class="qd-metric qd-metric--stacked">
+                                            <span class="qd-metric-hours qd-metric-hours--total qd-metric-hours--strong">{quarterDetailModel.totalFactHoursText}</span>
+                                            <span class="qd-metric-pct qd-metric-pct--fact">{quarterDetailModel.totalFactPctText}</span>
+                                        </div>
+                                    </td>
+                                    <td class="qd-col-num qd-total-cell">
+                                        <div class="qd-metric qd-metric--stacked">
+                                            <span class="qd-metric-hours qd-metric-hours--total">{quarterDetailModel.totalNoFactHoursText}</span>
+                                            <span class="qd-metric-pct qd-metric-pct--nofact">{quarterDetailModel.totalNoFactPctText}</span>
+                                        </div>
+                                    </td>
+                                    <td class="qd-col-num qd-total-cell">
+                                        <span class="qd-meta-hours qd-meta-hours--total">{quarterDetailModel.totalMetaText}</span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="qd-consejo" role="note">
+                            <lightning-icon icon-name="utility:light_bulb" size="x-small" alternative-text="" class="qd-consejo-icon"></lightning-icon>
+                            <div class="qd-consejo-text">
+                                <p><strong>Consejo:</strong> Utilice los valores de la tabla como referencia de su facturable trimestral, siempre confirme con su líder sus horas facturables.</p>
+                            </div>
+                        </div>
+                        <div class="import-preview-actions qd-actions">
+                            <lightning-button variant="brand" label="Cerrar" onclick={closeQuarterDetailModal}></lightning-button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={monthMetaHelpModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeMonthMetaHelpModal}></div>
+            <div class="import-modal-panel month-meta-help-modal" role="dialog" aria-modal="true" aria-labelledby="month-meta-help-heading">
+                <div class="import-modal-header">
+                    <h2 id="month-meta-help-heading" class="import-modal-title">Metas del mes</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeMonthMetaHelpModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body month-meta-help-body">
+                    <ul class="month-meta-help-list">
+                        <li class="month-meta-help-item">
+                            <span class="month-meta-help-term">Horas meta imputables del mes</span>
+                            <strong class="month-meta-help-val">{monthMetaImputableText}</strong>
+                        </li>
+                        <li class="month-meta-help-item">
+                            <span class="month-meta-help-term">Horas meta facturable {codeFacturableTargetPct}%</span>
+                            <strong class="month-meta-help-val">{monthMetaFacturableBonoText}</strong>
+                        </li>
+                    </ul>
+                    <div class="month-meta-help-consejo" role="note">
+                        <lightning-icon icon-name="utility:light_bulb" size="x-small" alternative-text="" class="month-meta-help-consejo-icon"></lightning-icon>
+                        <p><strong>Consejo:</strong> Utilice los valores del gráfico como referencia de su facturable mensual, siempre confirme con su líder sus horas facturables.</p>
+                    </div>
+                    <div class="import-preview-actions qd-actions">
+                        <lightning-button variant="brand" label="Cerrar" onclick={closeMonthMetaHelpModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={ticketBillableModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeTicketBillableModal}></div>
+            <div class="import-modal-panel ticket-billable-modal" role="dialog" aria-modal="true" aria-labelledby="ticket-billable-heading">
+                <div class={ticketBillableHeadClass}>
+                    <span class={ticketBillableDotClass} aria-hidden="true"></span>
+                    <div class="ticket-billable-head-text">
+                        <h2 id="ticket-billable-heading" class="import-modal-title">{ticketBillableModalTitle}</h2>
+                        <p class="ticket-billable-subtitle">{ticketBillableModalSubtitle}</p>
+                    </div>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeTicketBillableModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body ticket-billable-body">
+                    <template if:true={ticketBillableLoading}>
+                        <div class="ticket-billable-loading">
+                            <lightning-spinner alternative-text="Cargando" size="small"></lightning-spinner>
+                            <span>Cargando tickets…</span>
+                        </div>
+                    </template>
+                    <template if:false={ticketBillableLoading}>
+                        <template if:true={ticketBillableEmpty}>
+                            <p class="ticket-billable-empty">No hay imputaciones de este tipo en el mes.</p>
+                        </template>
+                        <template if:false={ticketBillableEmpty}>
+                            <div class="ticket-billable-summary">
+                                <span class="ticket-billable-count">{ticketBillableCount} ticket(s)</span>
+                                <span class="ticket-billable-total">{ticketBillableTotalText}</span>
+                            </div>
+                            <ul class="ticket-billable-list">
+                                <template for:each={ticketBillableList} for:item="t">
+                                    <li key={t.key} class="ticket-billable-item">
+                                        <div class="ticket-billable-item-main">
+                                            <span class="ticket-billable-num">{t.caseNumber}</span>
+                                            <span class="ticket-billable-subject" title={t.subject}>{t.subject}</span>
+                                        </div>
+                                        <span class="ticket-billable-hours">{t.hoursText}</span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                    </template>
+                    <div class="import-preview-actions qd-actions">
+                        <lightning-button variant="brand" label="Cerrar" onclick={closeTicketBillableModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={importModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeImportModal}></div>
+            <div class="import-modal-panel" role="dialog" aria-modal="true" aria-labelledby="import-modal-heading" aria-describedby="import-modal-desc">
+                <div class="import-modal-header">
+                    <h2 id="import-modal-heading" class="import-modal-title">Importar imputaciones</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeImportModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <p id="import-modal-desc" class="import-modal-lead">
+                        Descarga la plantilla CSV (separador «;»), complétala y súbela. «Aplicar a tabla» rellena los tickets marcados sin guardar. «Guardar importación» crea los registros en Pandora.
+                    </p>
+                    <p class="import-modal-note">
+                        La exportación incluye ImputacionId solo como referencia. La importación crea imputaciones nuevas; para corregir una existente, edítala desde el ticket o el detalle del día.
+                    </p>
+                    <template if:true={isImputationAdmin}>
+                        <p class="import-modal-lead import-modal-lead--admin">{importModalBehalfAdminNote}</p>
+                    </template>
+                    <div class="import-modal-actions">
+                        <lightning-button
+                            label="Descargar Plantilla"
+                            title={downloadPlantillaCsvButtonTitle}
+                            variant="neutral"
+                            onclick={downloadTemplate}>
+                        </lightning-button>
+                    </div>
+                    <template for:each={importFileInputIteratorRows} for:item="importFileIterRow">
+                        <lightning-input
+                            key={importFileIterRow.key}
+                            class="import-modal-file"
+                            type="file"
+                            label="Archivo a importar"
+                            accept=".csv,text/csv,.txt"
+                            onchange={handleImportFile}>
+                        </lightning-input>
+                    </template>
+
+                    <template if:true={showImportPreviewBanner}>
+                        <div class="import-preview-box" role="status">
+                            <p class="import-preview-file-caption">{importPreviewFileCaption}</p>
+                            <p class="import-preview-copy">{importPreviewSummaryText}</p>
+                            <div class="import-preview-table-wrap">
+                                <table class="import-preview-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Ticket</th>
+                                            <th scope="col">Horas</th>
+                                            <th scope="col">Fecha</th>
+                                            <th scope="col">No fact.</th>
+                                            <th scope="col">Comentario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={importPreviewTableRows} for:item="pr">
+                                            <tr key={pr.key}>
+                                                <td>{pr.caseNumber}</td>
+                                                <td>{pr.hours}</td>
+                                                <td>{pr.fecha}</td>
+                                                <td>{pr.noFactLabel}</td>
+                                                <td>{pr.commentShort}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <template if:true={importPreviewHasMoreRows}>
+                                <p class="import-preview-more">{importPreviewMoreRowsLabel}</p>
+                            </template>
+                            <div class="import-preview-actions">
+                                <lightning-button variant="neutral" label="Cancelar" onclick={cancelImportPreview} title="Descarta la vista previa; puedes elegir otro archivo"></lightning-button>
+                                <lightning-button variant="neutral" label="Aplicar a tabla" onclick={confirmImportApplyToTable} disabled={isLoading} title="Rellena la tabla sin guardar"></lightning-button>
+                                <lightning-button variant="brand" label="Guardar importación" onclick={confirmImportSave} disabled={isLoading} title="Valida y guarda todas las filas"></lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={usageGuideModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeUsageGuideModal}></div>
+            <div class="import-modal-panel usage-guide-modal" role="dialog" aria-modal="true" aria-labelledby="usage-guide-heading">
+                <div class="import-modal-header">
+                    <h2 id="usage-guide-heading" class="import-modal-title">Guía de uso</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        onclick={closeUsageGuideModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <p class="import-modal-lead">{usageGuideModel.intro}</p>
+                    <ul class="usage-guide-list">
+                        <template for:each={usageGuidePointRows} for:item="point">
+                            <li key={point.key} class="usage-guide-list__item">
+                                <strong>{point.title}</strong>
+                                <template if:true={point.hasLegend}>
+                                    <p class="usage-guide-point-lead">{point.text}</p>
+                                    <ul class="cal-legend usage-guide-cal-legend" aria-label="Leyenda de colores del calendario">
+                                        <template for:each={point.legendRows} for:item="leg">
+                                            <li key={leg.key}>
+                                                <span class={leg.swatchClass} aria-hidden="true"></span>
+                                                <span>{leg.label}</span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </template>
+                                <template if:false={point.hasLegend}>
+                                    <span>{point.text}</span>
+                                </template>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <div class="import-preview-actions">
+                    <lightning-button label="Cerrar" variant="brand" onclick={closeUsageGuideModal}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={rowCommentModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeRowCommentModal}></div>
+            <div class="import-modal-panel row-comment-modal" role="dialog" aria-modal="true" aria-labelledby="row-comment-heading">
+                <div class="import-modal-header">
+                    <h2 id="row-comment-heading" class="import-modal-title">Comentario ticket {rowCommentTicketLabel}</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeRowCommentModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <lightning-textarea
+                        label="Comentario de la imputación"
+                        value={rowCommentDraft}
+                        maxlength="255"
+                        onchange={handleRowCommentDraftChange}>
+                    </lightning-textarea>
+                    <div class="import-preview-actions row-comment-actions">
+                        <lightning-button label="Cancelar" variant="neutral" onclick={closeRowCommentModal}></lightning-button>
+                        <lightning-button label="Guardar comentario" variant="brand" onclick={saveRowCommentModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={dayDetailModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeDayDetailModal}></div>
+            <div class="import-modal-panel day-detail-modal" role="dialog" aria-modal="true" aria-labelledby="day-detail-heading">
+                <div class="import-modal-header">
+                    <h2 id="day-detail-heading" class="import-modal-title">{dayDetailModalTitle}</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeDayDetailModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <template if:true={dayDetailLoading}>
+                        <div class="day-detail-loading slds-align_absolute-center slds-m-vertical_medium">
+                            <lightning-spinner alternative-text="Cargando" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template if:false={dayDetailLoading}>
+                        <p class="day-detail-total">
+                            Total registrado ese día: <strong>{dayDetailTotalLabel}</strong>
+                        </p>
+                        <template if:true={dayDetailLines.length}>
+                            <ul class="day-detail-list">
+                                <template for:each={dayDetailLines} for:item="line">
+                                    <li key={line.key} class="day-detail-row">
+                                        <div class="day-detail-row-main">
+                                            <div class="day-detail-ident">
+                                                <template if:true={line.caseRecordUrl}>
+                                                    <a
+                                                        href={line.caseRecordUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="day-detail-case-link"
+                                                        title="Abrir ticket">
+                                                        {line.caseNumber}
+                                                    </a>
+                                                </template>
+                                                <template if:false={line.caseRecordUrl}>
+                                                    <span class="day-detail-case">{line.caseNumber}</span>
+                                                </template>
+                                            </div>
+                                            <span class="day-detail-fact" title="Facturable en este registro">{line.factLabel}</span>
+                                            <span class="day-detail-hours">{line.hoursLabel}</span>
+                                        </div>
+                                        <div class="day-detail-subject-row">{line.subject}</div>
+                                        <div class="day-detail-actions">
+                                            <template if:true={line.showDayDetailEdit}>
+                                                <button
+                                                    type="button"
+                                                    class="slds-button slds-button_neutral day-detail-act-btn"
+                                                    title="Editar horas, fecha, facturable y comentario"
+                                                    data-imp-id={line.imputationId}
+                                                    onclick={openDayDetailEdit}>
+                                                    Editar
+                                                </button>
+                                            </template>
+                                            <template if:true={line.impRecordUrl}>
+                                                <button
+                                                    type="button"
+                                                    class="slds-button slds-button_neutral day-detail-act-btn"
+                                                    title="Ver o editar en el registro de imputación (Pandora)"
+                                                    data-url={line.impRecordUrl}
+                                                    onclick={openImputationRecord}>
+                                                    Abrir registro
+                                                </button>
+                                            </template>
+                                            <template if:true={line.showDeleteImp}>
+                                                <button
+                                                    type="button"
+                                                    class="slds-button slds-button_destructive day-detail-act-btn day-detail-act-btn--danger"
+                                                    title="Elimina este registro de imputación de este día"
+                                                    data-imp-id={line.imputationId}
+                                                    onclick={handleDayDetailDeleteLine}>
+                                                    Eliminar
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                        <template if:false={dayDetailLines.length}>
+                            <p class="day-detail-empty">No hay líneas para mostrar (o sin permiso de lectura).</p>
+                        </template>
+                    </template>
+                    <div class="import-preview-actions row-comment-actions">
+                        <lightning-button label="Cerrar" variant="brand" onclick={closeDayDetailModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={caseImputationsModalOpen}>
+            <div class="import-modal-backdrop day-edit-stack-backdrop" onclick={closeCaseImputationsModal}></div>
+            <div
+                class="import-modal-panel case-imp-modal-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="case-imp-edit-heading">
+                <div class="import-modal-header">
+                    <h2 id="case-imp-edit-heading" class="import-modal-title">
+                        Imputaciones del ticket {caseImputationsTicketLabel}
+                    </h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeCaseImputationsModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <p class="day-edit-lead">{caseImpModalLeadText}</p>
+                    <template if:true={caseImpHoursSummaryVisible}>
+                        <div class="case-imp-ams-summary case-imp-ams-summary--compact" role="status" aria-live="polite">
+                            <span class="case-imp-ams-summary-label">{caseImpAmsSummaryLead}</span>
+                            <span class="case-imp-ams-summary-pill">
+                                <span class="case-imp-ams-summary-value">{caseImpAmsUserHoursDisplay}</span>
+                                <span class="case-imp-ams-summary-unit">H</span>
+                            </span>
+                            <template if:true={caseImpAmsShowTicketTotal}>
+                                <span class="case-imp-ams-summary-meta">
+                                    · Total ticket {caseImpAmsTicketHoursDisplay} H
+                                </span>
+                            </template>
+                        </div>
+                    </template>
+                    <div class="case-imp-toolbar">
+                        <div class="case-imp-toolbar-actions">
+                            <template if:false={caseImpDraftVisible}>
+                                <lightning-button
+                                    label="Nueva imputación"
+                                    title="Crear un registro para este ticket"
+                                    variant="neutral"
+                                    onclick={startCaseImpAdd}
+                                    disabled={caseImpToolbarBusy}>
+                                </lightning-button>
+                            </template>
+                            <template if:true={caseImpDraftVisible}>
+                                <lightning-button
+                                    label="Cancelar alta"
+                                    variant="neutral"
+                                    onclick={cancelCaseImpAdd}
+                                    disabled={caseImpSavingNew}>
+                                </lightning-button>
+                            </template>
+                        </div>
+                        <lightning-button
+                            label={caseImpSortButtonLabel}
+                            title={caseImpSortButtonTitle}
+                            variant="neutral"
+                            class="case-imp-sort-btn"
+                            onclick={toggleCaseImpDateSort}
+                            disabled={caseImpToolbarBusy}>
+                        </lightning-button>
+                    </div>
+                    <template if:true={caseImpDraftVisible}>
+                        <div class="case-imp-new-draft">
+                            <p class="case-imp-new-draft-label">Nueva imputación</p>
+                            <div class="case-imp-new-draft-grid">
+                                <lightning-input
+                                    type="number"
+                                    label="Horas"
+                                    step="0.25"
+                                    min="0.25"
+                                    max="24"
+                                    value={caseImpDraftHoursStr}
+                                    disabled={caseImpSavingNew}
+                                    onchange={handleCaseImpDraftHoursChange}>
+                                </lightning-input>
+                                <lightning-input
+                                    type="date"
+                                    label="Fecha de imputación"
+                                    value={caseImpDraftIsoDate}
+                                    disabled={caseImpSavingNew}
+                                    onchange={handleCaseImpDraftDateChange}>
+                                </lightning-input>
+                                <template if:true={caseImpNoFactFieldVisible}>
+                                    <lightning-input
+                                        type="checkbox"
+                                        label="No facturable"
+                                        checked={caseImpDraftNoFacturable}
+                                        disabled={caseImpSavingNew}
+                                        onchange={handleCaseImpDraftNfChange}>
+                                    </lightning-input>
+                                </template>
+                                <lightning-textarea
+                                    label="Comentario"
+                                    value={caseImpDraftComment}
+                                    maxlength="255"
+                                    disabled={caseImpSavingNew}
+                                    onchange={handleCaseImpDraftCommentChange}>
+                                </lightning-textarea>
+                            </div>
+                            <div class="case-imp-new-draft-actions">
+                                <lightning-button
+                                    label="Crear imputación"
+                                    variant="brand"
+                                    onclick={saveCaseImpNew}
+                                    disabled={caseImpSavingNew}>
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                    <template if:false={caseImpHasLines}>
+                        <template if:false={caseImpDraftVisible}>
+                            <p class="case-imp-empty-hint">Todavía no hay imputaciones en este ticket. Usa «Nueva imputación» para crear la primera.</p>
+                        </template>
+                    </template>
+                    <div class="case-imp-lines-scroll">
+                        <template for:each={caseImputationsEditLinesUi} for:item="line">
+                            <div key={line.key} class={line.caseImpCardClass}>
+                                <button
+                                    type="button"
+                                    class="case-imp-line-header"
+                                    data-imputation-id={line.imputationId}
+                                    onclick={toggleCaseImpLine}
+                                    aria-expanded={line.isExpanded}>
+                                    <lightning-icon
+                                        icon-name={line.caseImpChevronIcon}
+                                        size="x-small"
+                                        alternative-text=""
+                                        class="case-imp-chevron">
+                                    </lightning-icon>
+                                    <span class="case-imp-header-main">
+                                        <span class="case-imp-header-date">{line.dateDisplayLabel}</span>
+                                        <template if:true={line.hoursSummaryText}>
+                                            <span class="case-imp-header-hours">{line.hoursSummaryText}</span>
+                                        </template>
+                                    </span>
+                                    <template if:true={line.readOnly}>
+                                        <span class="case-imp-readonly-badge">Solo lectura</span>
+                                    </template>
+                                </button>
+                                <template if:true={line.isExpanded}>
+                                    <div class="case-imp-line-fields">
+                                        <lightning-input
+                                            type="number"
+                                            label="Horas"
+                                            step="0.25"
+                                            min="0.25"
+                                            max="24"
+                                            data-imputation-id={line.imputationId}
+                                            value={line.hoursStr}
+                                            disabled={line.lineInputsDisabled}
+                                            onchange={handleCaseImpHoursChange}>
+                                        </lightning-input>
+                                        <lightning-input
+                                            type="date"
+                                            label="Fecha"
+                                            data-imputation-id={line.imputationId}
+                                            value={line.isoDate}
+                                            disabled={line.lineInputsDisabled}
+                                            onchange={handleCaseImpDateChange}>
+                                        </lightning-input>
+                                        <template if:true={caseImpNoFactFieldVisible}>
+                                            <lightning-input
+                                                type="checkbox"
+                                                label="No facturable"
+                                                data-imputation-id={line.imputationId}
+                                                checked={line.noFacturable}
+                                                disabled={line.lineInputsDisabled}
+                                                onchange={handleCaseImpNfChange}>
+                                            </lightning-input>
+                                        </template>
+                                        <lightning-textarea
+                                            label="Comentario"
+                                            data-imputation-id={line.imputationId}
+                                            value={line.comment}
+                                            maxlength="255"
+                                            disabled={line.lineInputsDisabled}
+                                            onchange={handleCaseImpCommentChange}>
+                                        </lightning-textarea>
+                                        <div class="case-imp-line-actions">
+                                            <lightning-button
+                                                label="Guardar"
+                                                variant="brand"
+                                                data-imputation-id={line.imputationId}
+                                                onclick={saveCaseImputationLine}
+                                                disabled={line.lineSaveDisabled}
+                                                class="case-imp-save-btn">
+                                            </lightning-button>
+                                            <template if:true={line.canDeleteImputation}>
+                                                <lightning-button
+                                                    label="Eliminar imputación"
+                                                    variant="destructive"
+                                                    data-imputation-id={line.imputationId}
+                                                    onclick={handleCaseImpDeleteLine}
+                                                    disabled={line.lineDeleteDisabled}
+                                                    class="case-imp-delete-btn">
+                                                </lightning-button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="import-preview-actions row-comment-actions">
+                        <lightning-button label="Cerrar" variant="neutral" onclick={closeCaseImputationsModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={dayEditModalOpen}>
+            <div class="import-modal-backdrop day-edit-stack-backdrop" onclick={closeDayEditModal}></div>
+            <div class="import-modal-panel day-edit-stack-panel" role="dialog" aria-modal="true" aria-labelledby="day-edit-heading">
+                <div class="import-modal-header">
+                    <h2 id="day-edit-heading" class="import-modal-title">Editar imputación</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeDayEditModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <p class="day-edit-lead">Ajusta los datos y guarda; se aplican las mismas reglas que al crear imputaciones.</p>
+                    <lightning-input
+                        type="number"
+                        label="Horas"
+                        step="0.25"
+                        min="0.25"
+                        max="24"
+                        value={dayEditHoursStr}
+                        onchange={handleDayEditHoursChange}>
+                    </lightning-input>
+                    <lightning-input type="date" label="Fecha de imputación" value={dayEditIsoDate} onchange={handleDayEditDateChange}>
+                    </lightning-input>
+                    <lightning-input
+                        type="checkbox"
+                        label="No facturable"
+                        checked={dayEditNoFacturable}
+                        onchange={handleDayEditNfChange}>
+                    </lightning-input>
+                    <lightning-textarea
+                        label="Comentario"
+                        value={dayEditComment}
+                        maxlength="255"
+                        onchange={handleDayEditCommentChange}>
+                    </lightning-textarea>
+                    <div class="import-preview-actions row-comment-actions">
+                        <lightning-button label="Cancelar" variant="neutral" onclick={closeDayEditModal} disabled={dayEditSaving}></lightning-button>
+                        <lightning-button label="Guardar" variant="brand" onclick={saveDayEditModal} disabled={dayEditSaving}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={rowDateModalOpen}>
+            <div class="import-modal-backdrop" onclick={closeRowDateModal}></div>
+            <div class="import-modal-panel row-date-modal" role="dialog" aria-modal="true" aria-labelledby="row-date-heading">
+                <div class="import-modal-header">
+                    <h2 id="row-date-heading" class="import-modal-title">Fechas ticket {rowDateTicketLabel}</h2>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Cerrar"
+                        title="Cerrar"
+                        variant="border-filled"
+                        onclick={closeRowDateModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="import-modal-body">
+                    <p class="rowdate-help">
+                        Un clic: un día. Arrastra: rango. Ctrl (⌘ en Mac) + clic: varios días no seguidos.
+                    </p>
+                    <div class="rowdate-header">
+                        <lightning-button-icon icon-name="utility:chevronleft" variant="border-filled" size="x-small" onclick={handleRowDatePrevMonth} alternative-text="Mes anterior"></lightning-button-icon>
+                        <strong>{rowDateMonthTitle}</strong>
+                        <lightning-button-icon icon-name="utility:chevronright" variant="border-filled" size="x-small" onclick={handleRowDateNextMonth} alternative-text="Mes siguiente"></lightning-button-icon>
+                    </div>
+                    <div class="rowdate-grid">
+                        <template for:each={rowDateCalendarDays} for:item="d">
+                            <template if:true={d.isEmpty}>
+                                <div key={d.key} class="rowdate-empty"></div>
+                            </template>
+                            <template if:false={d.isEmpty}>
+                                <button
+                                    key={d.key}
+                                    type="button"
+                                    class={d.className}
+                                    data-date={d.iso}
+                                    disabled={d.disabled}
+                                    onmousedown={handleRowDateDayMouseDown}
+                                    onmouseenter={handleRowDateDayMouseEnter}
+                                    onclick={handleRowDateDayClick}>
+                                    {d.label}
+                                </button>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="import-preview-actions row-comment-actions">
+                        <lightning-button label="Cancelar" variant="neutral" onclick={closeRowDateModal}></lightning-button>
+                        <lightning-button label="Guardar fechas" variant="brand" onclick={saveRowDateModal}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

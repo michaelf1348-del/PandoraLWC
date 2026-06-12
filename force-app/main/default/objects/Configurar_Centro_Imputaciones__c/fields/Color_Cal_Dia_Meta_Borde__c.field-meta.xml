@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Color_Cal_Dia_Meta_Borde__c</fullName>
+    <description>Borde dia meta cumplida. Formato #RRGGBB.</description>
+    <externalId>false</externalId>
+    <label>Color dia meta cumplida (borde)</label>
+    <length>7</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

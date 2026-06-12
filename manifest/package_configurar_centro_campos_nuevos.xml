@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Desplegar ESTO PRIMERO si el org aun no tiene estos campos; luego Apex + LWC con package_centroImputacionesAMS.xml -->
+    <types>
+        <members>Configurar_Centro_Imputaciones__c.PEP_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Motivos_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Servicios_Fallback__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Tamano_Pagina_Tickets__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Umbral_Aviso_Horas_Dia__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Meta_Facturable_Pct__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Origen_Imputacion__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Activar_Aviso_Umbral_Horas__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Excepcion_Fin_Semana_User_Campo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Excepcion_Fin_Semana_User_Valores__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Servicio_Tickets__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Consultor_User_Campo__c</members>
+        <members>Configurar_Centro_Imputaciones__c.Filtro_Consultor_User_Valores__c</members>
+        <name>CustomField</name>
+    </types>
+    <version>66.0</version>
+</Package>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Grupo A</fullName>
+        <default>false</default>
+        <label>Grupo A</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo B</fullName>
+        <default>false</default>
+        <label>Grupo B</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo C</fullName>
+        <default>false</default>
+        <label>Grupo C</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo D</fullName>
+        <default>false</default>
+        <label>Grupo D</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo E</fullName>
+        <default>false</default>
+        <label>Grupo E</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo F</fullName>
+        <default>false</default>
+        <label>Grupo F</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Z</fullName>
+        <default>false</default>
+        <label>Grupo Z</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Incidente</fullName>
+        <default>false</default>
+        <label>Grupo Incidente</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Roles</fullName>
+        <default>false</default>
+        <label>Grupo Roles</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Tecnicos</fullName>
+        <default>false</default>
+        <label>Grupo Tecnicos</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Analytics</fullName>
+        <default>false</default>
+        <label>Grupo Analytics</label>
+    </customValue>
+    <customValue>
+        <fullName>Grupo Ariba</fullName>
+        <default>false</default>
+        <label>Grupo Ariba</label>
+    </customValue>
+    <masterLabel>Celula</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

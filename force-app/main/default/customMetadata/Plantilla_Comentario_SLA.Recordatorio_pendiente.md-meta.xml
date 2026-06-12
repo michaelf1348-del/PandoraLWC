@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <label>Recordatorio pendiente cliente</label>
+    <protected>false</protected>
+    <values>
+        <field>Activo__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Categoria__c</field>
+        <value xsi:type="xsd:string">Recordatorio</value>
+    </values>
+    <values>
+        <field>Orden__c</field>
+        <value xsi:type="xsd:double">30.0</value>
+    </values>
+    <values>
+        <field>Texto__c</field>
+        <value xsi:type="xsd:string">Estimado/a, recordamos que estamos a la espera de la informacion solicitada para continuar con la resolucion del caso.</value>
+    </values>
+    <values>
+        <field>Tipo_Ticket__c</field>
+        <value xsi:type="xsd:string">Ambos</value>
+    </values>
+</CustomMetadata>

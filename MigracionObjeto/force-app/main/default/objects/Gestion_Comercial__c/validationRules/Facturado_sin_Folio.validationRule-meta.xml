@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Facturado_sin_Folio</fullName>
+    <active>true</active>
+    <errorConditionFormula>and( ISPICKVAL(Estatus_Facturacion__c,&apos;Facturado&apos;),   ISBLANK( Folio__c  ))</errorConditionFormula>
+    <errorMessage>Por favor completar numero de folio antes de pasar a estatus Facturado</errorMessage>
+</ValidationRule>

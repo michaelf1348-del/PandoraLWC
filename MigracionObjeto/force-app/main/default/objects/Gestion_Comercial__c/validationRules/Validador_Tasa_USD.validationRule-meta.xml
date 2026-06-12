@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Validador_Tasa_USD</fullName>
+    <active>false</active>
+    <description>Valida que los campos Tasa UF y Moneda UF deben estar con datos</description>
+    <errorConditionFormula>AND(Moneda_Txt__c = &apos;USD&apos;, ISBLANK(  Tasa_USD_a_CLP__c ))</errorConditionFormula>
+    <errorMessage>Se debe registrar una tasa USD a CLP dado que el registro esta siendo generado en USD.</errorMessage>
+</ValidationRule>

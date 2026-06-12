@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Activar_Aviso_Umbral_Horas__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Activa el aviso no bloqueante al guardar cuando un dia supera el umbral de horas.</description>
+    <externalId>false</externalId>
+    <label>Activar aviso umbral horas</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

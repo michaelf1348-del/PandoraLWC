@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Copia_1_de_Copia_2_de_Envia_email_por_cambio_de_fecha</name>
+        <label>Envia email por reestimacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <connector>
+            <targetReference>Actualiza_campos_Restimacion</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$Record.Account.Owner.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>ccRecipientAddressList</name>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>Alerta por cambio de Estimación de Horas Ticket {!$Record.ID_Asunto__c}.</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;Hola,&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Se informa que el valor de la estimación de horas en el DTF ha sido modificado en el Ticket &lt;strong&gt;{!$Record.ID_Asunto__c}.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Total Actual (H): {!$Record.ZAMS_DTFTOT1_TOTAL__c}&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Total Anterior (H): {!$Record__Prior.ZAMS_DTFTOT1_TOTAL__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Fecha de cambio: &lt;/span&gt;&lt;strong style=&quot;background-color: rgb(255, 255, 255);&quot;&gt; &lt;/strong&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;{!$Record.LastModifiedDate}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Re-estimado por: {!$User.Nombre_Usuario__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Para visualizar el ticket haz click-&amp;gt;  &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Case/{!$Record.Id}/view&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;aqui&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Muchas Gracias&lt;/p&gt;&lt;p&gt;Saludos&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>relatedRecordId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <actionCalls>
+        <name>Envia_email_por_primera_estimacion</name>
+        <label>Envia email por primera estimacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <connector>
+            <targetReference>Actualiza_campos_primera_vez</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$Record.Account.Owner.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>ccRecipientAddressList</name>
+        </inputParameters>
+        <inputParameters>
+            <name>senderType</name>
+            <value>
+                <stringValue>OrgWideEmailAddress</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>senderAddress</name>
+            <value>
+                <stringValue>soporteams@soportesapseidor.com</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>composeEmailContent</name>
+            <value>
+                <stringValue>True</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>Se he completado la Estimación de Horas Ticket {!$Record.ID_Asunto__c}.</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>&lt;p&gt;Hola,&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Se informa que se ha completado la estimación de horas en el DTF del Ticket &lt;strong&gt;{!$Record.ID_Asunto__c}.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Valor Estimación (H): {!$Record.ZAMS_DTFTOT1_TOTAL__c}&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Fecha de Estimación: &lt;/span&gt;&lt;strong style=&quot;background-color: rgb(255, 255, 255);&quot;&gt; &lt;/strong&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;{!$Record.LastModifiedDate}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255);&quot;&gt;Estimado por: {!$User.Nombre_Usuario__c}&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Para visualizar el ticket haz click-&amp;gt;  &lt;a href=&quot;https://seidorcrm.lightning.force.com/lightning/r/Case/{!$Record.Id}/view&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;aqui&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Muchas Gracias&lt;/p&gt;&lt;p&gt;Saludos&lt;/p&gt;</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>relatedRecordId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>emailSimple</nameSegment>
+    </actionCalls>
+    <apiVersion>64.0</apiVersion>
+    <constants>
+        <name>CorreosGcia</name>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>aticona@seidor.com, cvaras@seidor.com, jonathan.bastian@seidor.com, lmrodriguez@seidor.com, pastor.alvarado@seidor.com, andrea.hormazabal@seidor.com, marlon.sambrano@seidor.com</stringValue>
+        </value>
+    </constants>
+    <constants>
+        <name>corrromjso</name>
+        <dataType>String</dataType>
+        <value>
+            <stringValue>marlonjso75@gmail.com</stringValue>
+        </value>
+    </constants>
+    <decisions>
+        <name>Primera_Est</name>
+        <label>Primera Est</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Copia_1_de_Copia_2_de_Envia_email_por_cambio_de_fecha</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Reestimado</defaultConnectorLabel>
+        <rules>
+            <name>Primera_estimacion</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Estimacion_Creada__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.ZAMS_Pre_Total_Estimacion__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <elementReference>valorprevio</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Envia_email_por_primera_estimacion</targetReference>
+            </connector>
+            <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
+            <label>Primera estimacion</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <formulas>
+        <name>Fechaanterior</name>
+        <dataType>String</dataType>
+        <expression>IF(
+   ISBLANK($Record__Prior.Fecha_de_entrega__c),
+   &quot;(sin valor anterior)&quot;,
+  TEXT(DAY($Record__Prior.Fecha_de_entrega__c)) &amp; &quot;-&quot; &amp;
+CASE(MONTH($Record__Prior.Fecha_de_entrega__c),
+ 1, &quot;01&quot;, 
+ 2, &quot;02&quot;, 
+ 3, &quot;03&quot;, 
+ 4, &quot;04&quot;, 
+ 5, &quot;05&quot;, 
+ 6, &quot;06&quot;, 
+ 7, &quot;07&quot;, 
+ 8, &quot;08&quot;, 
+ 9, &quot;09&quot;, 
+10, &quot;10&quot;, 
+11, &quot;11&quot;, 
+12, &quot;12&quot;, 
+&quot;&quot;
+) &amp; &quot;-&quot; &amp;
+TEXT(YEAR($Record__Prior.Fecha_de_entrega__c)))</expression>
+    </formulas>
+    <formulas>
+        <name>Fechanueva</name>
+        <dataType>String</dataType>
+        <expression>IF(
+   ISBLANK($Record.Fecha_de_entrega__c),
+   &quot;(sin valor actual)&quot;,
+    TEXT(DAY($Record.Fecha_de_entrega__c)) &amp; &quot;-&quot; &amp;
+CASE(MONTH($Record.Fecha_de_entrega__c),
+ 1, &quot;01&quot;, 
+ 2, &quot;02&quot;, 
+ 3, &quot;03&quot;, 
+ 4, &quot;04&quot;, 
+ 5, &quot;05&quot;, 
+ 6, &quot;06&quot;, 
+ 7, &quot;07&quot;, 
+ 8, &quot;08&quot;, 
+ 9, &quot;09&quot;, 
+10, &quot;10&quot;, 
+11, &quot;11&quot;, 
+12, &quot;12&quot;, 
+&quot;&quot;
+) &amp; &quot;-&quot; &amp;
+TEXT(YEAR($Record.Fecha_de_entrega__c)))</expression>
+    </formulas>
+    <formulas>
+        <name>Validadorcambiofecha</name>
+        <dataType>Boolean</dataType>
+        <expression>(ISBLANK($Record__Prior.Fecha_de_Entrega__c) &amp;&amp; NOT(ISBLANK($Record.Fecha_de_Entrega__c)))
+||
+(NOT(ISBLANK($Record__Prior.Fecha_de_Entrega__c)) &amp;&amp; ISBLANK($Record.Fecha_de_Entrega__c))
+||
+($Record__Prior.Fecha_de_Entrega__c) &lt;&gt; ($Record.Fecha_de_Entrega__c)</expression>
+    </formulas>
+    <formulas>
+        <name>valorprevio</name>
+        <dataType>Number</dataType>
+        <expression>{!$Record__Prior.ZAMS_Pre_Total_Estimacion__c}</expression>
+        <scale>2</scale>
+    </formulas>
+    <interviewLabel>Envio de estimacion {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Envio de estimacion</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Actualiza_campos_primera_vez</name>
+        <label>Actualiza campos primera vez</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>Estimacion_Creada__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Estimacion_Creada_el__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Estimacion_creada_por__c</field>
+            <value>
+                <elementReference>$User.Nombre_Usuario__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Horas_cubicadas__c</field>
+            <value>
+                <elementReference>$Record__Prior.ZAMS_DTFTOT1_TOTAL__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Actualiza_campos_Restimacion</name>
+        <label>Actualiza campos Restimacion</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <inputAssignments>
+            <field>Horas_cubicadas__c</field>
+            <value>
+                <elementReference>$Record.ZAMS_DTFTOT1_TOTAL__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Re_Estimacion_Creada__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Re_Estimacion_creada_por__c</field>
+            <value>
+                <elementReference>$User.Nombre_Usuario__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Re_Estimacion_creada_ult_el__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Primera_Est</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Servicio__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>AMS-SAP</stringValue>
+            </value>
+        </filters>
+        <object>Case</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Draft</status>
+    <triggerOrder>1400</triggerOrder>
+    <variables>
+        <name>Numticket</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <elementReference>$Record.CaseNumber</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>Totalanterior</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>2</scale>
+        <value>
+            <elementReference>$Record.ZAMS_DTFTOT1_TOTAL__c</elementReference>
+        </value>
+    </variables>
+    <variables>
+        <name>Totalnuevo</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>2</scale>
+        <value>
+            <elementReference>$Record.ZAMS_DTFTOT1_TOTAL__c</elementReference>
+        </value>
+    </variables>
+</Flow>

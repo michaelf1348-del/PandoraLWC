@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Periodo_O__c</fullName>
+    <description>Periodo de fecha prevista</description>
+    <externalId>false</externalId>
+    <formula>CASE(
+MONTH( Fecha_Prevista__c ),
+1, &quot;01 Ene.&quot;,
+2, &quot;02 Feb.&quot;,
+3, &quot;03 Mar.&quot;,
+4, &quot;04 Abr.&quot;,
+5, &quot;05 May.&quot;,
+6, &quot;06 Jun.&quot;,
+7, &quot;07 Jul.&quot;,
+8, &quot;08 Ago.&quot;,
+9, &quot;09 Sep.&quot;,
+10, &quot;10 Oct.&quot;,
+11, &quot;11 Nov.&quot;,
+12, &quot;12 Dic.&quot;,
+&quot;&quot;
+) + TEXT(YEAR( Fecha_Prevista__c ))</formula>
+    <label>Periodo O</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

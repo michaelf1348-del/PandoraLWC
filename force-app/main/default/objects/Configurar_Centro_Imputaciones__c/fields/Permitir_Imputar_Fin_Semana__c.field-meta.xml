@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Permitir_Imputar_Fin_Semana__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Si esta desmarcado, el LWC bloquea imputaciones en sabado y domingo.</description>
+    <externalId>false</externalId>
+    <label>Permitir imputar fin de semana</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,2834 @@
+/* ===================================================================
+   PANDORA · Paleta "Corporate Confident" (Ola 1 - Identidad visual)
+   ------------------------------------------------------------------
+   Estas variables centralizan el sistema de color del componente.
+   Las clases existentes (.seidor-*, .ux-*, .recent-*, etc.) NO cambian
+   de nombre: solo se repinta usando los tokens de abajo. Asi otros
+   selectores en este mismo CSS heredan automaticamente sin romper.
+   =================================================================== */
+:host {
+    --pandora-navy: #0F2A5E;
+    --pandora-indigo: #1E3A8A;
+    --pandora-primary: #2563EB;
+    --pandora-primary-hover: #1D4ED8;
+    --pandora-accent: #3B82F6;
+
+    --pandora-surface: #FFFFFF;
+    --pandora-bg: #F8FAFC;
+    --pandora-bg-soft: #F1F5F9;
+
+    --pandora-text: #0F172A;
+    --pandora-text-secondary: #475569;
+    --pandora-text-muted: #94A3B8;
+    --pandora-text-on-dark: rgba(255, 255, 255, 0.92);
+    --pandora-text-on-dark-soft: rgba(255, 255, 255, 0.72);
+
+    --pandora-border: #E2E8F0;
+    --pandora-border-strong: #CBD5E1;
+    --pandora-border-on-dark: rgba(255, 255, 255, 0.18);
+
+    --pandora-status-red: #DC2626;
+    --pandora-status-orange: #F59E0B;
+    --pandora-status-green: #10B981;
+    --pandora-status-blue: #3B82F6;
+
+    --pandora-elev-1: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --pandora-elev-2: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --pandora-elev-3: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+
+    --pandora-radius-sm: 8px;
+    --pandora-radius-md: 10px;
+    --pandora-radius-lg: 14px;
+}
+
+.pandora-app { background: linear-gradient(180deg, var(--pandora-bg) 0%, var(--pandora-bg-soft) 60%, #E8EEF5 100%); min-height: 100vh; font-family: 'Inter', 'Salesforce Sans', Arial, sans-serif; -webkit-font-smoothing: antialiased; color: var(--pandora-text); }
+
+/* HEADER: gradiente navy + textos claros + botones en su color por defecto
+   (los lightning-button se ven bien sobre navy porque su variant neutral
+   es blanco y brand es azul SLDS). */
+.seidor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--pandora-navy) 0%, var(--pandora-indigo) 100%);
+    padding: 18px 28px;
+    border-bottom: none;
+    color: var(--pandora-text-on-dark);
+    box-shadow: 0 6px 18px rgba(15, 42, 94, 0.22);
+    position: relative;
+}
+/* Línea de acento sutil en el borde inferior, para "separar" del sub-header sin un borde duro. */
+.seidor-header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+}
+.seidor-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.header-action-group { display: flex; align-items: center; gap: 8px; }
+.header-action-group--output {
+    padding-left: 10px;
+    border-left: 1px solid var(--pandora-border-on-dark);
+    margin-left: 6px;
+}
+.seidor-header__left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+/* B4: chip de "Hoja activa" en el header. Tono claro sobre el fondo oscuro
+   del header para que destaque sin competir con el título principal. */
+.active-sheet-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid var(--pandora-border-on-dark);
+    border-radius: 999px;
+    color: var(--pandora-text-on-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    max-width: 320px;
+}
+.active-sheet-chip lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-text-on-dark);
+}
+.active-sheet-chip__label { color: var(--pandora-text-on-dark-soft); font-weight: 600; }
+.active-sheet-chip__name {
+    color: var(--pandora-text-on-dark);
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+.seidor-dot {
+    width: 12px;
+    height: 12px;
+    background-color: var(--pandora-status-green);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22), 0 0 10px rgba(16, 185, 129, 0.55);
+}
+.seidor-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+}
+.seidor-subtitle {
+    font-size: 12px;
+    color: var(--pandora-text-on-dark-soft);
+    letter-spacing: 0.01em;
+}
+
+/* Sub-barra del selector: ahora actúa como "context bar" sticky bajo el header. */
+.report-selector {
+    padding: 14px 28px;
+    background-color: var(--pandora-surface);
+    border-bottom: 1px solid var(--pandora-border);
+    box-shadow: var(--pandora-elev-1);
+}
+.report-selector__main { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; }
+.studio-settings-btn { flex-shrink: 0; margin-bottom: 2px; }
+.report-selector lightning-combobox { width: 100%; max-width: 400px; flex: 1 1 280px; }
+.report-selector__density { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.report-selector__preset { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; flex: 1 1 220px; max-width: 360px; min-width: 200px; }
+.report-selector__preset lightning-combobox { width: 100%; min-width: 180px; }
+.report-selector__density-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.panel-quick-actions { width: 100%; }
+.panel-quick-actions lightning-button { width: 100%; }
+/* A3: dos botones compactos lado a lado (Columna virtual + Mostrar todas).
+   Más pequeños que los lightning-button originales y juntos en una fila,
+   liberando espacio para los campos del reporte. */
+.panel-quick-actions--grouped {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+}
+.panel-quick-btn {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 8px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: var(--pandora-radius-sm);
+    color: var(--pandora-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+.panel-quick-btn:hover:not(:disabled) {
+    border-color: var(--pandora-primary);
+    color: var(--pandora-primary);
+    box-shadow: var(--pandora-elev-1);
+    transform: translateY(-1px);
+}
+.panel-quick-btn:focus-visible {
+    outline: 2px solid var(--pandora-primary);
+    outline-offset: 1px;
+}
+.panel-quick-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.panel-quick-btn--primary {
+    background: linear-gradient(135deg, var(--pandora-primary) 0%, var(--pandora-accent) 100%);
+    color: #fff;
+    border-color: transparent;
+}
+.panel-quick-btn--primary lightning-icon {
+    --sds-c-icon-color-foreground-default: #fff;
+}
+.panel-quick-btn--primary:hover:not(:disabled) {
+    color: #fff;
+    filter: brightness(1.05);
+}
+.density-compact .panel-quick-btn { padding: 5px 6px; font-size: 10px; }
+
+/* Vista compacta: más datos útiles en pantalla (sesión). */
+.density-compact .seidor-header { padding: 12px 20px; }
+.density-compact .report-selector { padding: 10px 20px 12px; }
+.density-compact .left-panel,
+.density-compact .right-panel { padding: 10px 12px; }
+.density-compact .field-item { padding: 7px 10px; }
+.density-compact .field-label { font-size: 12px; }
+.density-compact .ux-panel-header { padding: 12px 12px; }
+.density-compact .ux-panel-body { padding: 10px 12px; }
+.density-compact .ux-card { padding: 10px 12px; }
+.density-compact .canvas-toolbar { padding: 8px 16px; }
+.density-compact .excel-canvas { padding: 8px 20px 28px; }
+.loading-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: #64748b; font-size: 13px; font-weight: bold; }
+
+/* ONE-CLICK EXPORT DASHBOARD */
+.home-dashboard { padding: 40px; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.4s ease; }
+.welcome-banner { text-align: center; margin-bottom: 40px; color: #1e293b; }
+.welcome-banner h2 { font-size: 28px; font-weight: 900; margin-bottom: 8px; color: #0f172a;}
+.welcome-banner p { font-size: 15px; color: #64748b; }
+
+.recent-reports-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.recent-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--pandora-surface);
+    padding: 16px;
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-md);
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--pandora-elev-1);
+}
+.recent-card:hover {
+    border-color: var(--pandora-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--pandora-elev-3);
+}
+
+.recent-content { display: flex; align-items: center; gap: 16px; flex: 1; }
+.recent-info { display: flex; flex-direction: column; }
+.recent-title { font-weight: 700; font-size: 14px; color: var(--pandora-text); }
+.recent-date { font-size: 11px; color: var(--pandora-text-muted); margin-top: 4px; }
+
+/* Siempre visible (antes solo en hover, lo cual era inaccesible en táctil/teclado).
+   Se atenúan ligeramente cuando la tarjeta no tiene foco para no saturar visualmente. */
+.recent-actions { display: flex; gap: 8px; opacity: 0.75; transition: opacity 0.2s; }
+.recent-card:hover .recent-actions,
+.recent-card:focus-within .recent-actions { opacity: 1; }
+.recent-actions lightning-button-icon { --sds-c-icon-color-foreground-default: var(--pandora-text-secondary); }
+.recent-actions lightning-button-icon:hover { --sds-c-icon-color-foreground-default: var(--pandora-primary); transform: scale(1.1); }
+
+.home-section-title { text-align: center; letter-spacing: 0.06em; color: var(--pandora-text-secondary); }
+.recent-card--favorite { border-color: #FCD34D; background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 55%); }
+.recent-card--favorite .recent-actions { opacity: 1; }
+
+/* Pills de estado de plantilla: tonos más saturados para legibilidad sobre header navy. */
+.template-sync-badge {
+    font-size: 10px;
+    border-radius: 999px;
+    padding: 3px 10px;
+    margin-left: 8px;
+    font-weight: 700;
+    border: 1px solid;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+}
+.template-sync-badge--server { background: rgba(255,255,255,0.92); color: #1D4ED8; border-color: #BFDBFE; }
+.template-sync-badge--draft  { background: rgba(255,251,235,0.96); color: #92400E; border-color: #FCD34D; }
+.template-sync-badge--default{ background: rgba(255,255,255,0.18); color: var(--pandora-text-on-dark); border-color: var(--pandora-border-on-dark); }
+
+.unsaved-badge {
+    margin-left: 8px;
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    letter-spacing: 0.2px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.unsaved-badge--dirty {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.18);
+    animation: unsavedPulse 2.4s ease-in-out infinite;
+}
+.unsaved-badge--clean {
+    background-color: rgba(236, 253, 245, 0.96);
+    color: #047857;
+    border-color: #10B981;
+}
+@keyframes unsavedPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.0); }
+    50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25); }
+}
+.template-last-save {
+    font-size: 10px;
+    color: var(--pandora-text-on-dark-soft);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.favorite-star--on { --sds-c-icon-color-foreground-default: #EA580C; }
+
+/* OVERLAY DE CARGA Y PROGRESO */
+.export-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 9999999; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
+.export-modal { background: white; padding: 32px; border-radius: 16px; width: 360px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+.export-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+.export-progress-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.export-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pandora-primary) 0%, var(--pandora-accent) 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+.export-percentage { font-size: 12px; font-weight: bold; color: #64748b; }
+
+.initial-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: #64748b; text-align: center; animation: fadeIn 0.5s ease; }
+.empty-icon-wrapper { font-size: 48px; margin-bottom: 16px; background: #e2e8f0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.initial-state h2, .empty-state h2 { font-size: 22px; font-weight: 900; color: #334155; margin-bottom: 8px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── Ola 2: tabs Diseño / Vista previa / Exportación ──────────────── */
+.studio-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    padding: 0 28px;
+    background: var(--pandora-surface);
+    border-bottom: 1px solid var(--pandora-border);
+    box-shadow: var(--pandora-elev-1);
+}
+.studio-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--pandora-text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    font-family: inherit;
+}
+.studio-tab:hover { color: var(--pandora-text); background-color: var(--pandora-bg); }
+.studio-tab:focus-visible { outline: 2px solid var(--pandora-primary); outline-offset: -2px; }
+.studio-tab--active {
+    color: var(--pandora-primary);
+    border-bottom-color: var(--pandora-primary);
+}
+.studio-tab--active:hover { background-color: transparent; }
+.studio-tab lightning-icon { --sds-c-icon-color-foreground-default: currentColor; }
+.density-compact .studio-tab { padding: 9px 14px; }
+
+/* En Vista previa colapsamos el grid a 1 columna desde JS (studioLayoutStyle) y
+   ocultamos los paneles laterales con CSS (display:none los saca del flujo del grid). */
+.studio-layout.studio-layout--preview .left-panel,
+.studio-layout.studio-layout--preview .right-panel { display: none; }
+
+/* Restamos al alto la nueva fila de tabs (~46px) para que el lienzo no overflowee. */
+.studio-layout { display: grid; height: calc(100vh - 208px); background-color: transparent; }
+.left-panel {
+    background-color: var(--pandora-surface);
+    border-right: 1px solid var(--pandora-border);
+    overflow-y: auto;
+    padding: 16px;
+    transition: background-color 0.2s ease;
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04);
+}
+.canvas-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+.right-panel {
+    background: linear-gradient(180deg, #FCFCFD 0%, var(--pandora-bg) 100%);
+    border-left: 1px solid var(--pandora-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 24px rgba(15, 23, 42, 0.04);
+    min-height: 0;
+}
+
+.panel-section { margin-bottom: 24px; }
+.panel-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.panel-title { font-size: 11px; font-weight: 800; color: var(--pandora-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0; }
+.field-count-badge {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--pandora-primary-hover);
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+.field-list { display: flex; flex-direction: column; gap: 8px; }
+.field-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background-color: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+    cursor: grab;
+    box-shadow: var(--pandora-elev-1);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.field-item:active { cursor: grabbing; }
+.field-item:hover { border-color: var(--pandora-border-strong); transform: translateY(-1px); box-shadow: var(--pandora-elev-2); }
+.field-item.active { border-color: var(--pandora-primary); background-color: #EFF6FF; }
+.field-item.active .field-label { color: var(--pandora-primary-hover); }
+/* Drop indicator del drag-reorder. Mostramos una franja azul arriba o abajo
+   del item objetivo dependiendo de dónde está el cursor del mouse, para que
+   el usuario vea con precisión dónde caerá el campo al soltar. */
+.field-item--drop-before {
+    box-shadow: 0 -3px 0 0 var(--pandora-primary), var(--pandora-elev-2) !important;
+    border-color: var(--pandora-primary) !important;
+}
+.field-item--drop-after {
+    box-shadow: 0 3px 0 0 var(--pandora-primary), var(--pandora-elev-2) !important;
+    border-color: var(--pandora-primary) !important;
+}
+.field-item--drop-before .field-info,
+.field-item--drop-after .field-info { pointer-events: none; }
+/* Mientras arrastras, el item original baja la opacidad para que se distinga
+   del resto del listado y el indicador de inserción se lea con claridad. */
+.field-item[draggable="true"]:active { opacity: 0.65; }
+.left-panel-hint {
+    font-size: 11px;
+    color: var(--pandora-text-muted);
+    margin-bottom: 8px;
+    line-height: 1.35;
+}
+.field-info { display: flex; flex-direction: column; pointer-events: none; }
+.field-label { font-size: 13px; font-weight: 700; color: #334155; transition: color 0.2s; }
+.field-api { font-size: 10px; color: var(--pandora-text-muted); margin-top: 2px; }
+
+.ux-panel-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 18px;
+    background-color: var(--pandora-surface);
+    border-bottom: 1px solid var(--pandora-border);
+    box-shadow: var(--pandora-elev-1);
+    flex-shrink: 0;
+    z-index: 2;
+    gap: 12px;
+}
+/* U2: header global del panel derecho con icono engranaje al lado del título. */
+.ux-panel-header__icon {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    color: var(--pandora-primary);
+}
+.ux-panel-header__icon lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.ux-panel-header__text { flex: 1 1 auto; min-width: 0; }
+
+/* ─── Ola 3: sub-tabs del panel derecho ─────────────────────────────
+   IMPORTANTE: header y tabs van como flex-items NO sticky (flex-shrink:0)
+   y el scroll vive en .ux-panel-body. Antes usaban position:sticky pero
+   en LWC/shadow DOM y dentro de flex column eso causaba que las tabs
+   "desaparecieran" o quedaran tapadas por el header al cambiar de tab. */
+.panel-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0 12px;
+    background: var(--pandora-surface);
+    border-bottom: 1px solid var(--pandora-border);
+    box-shadow: var(--pandora-elev-1);
+    flex-shrink: 0;
+    z-index: 1;
+    overflow-x: auto;
+}
+.panel-subtab {
+    flex: 1 0 auto;
+    padding: 10px 6px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--pandora-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.panel-subtab:hover { color: var(--pandora-text); background-color: var(--pandora-bg); }
+.panel-subtab:focus-visible { outline: 2px solid var(--pandora-primary); outline-offset: -2px; }
+.panel-subtab--active {
+    color: var(--pandora-primary);
+    border-bottom-color: var(--pandora-primary);
+}
+.panel-subtab--active:hover { background-color: transparent; }
+.density-compact .panel-subtab { padding: 8px 5px; font-size: 10px; }
+.ux-header-subtitle { font-size: 10px; color: var(--pandora-text-secondary); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+.ux-header-title { font-size: 16px; font-weight: 900; color: var(--pandora-text); margin-top: 2px;}
+.ux-panel-body { padding: 16px; flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.ux-card {
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-md);
+    padding: 16px;
+    box-shadow: var(--pandora-elev-1);
+}
+/* U2-rev2: cabecera de cada ux-card con separador inferior + icono en caja azul
+   (como en el mockup). El icono es opcional: si la card usa emoji legacy también
+   se ve bien gracias a la flex layout. */
+.ux-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--pandora-text);
+    letter-spacing: 0.1px;
+    margin: -2px 0 12px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--pandora-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.density-compact .ux-section-title { font-size: 12px; padding-bottom: 8px; margin-bottom: 10px; }
+.section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: var(--pandora-primary);
+    flex-shrink: 0;
+}
+.section-icon lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+
+/* Stack vertical de toggles dentro de una card (uniforma el espacio). */
+.toggle-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Hint informativo bajo el título de una card (ej. "Combinar otro reporte"). */
+.ux-card__lead {
+    font-size: 11px;
+    color: var(--pandora-text-muted);
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+/* Variante "combinar otro reporte": fondo levemente distinto, borde sutil. */
+.ux-card--blend {
+    background: linear-gradient(180deg, var(--pandora-surface) 0%, var(--pandora-bg) 100%);
+}
+/* Caja roja para confirmar "Quitar logo" (antes con estilos inline). */
+.logo-remove-box {
+    text-align: center;
+    background: #FEE2E2;
+    border: 1px solid #FCA5A5;
+    border-radius: var(--pandora-radius-sm);
+    padding: 6px 8px;
+}
+
+/* Modo de pantalla: interruptor compacto + ayuda breve */
+.ux-card--screen-mode { padding-bottom: 14px; }
+.ux-card--experience-gate {
+    border-style: dashed;
+    border-color: #cbd5e1;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+.experience-gate__title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #334155;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.experience-gate__title lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.experience-gate__lead {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.45;
+    margin: 0 0 12px 0;
+}
+.screen-mode-hint {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0;
+}
+.pivot-section-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+}
+.pivot-section-toolbar__title {
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.pivot-config-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; }
+.pivot-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; margin-bottom: 12px; }
+.pivot-title { font-size: 13px; font-weight: 800; color: #1e293b; }
+.color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hint-box { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.4; }
+.full-width-btn { display: block; width: 100%; margin-top: 8px; }
+.full-width-btn lightning-button { width: 100%; }
+.filter-row { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px; background: #f8fafc; margin-bottom: 8px; }
+.filter-row__actions { display: flex; align-items: center; justify-content: space-between; }
+.filter-row__logic { font-size: 11px; font-weight: 700; color: #64748b; }
+/* Restos del modal v1 + z-index altos para que el modal v2 quede sobre todo. */
+.filter-row--modal { max-width: 760px; }
+.filters-modal-v2.slds-modal { z-index: 10000002; }
+.filters-modal-v2 + .slds-backdrop_open { z-index: 10000001; }
+
+.canvas-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; gap: 12px; }
+.canvas-titles { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* R4: controles de zoom del lienzo. */
+.canvas-zoom-controls {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    height: 30px;
+}
+.canvas-zoom-controls .canvas-zoom-btn,
+.canvas-zoom-controls .canvas-zoom-level {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: #0f172a;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 8px;
+    cursor: pointer;
+    min-width: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.canvas-zoom-controls .canvas-zoom-btn { font-weight: 600; font-size: 16px; }
+.canvas-zoom-controls .canvas-zoom-level {
+    min-width: 56px;
+    border-left: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+}
+.canvas-zoom-controls .canvas-zoom-btn:hover,
+.canvas-zoom-controls .canvas-zoom-level:hover { background: #f1f5f9; }
+.canvas-zoom-controls .canvas-zoom-btn[disabled] { opacity: 0.4; cursor: not-allowed; background: transparent; }
+.pandora-app--dark .canvas-zoom-controls { background: #1f2937; border-color: #334155; }
+.pandora-app--dark .canvas-zoom-controls .canvas-zoom-btn,
+.pandora-app--dark .canvas-zoom-controls .canvas-zoom-level { color: #e2e8f0; }
+.pandora-app--dark .canvas-zoom-controls .canvas-zoom-level { border-color: #334155; }
+.pandora-app--dark .canvas-zoom-controls .canvas-zoom-btn:hover,
+.pandora-app--dark .canvas-zoom-controls .canvas-zoom-level:hover { background: #273548; }
+
+/* Wrapper que aplica el zoom al contenido del lienzo. */
+.canvas-zoom-wrap { transform-origin: top left; position: relative; }
+.canvas-title { font-size: 16px; font-weight: 900; color: #0f172a; }
+.canvas-subtitle { font-size: 12px; color: #64748b; }
+
+/* ─── Ola 4: breadcrumb del canvas (tipo · columnas · filtros) ──────── */
+.canvas-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--pandora-text-secondary);
+    line-height: 1.2;
+}
+.canvas-breadcrumb__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--pandora-bg);
+    border: 1px solid var(--pandora-border);
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--pandora-text-secondary);
+    white-space: nowrap;
+}
+.canvas-breadcrumb__chip--type {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+    color: var(--pandora-primary-hover);
+}
+.canvas-breadcrumb__chip--filters {
+    background: #FEF3C7;
+    border-color: #FCD34D;
+    color: #92400E;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.canvas-breadcrumb__chip--filters:hover { background: #FDE68A; border-color: #F59E0B; }
+.canvas-breadcrumb__chip--filters lightning-icon { --sds-c-icon-color-foreground-default: #92400E; }
+.canvas-breadcrumb__dot { color: var(--pandora-text-muted); font-weight: 700; }
+.density-compact .canvas-breadcrumb { font-size: 11px; }
+.density-compact .canvas-breadcrumb__chip { padding: 2px 6px; }
+
+/* ─── Ola 4: tabs del panel izquierdo (Todos / Activas / Inactivas) ─── */
+.left-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    margin-bottom: 10px;
+    padding: 3px;
+    background: var(--pandora-bg);
+    border: 1px solid var(--pandora-border);
+    border-radius: 999px;
+}
+.left-tab {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: var(--pandora-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.left-tab:hover { color: var(--pandora-text); }
+.left-tab:focus-visible { outline: 2px solid var(--pandora-primary); outline-offset: 1px; }
+.left-tab--active {
+    background: var(--pandora-surface);
+    color: var(--pandora-primary);
+    box-shadow: var(--pandora-elev-1);
+}
+.left-tab__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    padding: 0 5px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--pandora-border);
+    color: var(--pandora-text-secondary);
+    font-size: 10px;
+    font-weight: 800;
+}
+.left-tab--active .left-tab__count {
+    background: #DBEAFE;
+    color: var(--pandora-primary-hover);
+}
+.density-compact .left-tab { padding: 5px 6px; font-size: 10px; }
+
+/* Mensaje cuando el panel izquierdo no tiene resultados (por tab o search). */
+.left-panel-empty {
+    padding: 16px 12px;
+    text-align: center;
+    color: var(--pandora-text-secondary);
+    font-size: 12px;
+    background: var(--pandora-surface);
+    border: 1px dashed var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+}
+
+/* ─── Modal Columna Virtual: UX rediseñada ────────────────────────────
+   Layout 2-col (modos a la izquierda, configuración a la derecha) +
+   vista previa en vivo al fondo. Conserva 100% la lógica funcional;
+   solo cambia presentación. */
+.vc-modal__container { width: min(960px, 96vw) !important; max-width: none !important; }
+.vc-modal__body { padding: 20px 24px; }
+.vc-modal__intro { font-size: 13px; line-height: 1.4; margin-bottom: 16px; }
+.vc-modal__name { display: block; margin-bottom: 16px; }
+.vc-modal__grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 720px) {
+    .vc-modal__grid { grid-template-columns: 1fr; }
+}
+.vc-mode-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    background: var(--pandora-bg);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-md);
+}
+.vc-mode-list__title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--pandora-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px 6px;
+}
+.vc-type-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    text-align: left;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pandora-text);
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+.vc-type-card:hover { background: #F8FAFC; border-color: var(--pandora-border-strong); }
+.vc-type-card:focus-visible { outline: 2px solid var(--pandora-primary); outline-offset: 1px; }
+.vc-type-card--active {
+    background: #EFF6FF;
+    border-color: var(--pandora-primary);
+    color: var(--pandora-primary-hover);
+    box-shadow: 0 0 0 1px var(--pandora-primary), var(--pandora-elev-2);
+}
+.vc-type-card .vc-mode-card__icon { --sds-c-icon-color-foreground-default: currentColor; }
+.vc-type-card--active .vc-mode-card__icon { --sds-c-icon-color-foreground-default: var(--pandora-primary); }
+.vc-mode-card__title { line-height: 1.2; flex: 1 1 auto; }
+
+.vc-config { min-width: 0; }
+.vc-config__hint {
+    font-size: 12px;
+    color: var(--pandora-text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.4;
+    padding: 8px 12px;
+    background: #F1F5F9;
+    border-left: 3px solid var(--pandora-primary);
+    border-radius: 4px;
+}
+
+.vc-preview {
+    padding: 12px 14px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-md);
+    box-shadow: var(--pandora-elev-1);
+}
+.vc-preview__title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--pandora-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.vc-preview__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.vc-preview__item {
+    padding: 6px 10px;
+    background: var(--pandora-bg);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--pandora-text);
+    border-left: 3px solid var(--pandora-accent);
+    word-break: break-word;
+}
+.vc-preview__empty {
+    font-size: 12px;
+    color: var(--pandora-text-muted);
+    font-style: italic;
+    margin: 0;
+}
+/* Padding-top mínimo (12px) en lugar de 28px: el espacio arriba del preview
+   debe representar fielmente el Excel exportado. Si el usuario quiere espacio
+   real en la exportación, debe usar `tableStartRow` o cargar un logo. */
+.excel-canvas { flex: 1; min-height: 0; overflow: auto; padding: 12px 32px 40px; -webkit-overflow-scrolling: touch; background-color: #eef2f7; background-image: radial-gradient(#cbd5e1 0.9px, transparent 1px); background-size: 18px 18px; border-top: 1px solid #e2e8f0; }
+
+/* Opcional: fondo con cuadrícula tipo hoja de cálculo cuando el usuario activa «Aspecto tipo Excel». */
+.excel-canvas.excel-like-canvas-theme {
+    background-color: #fafafb;
+    background-image: linear-gradient(rgba(200, 208, 218, 0.35) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 208, 218, 0.35) 1px, transparent 1px);
+    background-size: 11px 11px;
+}
+
+/* Ancho natural de la tabla + scroll en el lienzo (no recortar columnas). */
+.preview-table-shell { display: inline-block; width: max-content; max-width: none; border-radius: 10px; overflow: visible; box-shadow: 0 12px 40px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(148, 163, 184, 0.25); vertical-align: top; }
+
+.preview-table-shell--excel {
+    border-radius: 0;
+    box-shadow: 0 0 0 1px #b8bdc5, 0 6px 20px rgba(15, 23, 42, 0.1);
+}
+
+.preview-table { border-collapse: collapse; background-color: #ffffff; box-shadow: none; border-radius: 0; }
+/* R2: header de la tabla de preview pegado arriba al hacer scroll vertical.
+   El scroll ocurre en .excel-canvas (overflow:auto), así que sticky top:0 funciona
+   relativo a ese contenedor. */
+.preview-table thead th,
+table.preview-table thead th,
+.excel-canvas table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+.pandora-app--dark .preview-table thead th,
+.pandora-app--dark .excel-canvas table thead th {
+    /* el fondo del th lo pone el inline-style (color del header), aquí solo aseguramos
+       que no haya transparencia visible si el config no lo aporta. */
+    background-clip: padding-box;
+}
+
+/* Vista previa tipo Excel: rejilla fina sin pisar fondos configurados por columna (solo bordes y tipografía). */
+.preview-table.preview-table--excel-grid th,
+.preview-table.preview-table--excel-grid td {
+    border: 1px solid #cfd4dc;
+}
+
+.preview-table.preview-table--excel-grid th {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.preview-table.preview-table--excel-grid thead th:first-child {
+    border-left-width: 1px;
+}
+
+/* Densidad de texto solo en vista previa (clases aplicadas sobre .excel-canvas). */
+.excel-preview-font--compact .preview-table th,
+.excel-preview-font--compact .preview-table td {
+    font-size: 11px;
+    padding: 3px 6px !important;
+    line-height: 1.25;
+}
+
+.excel-preview-font--large .preview-table th,
+.excel-preview-font--large .preview-table td {
+    font-size: 13px;
+    padding: 9px 10px !important;
+    line-height: 1.35;
+}
+
+/* Refuerzo del ajuste de líneas cuando también hay clase en la tabla. */
+.preview-table.preview-table--wrap-text td {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    vertical-align: top !important;
+}
+.pivot-preview-wrapper { background: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: inline-block; }
+.pivot-preview-title { font-size: 14px; font-weight: 800; color: #1e293b; }
+.pivot-badge { font-size: 10px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+.preview-th.selected {
+    outline: 2px solid var(--pandora-primary);
+    outline-offset: -2px;
+    background-color: #DBEAFE !important;
+    color: var(--pandora-primary-hover) !important;
+}
+.preview-th, .preview-table td { position: relative; }
+.resize-handle { position: absolute; top: 0; right: -2px; width: 10px; height: 100%; cursor: col-resize; background: transparent; z-index: 10; }
+.resize-handle:hover { background: rgba(37, 99, 235, 0.32); }
+.resize-handle-y { position: absolute; bottom: -2px; left: 0; width: 100%; height: 6px; cursor: row-resize; background: transparent; z-index: 10; }
+.resize-handle-y:hover { background: rgba(37, 99, 235, 0.32); }
+
+.floating-context-menu { position: fixed; z-index: 99999; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #cbd5e1; width: 240px; padding: 12px; animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.fcm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;}
+.fcm-title { font-weight: 800; font-size: 12px; color: #1e293b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.fcm-actions { display: flex; justify-content: space-between; align-items: center; }
+@keyframes popIn { from { opacity: 0; transform: translateY(-10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* Pestañas inferiores de hojas: estilo "chips" redondeadas, activa en primary. */
+.bottom-tabs {
+    display: flex;
+    background-color: var(--pandora-surface);
+    border-top: 1px solid var(--pandora-border);
+    padding: 10px 20px;
+    gap: 6px;
+    overflow-x: auto;
+    box-shadow: 0 -2px 6px rgba(15, 23, 42, 0.04);
+}
+.tab-wrap {
+    display: flex;
+    align-items: center;
+    background-color: var(--pandora-bg-soft);
+    border-radius: 999px;
+    border: 1px solid var(--pandora-border);
+    overflow: hidden;
+    margin-right: 2px;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.tab-wrap:hover { background-color: #E0E7FF; border-color: #C7D2FE; }
+.tab-wrap[draggable="true"] { cursor: grab; }
+.tab-wrap[draggable="true"]:active { cursor: grabbing; }
+/* B2: indicadores de drop para reordenar hojas. La línea azul aparece a la
+   izquierda (before) o derecha (after) según la mitad del wrap donde está
+   el cursor. */
+.tab-wrap--dragging { opacity: 0.55; }
+.tab-wrap--drop-before { box-shadow: -3px 0 0 0 var(--pandora-primary); }
+.tab-wrap--drop-after  { box-shadow:  3px 0 0 0 var(--pandora-primary); }
+.sheet-tab {
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--pandora-text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    letter-spacing: 0.01em;
+}
+.sheet-tab.active {
+    background: linear-gradient(135deg, var(--pandora-primary) 0%, var(--pandora-primary-hover) 100%);
+    color: #FFFFFF;
+    border-radius: 999px 0 0 999px;
+}
+.tab-wrap:has(.sheet-tab.active) {
+    background: linear-gradient(135deg, var(--pandora-primary) 0%, var(--pandora-primary-hover) 100%);
+    border-color: var(--pandora-primary);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+}
+.tab-wrap:has(.sheet-tab.active) .tab-close { color: rgba(255, 255, 255, 0.85); }
+.tab-wrap:has(.sheet-tab.active) .tab-close:hover { color: #FECACA; }
+.tab-close {
+    padding: 0 10px 0 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--pandora-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    line-height: 1;
+}
+.tab-close:hover { color: var(--pandora-status-red); }
+.add-tab {
+    background-color: var(--pandora-surface);
+    border: 1px dashed var(--pandora-border-strong);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--pandora-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.add-tab:hover { background-color: #EFF6FF; border-color: var(--pandora-primary); }
+
+.pandora-app.is-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background-color: var(--pandora-bg); overflow: hidden; }
+.is-fullscreen .seidor-header, .is-fullscreen .report-selector, .is-fullscreen .studio-tabs { display: none !important; }
+.is-fullscreen .studio-layout { height: 100vh !important; border-top: none !important; }
+
+/* ─── Ola 2: Vista de Exportación ─────────────────────────────────── */
+.studio-export-view {
+    padding: 48px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+    animation: fadeIn 0.35s ease;
+}
+.studio-export-view__intro { text-align: center; margin-bottom: 32px; }
+.studio-export-view__intro h2 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--pandora-text);
+    margin: 0 0 8px 0;
+}
+.studio-export-view__intro p {
+    font-size: 14px;
+    color: var(--pandora-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+.studio-export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+.export-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 22px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-lg);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: var(--pandora-elev-1);
+    color: var(--pandora-text);
+    font-family: inherit;
+}
+.export-card:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: var(--pandora-elev-3);
+    border-color: var(--pandora-primary);
+}
+.export-card:focus-visible {
+    outline: 2px solid var(--pandora-primary);
+    outline-offset: 2px;
+}
+.export-card:disabled { opacity: 0.55; cursor: not-allowed; }
+.export-card__icon {
+    font-size: 26px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.export-card__title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--pandora-text);
+    margin: 0;
+}
+.export-card__desc {
+    font-size: 12px;
+    color: var(--pandora-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+.export-card--ppt    .export-card__icon { background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%); }
+.export-card--excel  .export-card__icon { background: linear-gradient(135deg, #34D399 0%, #059669 100%); }
+.export-card--pdf    .export-card__icon { background: linear-gradient(135deg, #F87171 0%, #DC2626 100%); }
+.export-card--config .export-card__icon { background: linear-gradient(135deg, var(--pandora-primary) 0%, var(--pandora-primary-hover) 100%); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pandora-border-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pandora-text-muted); }
+
+/* Modal: configuración del taller (densidad, modo UI, plantillas rápidas) */
+.studio-settings-modal { max-width: 28rem; width: 100%; }
+.settings-modal-lead { font-size: 13px; color: #475569; line-height: 1.55; margin: 0; }
+.settings-modal-section { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #f8fafc; }
+.settings-modal-section__title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 12px; }
+.settings-modal-hint { font-size: 12px; color: #64748b; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ─── F5: Cards de gráficos en el lienzo y lista en panel ────────── */
+.charts-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+.chart-card {
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-md);
+    box-shadow: var(--pandora-elev-1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.chart-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--pandora-border);
+    background: var(--pandora-bg);
+}
+.chart-card__title {
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--pandora-text);
+}
+.chart-card__type {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--pandora-text-secondary);
+    padding: 2px 8px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: 999px;
+}
+.chart-card__body {
+    position: relative;
+    height: 280px;
+    padding: 12px;
+    background: var(--pandora-surface);
+}
+.chart-card__body canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+.pandora-app--dark .chart-card { background: #1B2940; }
+.pandora-app--dark .chart-card__header { background: #131C2C; }
+
+/* Lista de configuración de gráficos en panel derecho. */
+.chart-config-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.chart-config-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    background: var(--pandora-bg);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+}
+.chart-config-item__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+.chart-config-item__title {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--pandora-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chart-config-item__meta {
+    font-size: 10px;
+    color: var(--pandora-text-muted);
+}
+.pandora-app--dark .chart-config-item { background: rgba(255,255,255,0.04); }
+
+/* ─── F4: Trigger y menú flotante de Vistas guardadas ────────────── */
+.saved-views-trigger-wrap {
+    position: relative;
+    display: inline-flex;
+}
+.saved-views-trigger__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--pandora-primary);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--pandora-surface);
+    pointer-events: none;
+}
+.saved-views-menu {
+    position: fixed;
+    z-index: 9999;
+    min-width: 280px;
+    max-width: 360px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: var(--pandora-radius-md);
+    box-shadow: var(--pandora-elev-3);
+    overflow: hidden;
+    color: var(--pandora-text);
+}
+.saved-views-menu__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--pandora-bg);
+    border-bottom: 1px solid var(--pandora-border);
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--pandora-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.saved-views-menu__close {
+    width: 22px; height: 22px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--pandora-text-secondary);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.saved-views-menu__close:hover { background: rgba(0,0,0,0.06); color: var(--pandora-text); }
+.saved-views-menu__body { padding: 8px; max-height: 360px; overflow-y: auto; }
+.saved-views-menu__primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 1px solid var(--pandora-primary);
+    border-radius: var(--pandora-radius-sm);
+    color: var(--pandora-primary-hover);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.saved-views-menu__primary:hover { background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); transform: translateY(-1px); }
+.saved-views-menu__primary lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.saved-views-menu__form {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+}
+.saved-views-menu__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 10px;
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: var(--pandora-radius-sm);
+    font-size: 12px;
+    background: var(--pandora-surface);
+    color: var(--pandora-text);
+    font-family: inherit;
+    outline: none;
+}
+.saved-views-menu__input:focus { border-color: var(--pandora-primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+.saved-views-menu__save {
+    padding: 6px 14px;
+    background: var(--pandora-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--pandora-radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+.saved-views-menu__save:hover { background: var(--pandora-primary-hover); }
+.saved-views-menu__sep {
+    height: 1px;
+    background: var(--pandora-border);
+    margin: 8px 0;
+}
+.saved-views-menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.saved-views-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.saved-views-menu__apply {
+    flex: 1 1 auto;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--pandora-radius-sm);
+    padding: 6px 10px;
+    color: var(--pandora-text);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: inherit;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.saved-views-menu__apply:hover { background: var(--pandora-bg); border-color: var(--pandora-border); }
+.saved-views-menu__apply-name { font-weight: 700; }
+.saved-views-menu__apply-date { font-size: 10px; color: var(--pandora-text-muted); }
+.saved-views-menu__delete {
+    width: 24px; height: 24px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--pandora-text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.saved-views-menu__delete:hover { background: #FEE2E2; color: var(--pandora-status-red); }
+.saved-views-menu__empty {
+    margin: 8px 0 0 0;
+    padding: 12px;
+    background: var(--pandora-bg);
+    border: 1px dashed var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+    font-size: 11px;
+    color: var(--pandora-text-secondary);
+    text-align: center;
+}
+.pandora-app--dark .saved-views-menu { background: #1B2940; }
+.pandora-app--dark .saved-views-menu__header { background: #131C2C; }
+.pandora-app--dark .saved-views-menu__primary {
+    background: rgba(59, 130, 246, 0.18);
+    color: #BFDBFE;
+}
+.pandora-app--dark .saved-views-menu__input { background: #131C2C; color: var(--pandora-text); }
+.pandora-app--dark .saved-views-menu__apply:hover { background: rgba(59,130,246,0.1); }
+
+/* ─── F2: Chip de auto-guardado en el header ───────────────────────── */
+.autosave-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.95);
+}
+.autosave-chip lightning-icon {
+    --sds-c-icon-color-foreground-default: currentColor;
+}
+.autosave-chip--idle {
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.85);
+}
+.autosave-chip--saving {
+    background: rgba(251, 191, 36, 0.22);
+    color: #FEF3C7;
+    border-color: rgba(251, 191, 36, 0.4);
+}
+.autosave-chip--saving lightning-icon {
+    animation: autosave-spin 1s linear infinite;
+}
+.autosave-chip--saved {
+    background: rgba(16, 185, 129, 0.22);
+    color: #D1FAE5;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.autosave-chip--error {
+    background: rgba(239, 68, 68, 0.22);
+    color: #FEE2E2;
+    border-color: rgba(239, 68, 68, 0.5);
+}
+@keyframes autosave-spin {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ─── F1: Click en header de columna para ordenar ─────────────────── */
+.th-sort-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+    line-height: 1;
+    border-radius: 3px;
+    vertical-align: middle;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+}
+.th-sort-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+.th-sort-btn--active {
+    color: #FBBF24;
+    font-weight: 900;
+    background: rgba(255, 255, 255, 0.1);
+}
+.preview-th--sorted {
+    box-shadow: inset 0 -2px 0 #FBBF24;
+}
+.th-label { display: inline-block; }
+
+/* V3: AutoFiltro tipo Excel — botón ▾ por columna. */
+.th-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 2px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 3px;
+    vertical-align: middle;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+}
+.th-filter-btn:hover { background: rgba(255, 255, 255, 0.2); color: #ffffff; }
+.th-filter-btn--active {
+    background: #FBBF24;
+    color: #1f2937;
+    font-weight: 800;
+}
+.preview-th--filtered { box-shadow: inset 0 -2px 0 #FBBF24; }
+
+/* V4: celdas de columnas virtuales son editables por doble-click. */
+.preview-cell--virtual { cursor: pointer; }
+.preview-cell--virtual:hover { box-shadow: inset 0 0 0 2px rgba(0, 112, 192, 0.35); }
+
+/* V: Variantes — selector en cabecera + modal de gestión + tarjetas. */
+.variant-selector {
+    min-width: 220px;
+    max-width: 280px;
+}
+.variant-name-input { min-width: 280px; max-width: 360px; }
+
+/* M1+M2: breadcrumb del reporte seleccionado (con botón "Cambiar"). */
+.report-breadcrumb {
+    appearance: none;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #1e293b;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    align-self: flex-end;
+    height: 32px;
+    margin-top: 22px;
+}
+.report-breadcrumb:hover { background: #e2e8f0; border-color: #94a3b8; }
+.report-breadcrumb__label { font-weight: 600; color: #475569; }
+.report-breadcrumb__name { font-weight: 700; color: #0f172a; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-breadcrumb__hint {
+    margin-left: 4px;
+    padding: 2px 8px;
+    background: #0070c0;
+    color: #ffffff;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.pandora-app--dark .report-breadcrumb { background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.3); color: #e2e8f0; }
+.pandora-app--dark .report-breadcrumb:hover { background: rgba(148,163,184,0.2); }
+.pandora-app--dark .report-breadcrumb__label { color: #cbd5e1; }
+.pandora-app--dark .report-breadcrumb__name { color: #f8fafc; }
+
+/* M4: botón "Variantes" en la cabecera (llamativo pero compacto). */
+.header-variant-btn {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 6px 12px 6px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s ease, transform 0.15s ease;
+    margin-right: 8px;
+}
+.header-variant-btn:hover { background: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
+.header-variant-btn lightning-icon { --sds-c-icon-color-foreground-default: #ffffff; }
+.header-variant-btn__badge {
+    background: #f59e0b;
+    color: #0f172a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.4;
+}
+.variant-manager-container { max-width: 1024px; }
+.variant-manager-header { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); }
+.variant-manager-subtitle { color: #475569; font-size: 13px; max-width: 720px; }
+.variant-manager-content { max-height: 70vh; overflow: auto; }
+.variant-manager-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.variants-empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    color: #475569;
+}
+.variants-empty h3 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; color: #1e293b; }
+.variants-empty p { font-size: 13px; max-width: 420px; margin: 0 auto; }
+
+.variants-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+.variant-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.variant-card:hover { border-color: #94a3b8; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); }
+.variant-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.variant-card__name { font-size: 14px; font-weight: 700; color: #0f172a; }
+.variant-card__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11px; color: #64748b; }
+.variant-card__pill {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+}
+.variant-card__pill--default { background: #fef3c7; color: #92400e; }
+.variant-card__pill--current { background: #dbeafe; color: #1e40af; }
+/* V-PPT: icono doctype PPT (mismo que exportación) — sin caja de fondo. */
+.variant-card__ppt-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 0;
+    vertical-align: middle;
+}
+.variant-card__ppt-icon lightning-icon {
+    display: block;
+}
+.variant-card__date, .variant-card__owner { font-size: 11px; color: #64748b; }
+.variant-card__actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
+
+/* V-SEARCH: buscador del modal de variantes. */
+.variants-search {
+    margin: 0 0 12px;
+    max-width: 360px;
+}
+.variants-search__input {
+    --slds-c-input-radius-border: 8px;
+}
+.variants-empty--filter {
+    padding: 40px 20px;
+}
+.variants-empty--filter lightning-button {
+    margin-top: 12px;
+    display: inline-block;
+}
+
+/* V-IMPORT: input file oculto para importar variante desde archivo .json. */
+.variant-import-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+/* V-IMPORT: hint visual cuando estamos creando variante desde archivo. */
+.variant-import-hint {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+.variant-import-hint lightning-icon { flex-shrink: 0; margin-top: 2px; }
+.variant-import-hint p { margin: 0; }
+.variant-import-hint p + p { margin-top: 4px; }
+.variant-import-hint__warn { color: #b45309; font-weight: 600; }
+
+/* Tarjeta clicable en el modal de selección. */
+.variant-card--picker { padding: 0; }
+.variant-card__pick-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    padding: 14px 16px;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 10px;
+}
+.variant-card__pick-btn:hover { background: #f1f5f9; }
+
+/* Dark mode */
+.pandora-app--dark .variant-card { background: var(--pandora-bg-card, #1e293b); border-color: rgba(148, 163, 184, 0.25); }
+.pandora-app--dark .variant-card__name { color: #e2e8f0; }
+.pandora-app--dark .variant-card__meta,
+.pandora-app--dark .variant-card__date,
+.pandora-app--dark .variant-card__owner { color: #94a3b8; }
+.pandora-app--dark .variant-card__pick-btn:hover { background: rgba(148, 163, 184, 0.1); }
+.pandora-app--dark .variants-empty { background: rgba(148, 163, 184, 0.08); border-color: rgba(148, 163, 184, 0.3); color: #cbd5e1; }
+.pandora-app--dark .variants-empty h3 { color: #e2e8f0; }
+.pandora-app--dark .studio-variants-view__intro h2 { color: #e2e8f0; }
+.pandora-app--dark .studio-variants-view__intro p { color: #94a3b8; }
+
+/* Y2/Y3: Logo arrastrable y redimensionable en el lienzo. */
+.logo-floating {
+    cursor: grab;
+    user-select: none;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    padding: 2px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.logo-floating:hover {
+    cursor: grab;
+    border-color: rgba(0, 112, 192, 0.5);
+    box-shadow: 0 0 0 2px rgba(0, 112, 192, 0.1);
+}
+.logo-floating:active { cursor: grabbing; }
+.logo-floating__resize {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0070c0;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: nwse-resize;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    user-select: none;
+}
+.logo-floating:hover .logo-floating__resize { opacity: 1; }
+.logo-floating__resize:hover { background: #005a9c; }
+.pandora-app--dark .logo-floating:hover { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15); }
+
+/* X7: Vista previa de impresión — hoja A4 escalada + panel resumen. */
+.print-preview-body {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 24px 24px;
+}
+.print-preview-sheet {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.18);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+.print-preview-sheet__inner {
+    padding: 22px 26px;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.print-preview-sheet__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 2px solid #0070c0;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+.print-preview-sheet__minitable {
+    display: flex;
+    gap: 2px;
+    background: #0070c0;
+    color: #ffffff;
+    border-radius: 3px;
+    overflow: hidden;
+    padding: 4px 0;
+}
+.print-preview-sheet__col {
+    flex: 1;
+    font-size: 9px;
+    padding: 2px 4px;
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+}
+.print-preview-sheet__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.print-preview-sheet__row-placeholder {
+    height: 12px;
+    background: linear-gradient(90deg, #f1f5f9 60%, #e2e8f0);
+    border-radius: 2px;
+}
+.print-preview-summary {
+    flex: 1;
+    min-width: 260px;
+}
+.print-preview-summary__list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+.print-preview-summary__list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 13px;
+    color: #475569;
+}
+.print-preview-summary__list li:last-child { border-bottom: 0; }
+.print-preview-summary__list strong { color: #0f172a; }
+.print-preview-help {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #64748b;
+    font-style: italic;
+}
+.pandora-app--dark .print-preview-sheet { background: #1f2937; border-color: #334155; }
+.pandora-app--dark .print-preview-sheet__title { color: #e2e8f0; }
+.pandora-app--dark .print-preview-sheet__row-placeholder { background: linear-gradient(90deg, #273548 60%, #1f2937); }
+.pandora-app--dark .print-preview-summary__list li { color: #94a3b8; border-bottom-color: #334155; }
+.pandora-app--dark .print-preview-summary__list strong { color: #e2e8f0; }
+.pandora-app--dark .print-preview-help { color: #94a3b8; }
+
+/* V5: Modo "mover tabla" — al activar, el wrapper de la tabla se vuelve draggable.
+   K1: estado activo con feedback fuerte y consistente con el sistema (amarillo cálido +
+   outline + cursor explicativo). El icono cambia de color claro a oscuro para que se
+   distinga sobre el amarillo. No se usa azul corporativo aquí para evitar confusión con
+   los botones de zoom que ya son del mismo color en hover. */
+.canvas-zoom-btn.canvas-zoom-btn--active {
+    background: #FBBF24 !important;
+    color: #78350F !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4), inset 0 0 0 1px rgba(146, 64, 14, 0.35);
+    animation: pandora-move-pulse 1.8s ease-in-out infinite;
+}
+@keyframes pandora-move-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4), inset 0 0 0 1px rgba(146, 64, 14, 0.35); }
+    50% { box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.25), inset 0 0 0 1px rgba(146, 64, 14, 0.55); }
+}
+.preview-table-mover { display: block; position: relative; }
+.preview-table-mover--active { cursor: grab; outline: 2px dashed rgba(0, 112, 192, 0.55); outline-offset: 6px; border-radius: 8px; user-select: none; }
+.preview-table-mover--active:active { cursor: grabbing; }
+.preview-table-mover--active * { pointer-events: none; } /* mientras mueves, no quieres clic en cells/headers */
+.preview-table-mover--active::before {
+    content: '✥ Arrastra para mover la tabla. Click ✥ otra vez para salir.';
+    position: absolute;
+    top: -28px;
+    left: 0;
+    background: #0070c0;
+    color: #ffffff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    width: max-content;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+/* Menú flotante AutoFiltro. */
+.header-filter-menu {
+    position: fixed;
+    z-index: 9050;
+    width: 280px;
+    max-height: 460px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.header-filter-menu__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #f8fafc, #eef2f7);
+    border-bottom: 1px solid #e2e8f0;
+}
+.header-filter-menu__title { font-weight: 700; color: #0f172a; font-size: 13px; }
+.header-filter-menu__close { background: transparent; border: 0; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 6px; color: #64748b; }
+.header-filter-menu__close:hover { color: #0f172a; }
+.header-filter-menu__search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.header-filter-menu__search input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    height: 28px;
+}
+.header-filter-menu__search input:focus { outline: 2px solid #0070c0; outline-offset: 1px; }
+.header-filter-menu__all { padding: 4px 6px 0; }
+.header-filter-menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 6px;
+    overflow-y: auto;
+    max-height: 240px;
+    flex: 1 1 auto;
+}
+.header-filter-menu__li { margin: 0; padding: 0; }
+.header-filter-menu__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    text-align: left;
+    color: #0f172a;
+    font: inherit;
+}
+.header-filter-menu__row:hover { background: #f1f5f9; }
+.header-filter-menu__row--all { border-bottom: 1px solid #e2e8f0; border-radius: 0; padding: 8px; font-weight: 600; }
+.header-filter-menu__row-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.header-filter-menu__row-count { color: #94a3b8; font-size: 11px; font-variant-numeric: tabular-nums; }
+.hf-check {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #94a3b8;
+    border-radius: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+    position: relative;
+    background: #ffffff;
+}
+.hf-check--on {
+    background: #0070c0;
+    border-color: #0070c0;
+}
+.hf-check--on::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.header-filter-menu__footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+.header-filter-menu__btn {
+    appearance: none;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font: inherit;
+    font-size: 12px;
+    color: #0f172a;
+    cursor: pointer;
+}
+.header-filter-menu__btn:hover { background: #f1f5f9; }
+.header-filter-menu__btn--primary { background: #0070c0; border-color: #0070c0; color: #ffffff; }
+.header-filter-menu__btn--primary:hover { background: #005a9c; }
+.header-filter-menu__btn--primary[disabled] { opacity: 0.5; cursor: not-allowed; }
+.header-filter-menu__btn--secondary { color: #b91c1c; border-color: #fecaca; }
+.header-filter-menu__btn--secondary:hover { background: #fef2f2; }
+
+/* Dark mode AutoFiltro. */
+.pandora-app--dark .header-filter-menu { background: #1f2937; border-color: #334155; color: #e2e8f0; }
+.pandora-app--dark .header-filter-menu__header { background: linear-gradient(180deg, #273548, #1f2937); border-bottom-color: #334155; }
+.pandora-app--dark .header-filter-menu__title { color: #e2e8f0; }
+.pandora-app--dark .header-filter-menu__search { border-bottom-color: #334155; }
+.pandora-app--dark .header-filter-menu__search input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+.pandora-app--dark .header-filter-menu__row { color: #e2e8f0; }
+.pandora-app--dark .header-filter-menu__row:hover { background: #273548; }
+.pandora-app--dark .header-filter-menu__row--all { border-bottom-color: #334155; }
+.pandora-app--dark .header-filter-menu__footer { background: #1a2331; border-top-color: #334155; }
+.pandora-app--dark .header-filter-menu__btn { background: #273548; border-color: #334155; color: #e2e8f0; }
+.pandora-app--dark .hf-check { background: #0f172a; border-color: #475569; }
+
+/* ─── F3: Columnas congeladas (sticky left) ─────────────────────────
+   Cuando settings.frozenColumns > 0 las primeras N columnas se quedan
+   pegadas al borde izquierdo. El JS inyecta el `left: Xpx` exacto. */
+.preview-th--frozen,
+.preview-cell--frozen {
+    position: sticky;
+    z-index: 2;
+    box-shadow: 2px 0 4px -2px rgba(15, 23, 42, 0.12);
+}
+.preview-th--frozen {
+    z-index: 3;
+}
+.preview-th--frozen.preview-th--frozen-last,
+.preview-cell--frozen.preview-cell--frozen-last {
+    box-shadow: 2px 0 6px -2px rgba(15, 23, 42, 0.25);
+}
+
+/* ─── U-modals: Clase compartida para modales rediseñados (v2) ───────
+   Reutilizable por "Añadir nueva hoja", "Configuración del taller" y
+   "Configurar filtros". Aporta: header con icono en caja azul, body con
+   fondo bg sutil, cards consistentes, footer con borde superior. */
+.pandora-modal-v2 .slds-modal__container,
+.pandora-modal-v2__container {
+    width: 90vw;
+    max-width: 560px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--pandora-radius-lg);
+    box-shadow: var(--pandora-elev-3);
+    background: var(--pandora-surface);
+    overflow: hidden;
+}
+.pandora-modal-v2__header {
+    position: relative;
+    padding: 18px 22px 14px 22px;
+    background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+    border-bottom: 1px solid var(--pandora-border);
+    flex-shrink: 0;
+}
+/* Cierre visible en header claro: a la derecha, borde y X oscura (no inverse). */
+.pandora-modal-v2 .slds-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: auto;
+    margin: 0;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+.pandora-modal-v2 .slds-modal__close:hover,
+.pandora-modal-v2 .slds-modal__close:focus {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+.pandora-modal-v2 .slds-modal__close lightning-icon {
+    --sds-c-icon-color-foreground-default: #475569;
+    --slds-c-icon-color-foreground-default: #475569;
+}
+.pandora-modal-v2__header .pandora-modal-v2__title-row {
+    padding-right: 2.75rem;
+}
+.pandora-modal-v2__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.pandora-modal-v2__title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: var(--pandora-primary);
+    flex-shrink: 0;
+}
+.pandora-modal-v2__title-icon lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.pandora-modal-v2__title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--pandora-text);
+    margin: 0;
+}
+.pandora-modal-v2__subtitle {
+    font-size: 12px;
+    color: var(--pandora-text-secondary);
+    margin: 2px 0 0 0;
+    line-height: 1.4;
+}
+.pandora-modal-v2__body {
+    padding: 18px 22px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: var(--pandora-bg);
+}
+.pandora-modal-v2__footer {
+    padding: 14px 22px;
+    background: var(--pandora-surface);
+    border-top: 1px solid var(--pandora-border);
+    text-align: right;
+    flex-shrink: 0;
+}
+/* Modo oscuro de la clase compartida. */
+.pandora-app--dark .pandora-modal-v2__container,
+.pandora-app--dark .pandora-modal-v2__header,
+.pandora-app--dark .pandora-modal-v2__footer {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .pandora-modal-v2__body {
+    background: #131C2C;
+}
+.pandora-app--dark .pandora-modal-v2__header {
+    background: linear-gradient(135deg, #1B2940 0%, #14233F 100%);
+}
+.pandora-app--dark .pandora-modal-v2 .slds-modal__close {
+    background: #1e293b;
+    border-color: rgba(148, 163, 184, 0.4);
+}
+.pandora-app--dark .pandora-modal-v2 .slds-modal__close:hover,
+.pandora-app--dark .pandora-modal-v2 .slds-modal__close:focus {
+    background: #334155;
+}
+.pandora-app--dark .pandora-modal-v2 .slds-modal__close lightning-icon {
+    --sds-c-icon-color-foreground-default: #e2e8f0;
+    --slds-c-icon-color-foreground-default: #e2e8f0;
+}
+
+/* ─── U7: Modal "Configurar filtros" v2 ─────────────────────────────
+   Nuevo layout: resumen visual arriba + cards por condición con conector
+   AND/OR como chip clickable. Mantiene los mismos handlers que la v1. */
+.filters-modal-v2 .slds-modal__container,
+.filters-modal-v2__container {
+    width: 90vw;
+    max-width: 920px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--pandora-radius-lg);
+    box-shadow: var(--pandora-elev-3);
+    background: var(--pandora-surface);
+    overflow: hidden;
+}
+.filters-modal-v2__header {
+    position: relative;
+    padding: 18px 22px 14px 22px;
+    background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+    border-bottom: 1px solid var(--pandora-border);
+    flex-shrink: 0;
+}
+.filters-modal-v2 .slds-modal__close { top: 12px; right: 12px; }
+.filters-modal-v2__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.filters-modal-v2__title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: var(--pandora-primary);
+}
+.filters-modal-v2__title-icon lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.filters-modal-v2__title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--pandora-text);
+    margin: 0;
+}
+.filters-modal-v2__subtitle {
+    font-size: 12px;
+    color: var(--pandora-text-secondary);
+    margin: 2px 0 0 0;
+}
+.filters-modal-v2__summary {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+    box-shadow: var(--pandora-elev-1);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.filters-modal-v2__summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: var(--pandora-text-secondary);
+}
+.filters-modal-v2__summary-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+.summary-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pandora-text);
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.summary-connector {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    height: 22px;
+    min-width: 22px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--pandora-text-secondary);
+    background: transparent;
+    text-transform: uppercase;
+}
+.filters-modal-v2__body {
+    padding: 18px 22px 8px 22px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: var(--pandora-bg);
+}
+.filter-block { display: block; }
+.filter-connector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 8px 0;
+    position: relative;
+}
+.filter-connector::before,
+.filter-connector::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--pandora-border);
+}
+.logic-chip {
+    margin: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 26px;
+    padding: 0 10px;
+    background: var(--pandora-surface);
+    color: var(--pandora-primary-hover);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--pandora-primary);
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: var(--pandora-elev-1);
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+.logic-chip:hover {
+    background: var(--pandora-primary);
+    color: #fff;
+    transform: scale(1.05);
+}
+.logic-chip:focus-visible {
+    outline: 2px solid var(--pandora-primary);
+    outline-offset: 2px;
+}
+.filter-row-v2 {
+    display: grid;
+    grid-template-columns: minmax(160px, 1.2fr) minmax(140px, 1fr) minmax(160px, 1.4fr) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 14px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+    box-shadow: var(--pandora-elev-1);
+}
+.filter-row-v2__range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.filter-row-v2__remove {
+    align-self: center;
+    padding-bottom: 6px;
+}
+.filters-modal-v2__add {
+    margin: 16px 0 8px 0;
+    display: flex;
+    justify-content: center;
+}
+.filters-modal-v2__footer {
+    padding: 14px 22px;
+    background: var(--pandora-surface);
+    border-top: 1px solid var(--pandora-border);
+    text-align: right;
+    flex-shrink: 0;
+}
+/* Responsive: en pantallas estrechas las filas se apilan. */
+@media (max-width: 760px) {
+    .filter-row-v2 {
+        grid-template-columns: 1fr;
+    }
+    .filter-row-v2__remove {
+        justify-self: end;
+    }
+}
+
+/* ─── U5: Chips de "Formato de datos" en el panel de columna ─────────
+   Sustituyen al combobox antiguo: el usuario ve los 6 formatos en una
+   sola fila con icono y etiqueta. El activo se destaca en azul. */
+.format-chip-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+.format-chip {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 6px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: var(--pandora-radius-sm);
+    color: var(--pandora-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    min-height: 60px;
+    text-align: center;
+}
+.format-chip:hover {
+    border-color: var(--pandora-primary);
+    color: var(--pandora-primary);
+    box-shadow: var(--pandora-elev-1);
+    transform: translateY(-1px);
+}
+.format-chip:focus-visible {
+    outline: 2px solid var(--pandora-primary);
+    outline-offset: 1px;
+}
+.format-chip lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-text-muted);
+}
+.format-chip--active {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border-color: var(--pandora-primary);
+    color: var(--pandora-primary-hover);
+    box-shadow: 0 0 0 1px var(--pandora-primary) inset;
+}
+.format-chip--active lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary);
+}
+.density-compact .format-chip { min-height: 52px; padding: 8px 4px; font-size: 10px; }
+
+/* ─── U4: Pestaña Filtros del panel derecho con chips visuales ─────── */
+.filter-chips-card .ux-section-title { margin-bottom: 12px; }
+.filter-chip-list {
+    list-style: none;
+    margin: 0 0 12px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 10px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: 10px;
+    box-shadow: var(--pandora-elev-1);
+    font-size: 12px;
+    color: var(--pandora-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.filter-chip:hover {
+    border-color: var(--pandora-primary);
+    box-shadow: var(--pandora-elev-2);
+}
+.filter-chip__dot {
+    width: 8px; height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: var(--pandora-status-blue);
+}
+.filter-chip__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--pandora-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.filter-chip__remove {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    line-height: 1;
+    background: transparent;
+    color: var(--pandora-text-muted);
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.filter-chip__remove:hover {
+    background: #FEE2E2;
+    color: var(--pandora-status-red);
+}
+.filter-chips-empty {
+    padding: 14px 12px;
+    margin: 0 0 12px 0;
+    text-align: center;
+    color: var(--pandora-text-secondary);
+    font-size: 12px;
+    background: var(--pandora-bg);
+    border: 1px dashed var(--pandora-border);
+    border-radius: var(--pandora-radius-sm);
+}
+.filter-chips-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── B1: Barra de búsqueda en la tabla del lienzo ─────────────────── */
+.table-search-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 14px 8px 14px;
+    padding: 4px 8px 4px 12px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: 999px;
+    box-shadow: var(--pandora-elev-2);
+    width: fit-content;
+    max-width: calc(100% - 28px);
+}
+.table-search-bar lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-text-muted);
+}
+.table-search-bar__input { width: 220px; }
+.table-search-bar__count {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pandora-text-secondary);
+    padding: 2px 8px;
+    background: var(--pandora-bg);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+/* Highlight de celdas que matchean la búsqueda. Se aplica con !important
+   porque las celdas ya traen background-color inline desde buildDataStyle. */
+td.preview-cell--match {
+    background-color: #FEF3C7 !important;
+    box-shadow: inset 0 0 0 1px #FBBF24;
+}
+
+/* ─── B5: menú flotante de filtros rápidos ─────────────────────────── */
+.quick-filter-menu {
+    position: fixed;
+    z-index: 9999;
+    min-width: 230px;
+    padding: 6px;
+    background: var(--pandora-surface);
+    border: 1px solid var(--pandora-border-strong);
+    border-radius: var(--pandora-radius-md);
+    box-shadow: var(--pandora-elev-3);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.quick-filter-menu__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: var(--pandora-radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pandora-text);
+    text-align: left;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.quick-filter-menu__item:hover {
+    background: var(--pandora-bg);
+    color: var(--pandora-primary-hover);
+}
+.quick-filter-menu__item lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-text-secondary);
+}
+.quick-filter-menu__item:hover lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--pandora-primary-hover);
+}
+.quick-filter-menu__sep {
+    height: 1px;
+    background: var(--pandora-border);
+    margin: 4px 4px;
+}
+
+/* ─── B6: Modo oscuro ──────────────────────────────────────────────────
+   Solo afecta a la UI del taller; los archivos exportados conservan sus
+   colores configurados. Se hace por sobrescritura de las variables del
+   :host cuando .pandora-app--dark está activo. */
+.pandora-app--dark {
+    --pandora-surface: #1E293B;
+    --pandora-bg: #0F172A;
+    --pandora-bg-soft: #111C2F;
+    --pandora-text: #E2E8F0;
+    --pandora-text-secondary: #94A3B8;
+    --pandora-text-muted: #64748B;
+    --pandora-border: #1F2A44;
+    --pandora-border-strong: #334155;
+    --pandora-elev-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --pandora-elev-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --pandora-elev-3: 0 10px 25px -5px rgba(0, 0, 0, 0.55);
+    background: linear-gradient(180deg, #0F172A 0%, #111C2F 60%, #0B1322 100%);
+}
+.pandora-app--dark .seidor-header {
+    background: linear-gradient(135deg, #0B1A3A 0%, #122257 100%);
+    border-bottom: 1px solid var(--pandora-border-strong);
+}
+.pandora-app--dark .report-selector,
+.pandora-app--dark .canvas-toolbar,
+.pandora-app--dark .studio-tabs {
+    background-color: var(--pandora-surface);
+    border-color: var(--pandora-border);
+}
+.pandora-app--dark .left-panel,
+.pandora-app--dark .right-panel,
+.pandora-app--dark .canvas-panel,
+.pandora-app--dark .bottom-tabs {
+    background-color: var(--pandora-surface) !important;
+    color: var(--pandora-text);
+    border-color: var(--pandora-border);
+}
+.pandora-app--dark .excel-canvas {
+    background: var(--pandora-bg-soft) !important;
+}
+.pandora-app--dark .field-item,
+.pandora-app--dark .recent-card,
+.pandora-app--dark .ux-card,
+.pandora-app--dark .panel-quick-btn,
+.pandora-app--dark .hint-box,
+.pandora-app--dark .left-panel-empty,
+.pandora-app--dark .home-dashboard,
+.pandora-app--dark .welcome-banner,
+.pandora-app--dark .studio-export-view,
+.pandora-app--dark .export-card {
+    background-color: var(--pandora-surface);
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .field-label,
+.pandora-app--dark .canvas-title,
+.pandora-app--dark .ux-header-title,
+.pandora-app--dark .recent-title,
+.pandora-app--dark .panel-title {
+    color: var(--pandora-text);
+}
+.pandora-app--dark .left-tabs,
+.pandora-app--dark .panel-tabs {
+    background: var(--pandora-bg-soft);
+    border-color: var(--pandora-border);
+}
+.pandora-app--dark .left-tab--active,
+.pandora-app--dark .panel-subtab--active {
+    background: var(--pandora-surface);
+}
+.pandora-app--dark .canvas-breadcrumb__chip,
+.pandora-app--dark .active-sheet-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .quick-filter-menu,
+.pandora-app--dark .floating-context-menu,
+.pandora-app--dark .table-search-bar {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .quick-filter-menu__item { color: var(--pandora-text); }
+.pandora-app--dark .quick-filter-menu__item:hover { background: rgba(59, 130, 246, 0.18); color: #BFDBFE; }
+/* La tabla del preview conserva colores configurados por el usuario; sólo
+   suavizamos las celdas sin background propio. */
+.pandora-app--dark .preview-table tbody td,
+.pandora-app--dark table tbody td {
+    color: var(--pandora-text);
+}
+.pandora-app--dark td.preview-cell--match {
+    background-color: #5B4A0B !important;
+    color: #FEF3C7;
+    box-shadow: inset 0 0 0 1px #FBBF24;
+}
+/* U2-rev2: overrides de modo oscuro para iconos en caja y cards nuevas. */
+.pandora-app--dark .section-icon,
+.pandora-app--dark .ux-panel-header__icon,
+.pandora-app--dark .filters-modal-v2__title-icon {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93C5FD;
+}
+.pandora-app--dark .section-icon lightning-icon,
+.pandora-app--dark .ux-panel-header__icon lightning-icon,
+.pandora-app--dark .filters-modal-v2__title-icon lightning-icon {
+    --sds-c-icon-color-foreground-default: #93C5FD;
+}
+.pandora-app--dark .ux-card--blend {
+    background: linear-gradient(180deg, #1B2940 0%, #131C2C 100%);
+}
+.pandora-app--dark .filter-chip {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .filter-chips-empty {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--pandora-border);
+    color: var(--pandora-text-secondary);
+}
+.pandora-app--dark .filters-modal-v2__container,
+.pandora-app--dark .filters-modal-v2__header,
+.pandora-app--dark .filters-modal-v2__footer,
+.pandora-app--dark .filter-row-v2 {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text);
+}
+.pandora-app--dark .filters-modal-v2__body {
+    background: #131C2C;
+}
+.pandora-app--dark .filters-modal-v2__summary {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+}
+.pandora-app--dark .summary-pill {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #BFDBFE;
+}
+.pandora-app--dark .logic-chip {
+    background: #1B2940;
+    color: #93C5FD;
+    border-color: #93C5FD;
+}
+.pandora-app--dark .logic-chip:hover {
+    background: #2563EB;
+    color: #fff;
+}
+.pandora-app--dark .format-chip {
+    background: #1B2940;
+    border-color: var(--pandora-border-strong);
+    color: var(--pandora-text-secondary);
+}
+
+/* Banner "elige variante" que aparece tras seleccionar reporte y antes de elegir variante.
+   Estilo de aviso suave (no error, no warning fuerte) que invita a la acción. */
+.variant-await-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(90deg, #FFF7ED 0%, #FFFBF4 100%);
+    border: 1px solid #FED7AA;
+    border-radius: 0.5rem;
+    color: #7C2D12;
+}
+.variant-await-banner lightning-icon {
+    --sds-c-icon-color-foreground-default: #C2410C;
+    flex: 0 0 auto;
+}
+.variant-await-banner__text {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+.variant-await-banner__text strong {
+    font-size: 0.95rem;
+    color: #9A3412;
+}
+.pandora-app--dark .variant-await-banner {
+    background: linear-gradient(90deg, #2A1B0E 0%, #1B1410 100%);
+    border-color: #9A3412;
+    color: #FED7AA;
+}
+.pandora-app--dark .variant-await-banner__text strong {
+    color: #FDBA74;
+}
+.pandora-app--dark .format-chip--active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #BFDBFE;
+    box-shadow: 0 0 0 1px #60A5FA inset;
+    border-color: #60A5FA;
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cierre_sin_Consumo</fullName>
+    <active>false</active>
+    <description>Evita cerrar un mes sin el consumo</description>
+    <errorConditionFormula>AND( TipoRegistroTxt__c = &apos;Cierre Mensual&apos;,   ISBLANK( Consumo_Mensual__c ))</errorConditionFormula>
+    <errorMessage>No puede cerrar el mes sin el consumo mensual</errorMessage>
+</ValidationRule>

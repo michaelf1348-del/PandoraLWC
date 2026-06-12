@@ -1,0 +1,54 @@
+:host {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+}
+
+.bkb {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+}
+
+/* En curso — azul sólido */
+.bkb--curso {
+    background: #1d4ed8;
+    color: #ffffff;
+    border: 1px solid #1e40af;
+}
+
+/* Pendiente — naranja */
+.bkb--pendiente {
+    background: #f97316;
+    color: #ffffff;
+    border: 1px solid #ea580c;
+}
+
+/* Bloqueado / Cancelado — rojo */
+.bkb--bloqueado {
+    background: #dc2626;
+    color: #ffffff;
+    border: 1px solid #b91c1c;
+}
+
+/* Completado / Cerrado — verde */
+.bkb--completado {
+    background: #16a34a;
+    color: #ffffff;
+    border: 1px solid #15803d;
+}
+
+/* Default — gris neutro */
+.bkb--default {
+    background: #e5e7eb;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}

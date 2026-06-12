@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ESTADO_GENERAL__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( 
+   OR(Marcado_para_Borrar__c = TRUE,  Estado__c =&quot;INCOMPLETO&quot;), &quot;NO PROCESABLE&quot;,&quot;LISTO&quot;)</formula>
+    <label>ESTADO GENERAL</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,16 @@
+<template>
+    <template if:true={isStep1}>
+        <c-reporte-kaufmann onnextstep={handleNextStep}></c-reporte-kaufmann>
+    </template>
+
+    <template if:false={isStep1}>
+        <c-reporte-ppt-builder
+            excel-content-document-id={generatedExcelId}
+            sheet-name={generatedSheetName}
+            report-id={selectedReportId}
+            report-variant-id={selectedVariantId}
+            report-variant-name={selectedVariantName}
+            onback={handleBackStep}>
+        </c-reporte-ppt-builder>
+    </template>
+</template>

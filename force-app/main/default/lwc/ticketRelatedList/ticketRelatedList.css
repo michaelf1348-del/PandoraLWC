@@ -1,0 +1,17 @@
+/* Header con título a la izquierda y botón "Nuevo" alineado a la derecha. */
+.slds-card__header {
+    align-items: center;
+}
+
+/* Footer "Ver todos" centrado como en la related list estándar. */
+.slds-card__footer {
+    text-align: center;
+}
+
+/* Asegura que el modal esté por encima de otros componentes del page layout. */
+.slds-modal {
+    z-index: 9001;
+}
+.slds-backdrop {
+    z-index: 9000;
+}

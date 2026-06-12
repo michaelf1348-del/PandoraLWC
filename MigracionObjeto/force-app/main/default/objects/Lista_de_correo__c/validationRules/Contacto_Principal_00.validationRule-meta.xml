@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contacto_Principal_00</fullName>
+    <active>true</active>
+    <description>Evita crear sin contacto o usuario</description>
+    <errorConditionFormula>AND(
+  ISBLANK(ContactoP__c),
+  ISBLANK(UsuarioP__c)
+)</errorConditionFormula>
+    <errorMessage>Debes indicar un destinatario principal (Contacto o Usuario)</errorMessage>
+</ValidationRule>

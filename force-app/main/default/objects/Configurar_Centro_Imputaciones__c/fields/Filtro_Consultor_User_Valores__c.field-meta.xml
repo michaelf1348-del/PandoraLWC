@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Filtro_Consultor_User_Valores__c</fullName>
+    <description>Valores del campo User que deben tener los resolutores mostrados en combos admin.</description>
+    <externalId>false</externalId>
+    <label>Filtro consultor: valores User</label>
+    <length>32768</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contacto_Principal_01</fullName>
+    <active>true</active>
+    <description>Evita agregar contacto y usuario al mismo tiempo</description>
+    <errorConditionFormula>AND(
+  NOT(ISBLANK(ContactoP__c)),
+  NOT(ISBLANK(UsuarioP__c))
+)</errorConditionFormula>
+    <errorMessage>En Destinatario Principal selecciona Contacto o Usuario, no ambos</errorMessage>
+</ValidationRule>

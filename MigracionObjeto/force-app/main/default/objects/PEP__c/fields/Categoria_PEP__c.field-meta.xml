@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Categoria_PEP__c</fullName>
+    <externalId>false</externalId>
+    <label>Categoria PEP</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cliente</fullName>
+                <default>false</default>
+                <label>Cliente</label>
+            </value>
+            <value>
+                <fullName>Interno</fullName>
+                <default>false</default>
+                <label>Interno</label>
+            </value>
+            <value>
+                <fullName>Recambio</fullName>
+                <default>false</default>
+                <label>Recambio</label>
+            </value>
+            <value>
+                <fullName>Indisponibilidad</fullName>
+                <default>false</default>
+                <label>Indisponibilidad</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cabecera_Factura</fullName>
+    <fields>Cliente__c</fields>
+    <fields>RecordTypeId</fields>
+    <fields>Precio_Total__c</fields>
+    <fields>Moneda__c</fields>
+    <fields>Reversa_Provision_Requerida__c</fields>
+    <fields>RevP__c</fields>
+    <fields>Rechazada__c</fields>
+    <fields>Refac__c</fields>
+    <fields>Estatus_Facturacion__c</fields>
+    <label>Cabecera Factura</label>
+</CompactLayout>

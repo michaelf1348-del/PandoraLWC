@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Valor_en_CLP__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE( TipoRegistroTxt__c ,
+&apos;Factura Cliente&apos;,  Valor_en_CLP_Absoluto__c *1 ,
+&apos;Pago Proveedores&apos;,  Valor_en_CLP_Absoluto__c *-1 ,
+&apos;Egreso&apos;,  Valor_en_CLP_Absoluto__c *-1 ,
+&apos;Ingreso&apos;,  Valor_en_CLP_Absoluto__c *1 ,
+
+
+0 )</formula>
+    <label>Valor en CLP</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>
