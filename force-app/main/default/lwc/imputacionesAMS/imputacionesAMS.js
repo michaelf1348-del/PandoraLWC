@@ -4938,13 +4938,22 @@ export default class ImputacionesAMS extends LightningElement {
     }
 
     get billableDonutStyle() {
-        const { fact, total } = this.activeBillableBreakdown;
+        const { fact, noFact, total } = this.activeBillableBreakdown;
+        const trackColor = '#E5E7EB';
         if (total <= 0) {
-            return 'background: #e4e4e7;';
+            return `background: ${trackColor};`;
         }
-        const deg = (fact / total) * 360;
         const { fact: factColor, noFact: noFactColor } = this.resolvedChartColors;
-        return `background: conic-gradient(${factColor} 0deg ${deg}deg, ${noFactColor} ${deg}deg 360deg);`;
+        // El anillo representa el avance sobre la META (no la proporcion fact/noFact):
+        // verde = facturable, rojo = no facturable, gris = restante hasta la meta.
+        const target = this.monthlyFacturableTargetHours;
+        const base = target && target > 0 ? target : total;
+        const factDeg = Math.min((fact / base) * 360, 360);
+        let noFactDeg = Math.min((noFact / base) * 360, 360 - factDeg);
+        if (noFactDeg < 0) noFactDeg = 0;
+        const end1 = factDeg;
+        const end2 = factDeg + noFactDeg;
+        return `background: conic-gradient(${factColor} 0deg ${end1}deg, ${noFactColor} ${end1}deg ${end2}deg, ${trackColor} ${end2}deg 360deg);`;
     }
 
     get billablePctFactLabel() {

@@ -1830,9 +1830,9 @@ button.cal-day.disabled-day {
 
 .donut-chart {
     position: relative;
-    width: 9.5rem;
-    height: 9.5rem;
-    margin: 4px auto 16px;
+    width: 11.25rem;
+    height: 11.25rem;
+    margin: 8px auto 16px;
 }
 
 .donut-chart-ring {
@@ -1843,31 +1843,32 @@ button.cal-day.disabled-day {
 
 .donut-chart-center {
     position: absolute;
-    inset: 1.55rem;
+    inset: 1.125rem;
     background: var(--cc-surface);
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--cc-border);
+    border: none;
     text-align: center;
 }
 
 .donut-chart-pct-main {
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.75rem;
+    font-weight: 700;
     color: var(--cc-text);
     line-height: 1.05;
     letter-spacing: -0.02em;
 }
 
 .donut-chart-pct-sub {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
     color: var(--cc-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
+    letter-spacing: 0.04em;
+    margin-top: 3px;
 }
 
 .chart-legend-list {
