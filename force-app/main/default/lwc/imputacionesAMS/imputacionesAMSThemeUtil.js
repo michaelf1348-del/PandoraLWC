@@ -189,8 +189,11 @@ export function resolveCalendarCssVarsFromSettings(settings) {
         ),
         '--cc-cal-meta-bg': normalizeThemeHex(s.calColorMetaBg, CAL_COLOR_DEFAULTS.calColorMetaBg),
         '--cc-cal-meta-border': normalizeThemeHex(s.calColorMetaBorder, CAL_COLOR_DEFAULTS.calColorMetaBorder),
-        '--cc-cal-holiday-bg': normalizeThemeHex(s.calColorHolidayBg, CAL_COLOR_DEFAULTS.calColorHolidayBg),
-        '--cc-cal-weekend-bg': normalizeThemeHex(s.calColorWeekendBg, CAL_COLOR_DEFAULTS.calColorWeekendBg),
+        // Fin de semana y festivo: gris neutro fijo (look del prototipo Next.js).
+        // Se ignora el valor guardado en la org para evitar los tintes rosados
+        // (#FEF6F8 / #FFF1F3) que rompian la estetica limpia del calendario.
+        '--cc-cal-holiday-bg': '#F4F5F7',
+        '--cc-cal-weekend-bg': '#F4F5F7',
         '--cc-cal-selected-bg': normalizeThemeHex(s.calColorSelectedBg, CAL_COLOR_DEFAULTS.calColorSelectedBg),
         '--cc-cal-selected-border': normalizeThemeHex(
             s.calColorSelectedBorder,
