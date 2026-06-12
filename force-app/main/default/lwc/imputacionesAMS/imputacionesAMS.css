@@ -21,33 +21,38 @@
 }
 
 :host {
-    --cc-cal-empty-bg: #f7f8fa;
-    --cc-cal-partial-bg: #fef9ec;
-    --cc-cal-partial-border: #e6dabe;
-    --cc-cal-meta-bg: #eff8f3;
-    --cc-cal-meta-border: #b8dccb;
-    --cc-cal-over-outline: rgba(234, 88, 12, 0.35);
-    --cc-cal-holiday-bg: #fff1f3;
-    --cc-cal-weekend-bg: #fef6f8;
-    --cc-cal-selected-bg: #e9f4ff;
-    --cc-cal-selected-border: #82a7cf;
-    --cc-cal-locked-bg: #eef1f6;
+    /* Tintes de calendario mas suaves y neutros: reducen el efecto "arcoiris".
+       Mismos nombres de token y misma semantica de color. */
+    --cc-cal-empty-bg: #fafafa;
+    --cc-cal-partial-bg: #fcf8ee;
+    --cc-cal-partial-border: #ece2c8;
+    --cc-cal-meta-bg: #f1f8f4;
+    --cc-cal-meta-border: #cfe6d8;
+    --cc-cal-over-outline: rgba(234, 88, 12, 0.28);
+    --cc-cal-holiday-bg: #fbf4f5;
+    --cc-cal-weekend-bg: #fafafa;
+    --cc-cal-selected-bg: #eaf3fb;
+    --cc-cal-selected-border: #9cbfe0;
+    --cc-cal-locked-bg: #f1f2f5;
     --cc-primary: #0f6cbd;
     --cc-primary-dark: #0c5694;
-    --cc-primary-soft: #eef6fc;
-    --cc-bg: #f6f6f7;
+    --cc-primary-soft: #f0f6fc;
+    --cc-bg: #f7f8f9;
     --cc-surface: #ffffff;
-    --cc-border: #e4e4e7;
-    --cc-text: #18181b;
-    --cc-muted: #71717a;
-    --cc-info-bg: #f4f4f5;
-    --cc-info-br: #e4e4e7;
+    /* Borde mas claro y uniforme: menos peso visual por caja. */
+    --cc-border: #eaeaec;
+    --cc-border-strong: #e0e0e3;
+    --cc-text: #1a1a1e;
+    --cc-muted: #76767e;
+    --cc-info-bg: #f7f8f9;
+    --cc-info-br: #eaeaec;
     --cc-success: #15803d;
     --cc-chart-fact: #15803d;
     --cc-chart-nofact: #ea580c;
     --cc-chart-meta: #f59e0b;
-    --cc-success-bg: #f0fdf4;
+    --cc-success-bg: #f3faf5;
     --cc-shadow: none;
+    --cc-radius: 10px;
     display: block;
     width: 100%;
 }
@@ -64,7 +69,7 @@
 .pandora-wrapper {
     background: var(--cc-surface);
     border: 1px solid var(--cc-border);
-    border-radius: 12px;
+    border-radius: var(--cc-radius);
     /* visible: el men� del combobox Resolutores no debe recortarse por el card */
     overflow: visible;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -241,7 +246,7 @@
 .table-card {
     background-color: var(--cc-surface);
     border: 1px solid var(--cc-border);
-    border-radius: 12px;
+    border-radius: var(--cc-radius);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
@@ -249,8 +254,8 @@
 .calendar-card:hover,
 .summary-card:hover,
 .table-card:hover {
-    border-color: #d9dde5;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+    border-color: var(--cc-border-strong);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.045);
 }
 
 .ams-calendar-card {
@@ -3246,7 +3251,7 @@ td.td-hours-prior {
 }
 
 .ticket-table-row.ticket-row.ticket-row--selected:hover {
-    background: #e2eefb;
+    background: #e3effb;
 }
 
 .ticket-table-row.ticket-row.ticket-row--error {
@@ -3255,8 +3260,8 @@ td.td-hours-prior {
 }
 
 .ticket-table-row.ticket-row.ticket-row--equipo {
-    background: #f5f3ff;
-    box-shadow: inset 3px 0 0 #7c3aed;
+    background: #f0f8fa;
+    box-shadow: inset 3px 0 0 #0e7490;
 }
 
 .ticket-table-row.ticket-row.has-imputed.edited {
@@ -3294,11 +3299,11 @@ td.td-hours-prior {
 }
 
 .ticket-row.ticket-row--equipo td {
-    background: #f5f3ff;
+    background: #f0f8fa;
 }
 
 .ticket-row.ticket-row--equipo td:first-child {
-    box-shadow: inset 3px 0 0 #7c3aed;
+    box-shadow: inset 3px 0 0 #0e7490;
 }
 
 .ticket-row.has-imputed.edited td:first-child {

@@ -46,17 +46,17 @@ export function resolveChartColorsFromSettings(settings) {
 
 /** Mismos defaults que la pantalla de configuracion (si Apex no devuelve color por FLS). */
 export const CAL_COLOR_DEFAULTS = {
-    calColorEmptyBg: '#F7F8FA',
-    calColorPartialBg: '#FEF9EC',
-    calColorPartialBorder: '#E6DABE',
-    calColorMetaBg: '#EFF8F3',
-    calColorMetaBorder: '#B8DCCB',
+    calColorEmptyBg: '#FAFAFA',
+    calColorPartialBg: '#FCF8EE',
+    calColorPartialBorder: '#ECE2C8',
+    calColorMetaBg: '#F1F8F4',
+    calColorMetaBorder: '#CFE6D8',
     calColorOverThreshold: '#EA580C',
-    calColorHolidayBg: '#FFF1F3',
-    calColorWeekendBg: '#FEF6F8',
-    calColorSelectedBg: '#E9F4FF',
-    calColorSelectedBorder: '#82A7CF',
-    calColorLockedBg: '#EEF1F6'
+    calColorHolidayBg: '#FBF4F5',
+    calColorWeekendBg: '#FAFAFA',
+    calColorSelectedBg: '#EAF3FB',
+    calColorSelectedBorder: '#9CBFE0',
+    calColorLockedBg: '#F1F2F5'
 };
 
 /** Fusiona settings del Apex con defaults de tema (por si algun campo color viene null). */
@@ -111,11 +111,11 @@ export function buildStripDayButtonInlineStyle(day, settings) {
     } else if (cls.includes('strip-load--partial')) {
         parts.push(`background:${s.calColorPartialBg}`, `border-color:${s.calColorPartialBorder}`);
     } else if (cls.includes('strip-day--holiday')) {
-        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#e5c9cf', 'color:#5c343c');
+        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#ecd6da', 'color:#6b4248');
     } else if (cls.includes('strip-day--weekend')) {
-        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e9d7dd', 'color:#5c3940');
+        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e6e6e8', 'color:#6b6b73');
     } else {
-        parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#cfd4e6');
+        parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#e2e2e6');
     }
     if (cls.includes('strip-day--over8h')) {
         const rgb = hexToRgbParts(s.calColorOverThreshold);
@@ -148,14 +148,14 @@ export function buildCalDayButtonInlineStyle(day, settings) {
         return parts.join(';');
     }
     if (cls.includes('holiday-day')) {
-        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#e5c9cf', 'color:#5c343c');
+        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#ecd6da', 'color:#6b4248');
         return parts.join(';');
     }
     if (cls.includes('weekend-day')) {
-        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e9d7dd', 'color:#5c3940');
+        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e6e6e8', 'color:#6b6b73');
         return parts.join(';');
     }
-    parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#d4d4d8');
+    parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#e2e2e6');
     if (cls.includes('cal-day--over8h')) {
         const rgb = hexToRgbParts(s.calColorOverThreshold);
         if (rgb) {
