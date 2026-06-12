@@ -1,9 +1,9 @@
 /** Colores por defecto del centro (graficos y meta). */
 export const CHART_COLOR_DEFAULTS = {
-    fact: '#15803D',
+    fact: '#21A366',
     noFact: '#EA580C',
     meta: '#F59E0B',
-    imputable: '#2563EB'
+    imputable: '#3B82C4'
 };
 
 /** Normaliza hex para estilos inline y conic-gradient en LWC. */
@@ -102,7 +102,7 @@ export function buildStripDayButtonInlineStyle(day, settings) {
         return parts.join(';');
     }
     if (day?.selected) {
-        parts.push(`background:${s.calColorSelectedBg}`, `border-color:${s.calColorSelectedBorder}`, 'color:#163157');
+        parts.push(`background:${s.calColorSelectedBg}`, `border-color:${s.calColorSelectedBorder}`, 'color:oklch(0.21 0.02 257)');
         return parts.join(';');
     }
     const cls = String(day?.buttonClass || '');
@@ -111,11 +111,11 @@ export function buildStripDayButtonInlineStyle(day, settings) {
     } else if (cls.includes('strip-load--partial')) {
         parts.push(`background:${s.calColorPartialBg}`, `border-color:${s.calColorPartialBorder}`);
     } else if (cls.includes('strip-day--holiday')) {
-        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#ecd6da', 'color:#6b4248');
+        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:oklch(0.925 0.006 250)', 'color:oklch(0.55 0.015 257)');
     } else if (cls.includes('strip-day--weekend')) {
-        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e6e6e8', 'color:#6b6b73');
+        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:oklch(0.925 0.006 250)', 'color:oklch(0.55 0.015 257)');
     } else {
-        parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#e2e2e6');
+        parts.push(`background:${s.calColorEmptyBg}`, 'border-color:oklch(0.925 0.006 250)');
     }
     if (cls.includes('strip-day--over8h')) {
         const rgb = hexToRgbParts(s.calColorOverThreshold);
@@ -136,7 +136,7 @@ export function buildCalDayButtonInlineStyle(day, settings) {
         return parts.join(';');
     }
     if (cls.includes(' active')) {
-        parts.push(`background:${s.calColorSelectedBg}`, `border-color:${s.calColorSelectedBorder}`, 'color:#163157');
+        parts.push(`background:${s.calColorSelectedBg}`, `border-color:${s.calColorSelectedBorder}`, 'color:oklch(0.21 0.02 257)');
         return parts.join(';');
     }
     if (cls.includes('goal-met')) {
@@ -148,14 +148,14 @@ export function buildCalDayButtonInlineStyle(day, settings) {
         return parts.join(';');
     }
     if (cls.includes('holiday-day')) {
-        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:#ecd6da', 'color:#6b4248');
+        parts.push(`background:${s.calColorHolidayBg}`, 'border-color:oklch(0.925 0.006 250)', 'color:oklch(0.55 0.015 257)');
         return parts.join(';');
     }
     if (cls.includes('weekend-day')) {
-        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:#e6e6e8', 'color:#6b6b73');
+        parts.push(`background:${s.calColorWeekendBg}`, 'border-color:oklch(0.925 0.006 250)', 'color:oklch(0.55 0.015 257)');
         return parts.join(';');
     }
-    parts.push(`background:${s.calColorEmptyBg}`, 'border-color:#e2e2e6');
+    parts.push(`background:${s.calColorEmptyBg}`, 'border-color:oklch(0.925 0.006 250)');
     if (cls.includes('cal-day--over8h')) {
         const rgb = hexToRgbParts(s.calColorOverThreshold);
         if (rgb) {
